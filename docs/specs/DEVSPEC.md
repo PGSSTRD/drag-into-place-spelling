@@ -1,8 +1,8 @@
 # DEVSPEC - Drag Into Place Spelling
 
-**Version:** 0.1.0  
-**Status:** Draft - awaiting engineering and product approval; not implemented  
-**Last update:** 2026-10-21  
+**Version:** 0.2.0<br>
+**Status:** Draft - implementation in progress; release not approved<br>
+**Last update:** 2026-10-22<br>
 **Author:** Copilot
 
 ## 1. Authority and reading order
@@ -12,10 +12,11 @@ contracts, implementation sequence and technical decisions. Presentation belongs
 to [UISPEC](./UISPEC.md); [TESTSPEC](./TESTSPEC.md) verifies both. Test ordering
 must not override the module dependencies here.
 
-The [external container contract](./third-party-game-spec.md), v1.8, governs
+The [external container contract](../third-party-game-spec.md), v1.8, governs
 integration. This spec selects its two-tier Layout A, not an optional book/core
-content tier. No code, scripts or commands described below exist yet: they are
-required implementation deliverables, not instructions known to work today.
+content tier. A Foundation/MVP/Better static prototype now implements part of
+the contracts below; section 9.1 records evidence and gaps. Requirements remain
+normative, and this prototype is not a release candidate.
 
 ## Part I - Functional requirements
 
@@ -320,6 +321,39 @@ dropped with a diagnostic; the game must not retry it or block.
 Tests accompany each module, not just M7. M3 work independent of M2 may proceed
 in parallel; persistence cannot finalize before the domain snapshot contract.
 
+### 9.1 Approved static prototype evidence and remaining work
+
+This is an implementation-status record, not a waiver or replacement of D-01
+through D-10 exit criteria. The user approved implementation through Better
+and approved the code deliverable on 2026-10-22; release approval remains
+outstanding.
+
+| Module | Evidence in the current prototype | Status / unmet exit criteria |
+|---|---|---|
+| M1 | React 19.1.1, TypeScript 5.9.2, Vite 7.1.7, Ajv 8.17.1; Node 24.20.0/npm 11.19.0; content schema and reference/license validator; CAT fixture | Partial. Unit validation works, but `npm run validate:content` fails because production word/letter recordings, `assets/audios/incorrect.wav`, `assets/fonts/reader.woff2` and their licenses are missing. Individual invalid-fixture coverage is incomplete. |
+| M2 | Pure reducer, value-based duplicate matching, attempts, random wrong-tile relocation, Better foil removal/hints, per-user snapshot validation, cycle order and completion marker; six domain and four progress tests | Core behavior is present; full injected-clock/invariant matrix and all F-01-F-10 fixture coverage remain outstanding. |
+| M3 | Bounded XHR content loader, serialized HTML audio cues with watchdog, local progress/settings, and fire-and-forget bridge envelope | Partial. HTTP development uses XHR rather than the specified fetch path; preload settlement, hidden-page audio suspension (the active clock pauses), and full failure-generation tests remain outstanding. `sub_app_id` is a development placeholder pending Q-02. |
+| M4 | Responsive static UI, pointer capture, 8 px threshold, clamping, center hit-testing, tap/keyboard placement, live status, MVP/Better tier control | Focused browser checks pass. Full viewport, focus/screen-reader, contrast, cancellation and automated component/E2E acceptance remains outstanding. |
+| M5 | Better tier displays per-position hints and removes foils; MVP excludes foils; domain/browser smoke checks exercised both tiers | Focused behavior is present; full T-09/T-10 and regression suite remains outstanding. |
+| M6 | Not included in the approved scope | Great moving lanes and their reduced-motion/pause/recycle behavior are not implemented. |
+| M7 | Bridge envelope generation and call boundary are implemented | Partial. Release audit, ZIPs, icon, release configuration and device/container evidence are not implemented. |
+
+Commands currently present in `package.json` are:
+
+- `npm run dev`
+- `npm run build`
+- `npm run typecheck`
+- `npm run test:unit`
+- `npm run validate:content`
+
+The required `lint`, `build:standalone`, `test:e2e`, `audit:standalone` and
+`package` commands are not present. The lockfile was created and a clean
+install passed with `--ignore-scripts --no-audit --offline`; the documented
+plain `npm ci` was not run. The production build and `file://` smoke check
+succeed, but the content audit correctly blocks a release. npm reported five
+advisories during installation; the registry audit request timed out, so their
+details and remediation are unknown.
+
 ## Part II - Non-functional requirements
 
 ## 10. Quality, safety and diagnostics (D-08)
@@ -453,10 +487,10 @@ reservations, promotion or publishing.
 
 | ID | Question / owner | Blocks |
 |---|---|---|
-| Q-01 | Product owner: approve proposed word/foil limits, timings, scoring semantics and all Draft behavior | Implementation of affected modules |
+| Q-01 | Product owner: formal approval of proposed limits, timings, scoring and Draft behavior; user approved implementation through Better on 2026-10-22, but the product owner remains unassigned | Product/release approval; implementation scope through Better is authorized |
 | Q-02 | Curious Learning: approved engine slug, `sub_app_id`, language catalog entry and promotion permissions | Release packaging/upload |
 | Q-03 | Content owner: provide production level set, contextual recordings, illustrations, icon, font and redistribution evidence | Production content gate |
-| Q-04 | Engineering/QA: select baseline device, minimum OS/WebView versions and Node/npm versions | Performance/support claims; M1 toolchain selection |
+| Q-04 | Engineering/QA: select baseline device and minimum OS/WebView versions; Node.js 24.20.0/npm 11.19.0 selected for the prototype on 2026-10-22 | Performance/support claims; device and OS/WebView selection |
 | Q-05 | Sponsor: assign product approver, independent QA owner, human architecture/security reviewers and facilitated usability review | Approval/release |
 
 ## 15. Resolved and proposed decisions
@@ -469,10 +503,16 @@ reservations, promotion or publishing.
 | 2026-10-21 | Runtime-rendered letter glyph hints, not a required authored hint sprite | Proposed deviation from brief's media consideration; same per-position clue, avoids sprite/language coupling |
 | 2026-10-21 | Static Great alternative under reduced motion; no failure timer | Proposed; preserves accessibility and unlimited practice |
 | 2026-10-21 | Local snapshots and best-effort at-most-once bridge calls across reload | Proposed; no bridge acknowledgment or game-side retries exist |
+| 2026-10-22 | Node.js 24.20.0 LTS/npm 11.19.0 | Selected by the user for the prototype; device and minimum OS/WebView versions remain open |
 
-Out of scope is defined in the PRD. Lessons log: none yet; add observed
-implementation lessons with date/evidence, integrate them into normative
-sections before a major revision and remove resolved transient notes.
+Out of scope is defined in the PRD. Lessons log:
+
+- 2026-10-22: Keep synthetic schema/unit fixtures distinct from releasable
+  content; the local pack can be schema-valid while the media/license audit
+  still blocks release.
+- 2026-10-22: A successful `file://` browser smoke check demonstrates local
+  JSON/image boot and interaction only; it does not replace the production
+  artifact, outbound-request, device or container gates.
 
 ### Specification lifecycle
 
@@ -500,4 +540,5 @@ dates or invent a change-log entry for untouched specs.
 
 ## Spec change log
 
+2026-10-22 — Copilot — Recorded prototype implementation evidence, selected toolchain and remaining module/release gaps without changing normative contracts.
 2026-10-21 — Copilot — Added the initial draft behavioral contracts, module sequence, offline architecture, delivery runbook, explicit decisions and specification lifecycle; removed nothing.

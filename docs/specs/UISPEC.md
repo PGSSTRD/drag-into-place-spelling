@@ -1,8 +1,8 @@
 # UISPEC - Drag Into Place Spelling
 
-**Version:** 0.1.0  
-**Status:** Draft - awaiting product, accessibility and design review  
-**Last update:** 2026-10-21  
+**Version:** 0.2.0<br>
+**Status:** Draft - awaiting product, accessibility and design review; prototype evidence recorded<br>
+**Last update:** 2026-10-22<br>
 **Author:** Copilot
 
 ## 1. Authority and visual intent
@@ -237,6 +237,28 @@ behavior and audio require tests, not screenshots alone.
 Maintain Status, Version, Last update and the bottom log under the lifecycle
 defined in DEVSPEC. No design approval has been granted in this draft.
 
+## 7. Prototype implementation evidence and gaps
+
+The user approved implementation through the static Better tier on 2026-10-22;
+that approval is not product, accessibility, design or release approval. The
+normative U-01-U-05 requirements above remain unchanged.
+
+The current prototype presents the picture, Start/Resume, word replay, sound
+toggle, answer positions, a static letter pool and Better hints/foils. Browser
+smoke checks confirmed `file://` content/image loading, tap-to-place, a mouse
+drag, correct locking, foil removal with one position hint, and CAT completion
+followed by automatic advance. Missing speech files produce the specified
+nonfatal sound notice; they do not satisfy the pronunciation requirements.
+
+The present tier control is a header `<select>` for MVP and Better rather than
+the specified Settings dialog/radio group. Great lanes, the Settings dialog,
+focus trap/return, full 320x568/landscape/tablet review, screen-reader and
+contrast review, 200% zoom review, and reduced-motion review are not
+implemented or verified. Pointer/tap/keyboard behavior has not received the
+full U-04 acceptance review. These are recorded as implementation gaps, not
+changes to the normative design.
+
 ## Spec change log
 
+2026-10-22 — Copilot — Recorded static Better prototype presentation evidence and UI/accessibility gaps without changing normative design requirements.
 2026-10-21 — Copilot — Added the initial draft responsive design, complete screen/control states, accessible interactions and Gherkin acceptance scenarios; removed nothing.

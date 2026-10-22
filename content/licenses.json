@@ -1,0 +1,11 @@
+{
+  "assets": [
+    {
+      "path": "assets/images/cat.svg",
+      "creator": "Project contributors",
+      "license": "CC0-1.0",
+      "source": "Created for this repository",
+      "notes": "Original vector illustration; no external assets used."
+    }
+  ]
+}

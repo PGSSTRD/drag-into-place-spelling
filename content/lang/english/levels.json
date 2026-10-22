@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "content_version": "1.0.0",
+  "language": "english",
+  "levels": [
+    {
+      "level_id": 1,
+      "target_word": "cat",
+      "letters": ["C", "A", "T"],
+      "foils": ["B", "D"],
+      "image_path": "assets/images/cat.svg",
+      "word_audio_path": "lang/english/audios/cat.mp3",
+      "letter_audio_paths": [
+        "lang/english/audios/cat-0.mp3",
+        "lang/english/audios/cat-1.mp3",
+        "lang/english/audios/cat-2.mp3"
+      ],
+      "image_alt": "A cat sitting and looking forward"
+    }
+  ]
+}

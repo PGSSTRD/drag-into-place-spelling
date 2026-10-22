@@ -1,9 +1,9 @@
 # TESTSPEC - Drag Into Place Spelling
 
-**Version:** 0.1.0  
-**Status:** Draft - awaiting independent QA review; tests specified, not executed  
-**Last update:** 2026-10-21  
-**Author:** Copilot  
+**Version:** 0.2.0<br>
+**Status:** Draft - partial unit/browser smoke checks executed; full acceptance suite not executed; awaiting independent QA review<br>
+**Last update:** 2026-10-22<br>
+**Author:** Copilot<br>
 **Independent QA owner:** To be assigned
 
 ## 1. Authority and verification strategy
@@ -12,13 +12,13 @@ Verifies [PRD](./PRD.md), [DEVSPEC](./DEVSPEC.md) and
 [UISPEC](./UISPEC.md); it does not introduce product behavior or reorder
 engineering dependencies. Consult those sources for authoritative constants
 and policies. Test data below is synthetic, not production learning content.
-The [container contract](./third-party-game-spec.md) section 7 is a mandatory
+The [container contract](../third-party-game-spec.md) section 7 is a mandatory
 external release checklist.
 
-There is no application, executable test suite or dependency manifest in the
-current repository. All runner names, fixture paths and commands here are
-implementation requirements. This document's creation is not evidence that
-the game passes any test.
+The repository now contains an application, dependency manifest and focused
+unit tests. The acceptance groups, production-artifact E2E, device, human and
+release checks below remain requirements; this document and partial test
+results do not constitute evidence that the complete game passes them.
 
 Layer testing:
 
@@ -210,6 +210,37 @@ Completion output lists additions, removals and replacements per document and
 notes unchanged documents; a clarification replacing an old rule must not be
 reported as "added only". Re-run the affected coverage/link/consistency checks.
 
+## 9. Implementation evidence recorded 2026-10-22
+
+The user approved the Foundation/MVP/Better static code deliverable on
+2026-10-22. The following focused unit evidence is real but partial; no
+acceptance group is declared passed in full.
+
+| Evidence | Results | Partial coverage |
+|---|---|---|
+| [content.test.ts](../../tests/content.test.ts) | 3 passing unit tests | T-01: valid English pack, letter multiset mismatch, encoded traversal; remaining F-05/F-06 variants and file-format cases are untested. |
+| [domain.test.ts](../../tests/domain.test.ts) | 6 passing unit tests | Subsets of T-03 through T-10: repeated-letter matching, foil removal/hint, wrong target relocation, MVP foil omission, neutral occupied drop and one-level cycle. Does not cover full pointer/audio/timing/cycle matrices. |
+| [progress.test.ts](../../tests/progress.test.ts) | 4 passing unit tests | Subsets of T-13 through T-15: user/tier key, partial snapshot and cycle restore, completion marker and duplicate bindings. No ten-trial or physical storage matrix. |
+| [bridge.test.ts](../../tests/bridge.test.ts) | 3 passing unit tests | T-24/T-25 subsets: envelope schema, finite/size validation and UUID v4 shape. No recording/throwing bridge or container dedup test. |
+| Typecheck and production build | `npm run typecheck` and `npm run build` passed with Node 24.20.0/npm 11.19.0. | Does not establish runtime asset completeness or any device gate. |
+| Browser smoke checks | Production output opened from `file://`; CAT load, tap placement, Better foil/hint and completion/advance observed. A mouse drag was also observed in the local HTTP preview. | Not automated E2E; no instrumented outbound-request counter, viewport matrix, keyboard-only completion, accessibility scan or 10-cold-launch trial. T-17/T-18/T-27 are not passed in full. |
+
+`npm run validate:content` fails as expected: the English demo pack references
+missing production word/letter MP3s, the shared incorrect WAV and reader WOFF2,
+and there are no license records for those assets. Therefore T-01/T-26/T-31
+remain blocked. Browser smoke checks also observed the missing local audio
+requests and the nonfatal sound-unavailable notice.
+
+The documented plain `npm ci` was not run; clean install verification used
+`npm ci --ignore-scripts --no-audit --offline`. `npm audit` could not retrieve
+the registry advisory report because the audit endpoint timed out after npm
+reported five advisories during install. No advisory was verified or resolved.
+`lint`, `build:standalone`, `test:e2e`, `audit:standalone` and `package` are not
+implemented. Physical Android/iOS WebView, Curious Reader container, licensed
+media, independent QA, accessibility and usability reviews remain blocked or
+unrun; no release criterion is inferred from the passing unit/build checks.
+
 ## Spec change log
 
+2026-10-22 — Copilot — Recorded partial unit/build/browser evidence and explicitly retained missing-media, E2E, device and release gates.
 2026-10-21 — Copilot — Added the initial draft fixtures, 32 traceable test groups, offline/device protocols, coverage matrix and approval/spec-maintenance gates; removed nothing.

@@ -1,9 +1,9 @@
 # PRD - Drag Into Place Spelling
 
-**Version:** 0.1.0  
-**Status:** Draft - awaiting product approval; no implementation exists  
-**Last update:** 2026-10-21  
-**Author:** Copilot  
+**Version:** 0.2.0<br>
+**Status:** Draft - awaiting product approval; prototype exists; release not approved<br>
+**Last update:** 2026-10-22<br>
+**Author:** Copilot<br>
 **Product owner:** To be assigned by the project sponsor
 
 ## 1. Purpose and authority
@@ -20,9 +20,9 @@ documented reason required for deviation.
 
 ### Sources and provenance
 
-- [Original workshop brief](./Drag%20Into%20Place%20Spec%20Brief.md), dated
+- [Original workshop brief](../Drag%20Into%20Place%20Spec%20Brief.md), dated
   2017-04-11: pedagogical objective, MVP/Better/Great gameplay and constraints.
-- [Curious Reader third-party contract](./third-party-game-spec.md), v1.8,
+- [Curious Reader third-party contract](../third-party-game-spec.md), v1.8,
   2026-08-19: modern offline web-container, packaging and reporting obligations.
 - [Guru Banavar's SDAD article](https://medium.com/@guruduth.banavar/spec-driven-ai-development-engineering-discipline-for-the-ai-coding-era-22a678067b1c):
   the four-artifact methodology, traceability and human approval gates. This
@@ -123,6 +123,17 @@ devices and unassigned reviewers block release, not preparation of a prototype.
 No spec in Draft status constitutes approval to ship. Proposed reconstruction
 decisions require review before their implementation milestone starts.
 
+### Prototype evidence (2026-10-22)
+
+A Foundation/MVP/Better static prototype now exists. It has passing focused
+unit, typecheck and build checks, plus browser smoke checks for local-file
+loading, placement, progression and Better foils/hints. These results do not
+establish any release measure in section 5: the content audit fails on missing
+licensed audio/font assets, and packaging, device, independent QA and usability
+gates remain outstanding. Product intent and P-01-P-12 acceptance thresholds
+are unchanged.
+
 ## Spec change log
 
+2026-10-22 — Copilot — Recorded approved static-prototype evidence and outstanding release gates without changing product intent.
 2026-10-21 — Copilot — Added the initial draft product requirements, confirmed three-tier scope, provenance, measurable outcomes and approval gates; removed nothing.
