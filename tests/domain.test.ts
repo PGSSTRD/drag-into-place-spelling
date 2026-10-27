@@ -15,7 +15,7 @@ const book: Level = {
 
 describe("puzzle reducer", () => {
   it("accepts repeated letters by value, regardless of tile identity", () => {
-    let state = createPuzzle(book, "mvp", () => 0);
+    let state = createPuzzle(book, "great", () => 0);
     for (const [tileId, slotIndex] of [["t:0", 0], ["t:2", 1], ["t:1", 2], ["t:3", 3]] as const) {
       state = reducePuzzle(state, { type: "acquire", tileId }).state;
       const outcome = reducePuzzle(state, { type: "drop", slotIndex });
@@ -26,8 +26,8 @@ describe("puzzle reducer", () => {
     expect(state.attempts).toBe(4);
   });
 
-  it("removes Better foils and reveals only the dropped position", () => {
-    let state = createPuzzle(book, "better", () => 0);
+  it("removes Great foils and reveals only the dropped position", () => {
+    let state = createPuzzle(book, "great", () => 0);
     state = reducePuzzle(state, { type: "acquire", tileId: "f:0" }).state;
     const result = reducePuzzle(state, { type: "drop", slotIndex: 2 });
     expect(result.result).toBe("foil");
@@ -37,7 +37,7 @@ describe("puzzle reducer", () => {
   });
 
   it("returns a wrong target to a different randomized available position", () => {
-    let state = createPuzzle(book, "mvp", () => 0);
+    let state = createPuzzle(book, "great", () => 0);
     const originalIndex = state.availableTileIds.indexOf("t:1");
     state = reducePuzzle(state, { type: "acquire", tileId: "t:1" }).state;
     const result = reducePuzzle(state, { type: "drop", slotIndex: 0 }, () => 0);
@@ -47,13 +47,13 @@ describe("puzzle reducer", () => {
     expect(result.state.attempts).toBe(1);
   });
 
-  it("does not instantiate foils in MVP", () => {
-    const state = createPuzzle(book, "mvp", () => 0);
-    expect(state.tiles.every((tile) => tile.kind === "target")).toBe(true);
+  it("always instantiates Great foils", () => {
+    const state = createPuzzle(book, "great", () => 0);
+    expect(state.tiles.filter((tile) => tile.kind === "foil")).toHaveLength(2);
   });
 
   it("treats an occupied slot as a neutral cancellation", () => {
-    let state = createPuzzle(book, "mvp", () => 0);
+    let state = createPuzzle(book, "great", () => 0);
     state = reducePuzzle(state, { type: "acquire", tileId: "t:0" }).state;
     state = reducePuzzle(state, { type: "drop", slotIndex: 0 }).state;
     state = reducePuzzle(state, { type: "acquire", tileId: "t:1" }).state;

@@ -4,7 +4,7 @@ import { createEventEnvelope } from "../src/services/bridge";
 describe("container event envelopes", () => {
   it("uses the required schema and exact container user namespace", () => {
     const envelope = createEventEnvelope(
-      { type: "session_started", lang: "english", tier: "better" },
+      { type: "session_started", lang: "english", tier: "great" },
       "?cr_user_id=abc%2Fdef",
       new Date("2026-10-22T06:00:00.000Z"),
       "12345678-1234-4234-8234-123456789abc",
@@ -18,7 +18,7 @@ describe("container event envelopes", () => {
         payload_version: 1,
         collection: "user_sessions_data",
         timestamp: "2026-10-22T06:00:00.000Z",
-        data: { type: "session_started", lang: "english", tier: "better" },
+        data: { type: "session_started", lang: "english", tier: "great" },
       },
     });
   });
@@ -28,7 +28,7 @@ describe("container event envelopes", () => {
       type: "level_completed",
       lang: "english",
       level_id: 1,
-      tier: "mvp",
+      tier: "great",
       attempts: Number.NaN,
       duration_ms: 4,
       score: 3,
@@ -37,13 +37,13 @@ describe("container event envelopes", () => {
     expect(createEventEnvelope({
       type: "session_started",
       lang: "english",
-      tier: "mvp",
+      tier: "great",
     }, `?cr_user_id=${"x".repeat(66_000)}`)).toBeNull();
   });
 
   it("generates a version-4 identifier", () => {
     const envelope = createEventEnvelope(
-      { type: "session_started", lang: "english", tier: "mvp" },
+      { type: "session_started", lang: "english", tier: "great" },
       "",
     );
     expect(envelope?.payload.payload_id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);

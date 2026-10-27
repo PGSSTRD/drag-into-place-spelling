@@ -1,6 +1,6 @@
 import type { Level } from "./content";
 
-export type Tier = "mvp" | "better";
+export type Tier = "great";
 export type PuzzlePhase = "playing" | "completing";
 export type TileKind = "target" | "foil";
 
@@ -42,14 +42,11 @@ export function createPuzzle(
     letter,
     kind: "target",
   }));
-  const foils =
-    tier === "better"
-      ? level.foils.map((letter, index): Tile => ({
-          id: `f:${index}`,
-          letter,
-          kind: "foil",
-        }))
-      : [];
+  const foils = level.foils.map((letter, index): Tile => ({
+    id: `f:${index}`,
+    letter,
+    kind: "foil",
+  }));
   const tiles = [...targets, ...foils];
   return {
     level,

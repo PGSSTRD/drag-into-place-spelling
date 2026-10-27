@@ -25,33 +25,33 @@ class MemoryStorage implements Storage {
 }
 
 describe("progress snapshots", () => {
-  it("namespaces snapshots by opaque user and tier", () => {
-    expect(progressKey("a/b", "better")).toBe("drag-into-place:v1:a%2Fb:english:better");
-    expect(progressKey(null, "mvp")).toBe("drag-into-place:v1:guest:english:mvp");
+  it("namespaces snapshots by opaque user for the sole Great implementation", () => {
+    expect(progressKey("a/b")).toBe("drag-into-place:v1:a%2Fb:english");
+    expect(progressKey(null)).toBe("drag-into-place:v1:guest:english");
   });
 
   it("restores valid repeated-letter placements and cycle order", () => {
     const storage = new MemoryStorage();
-    let state = createPuzzle(level, "better", () => 0);
+    let state = createPuzzle(level, "great", () => 0);
     state = reducePuzzle(state, { type: "acquire", tileId: "t:0" }).state;
     state = reducePuzzle(state, { type: "drop", slotIndex: 0 }).state;
     expect(saveProgress(storage, "learner", state, "1.0.0", [7, 8], 0)).toBe(true);
-    const raw = JSON.parse(storage.getItem(progressKey("learner", "better")) ?? "null") as unknown;
-    expect(restoreProgress(raw, level, "better", "1.0.0", () => 0)?.slots).toEqual(["t:0", null, null, null]);
+    const raw = JSON.parse(storage.getItem(progressKey("learner")) ?? "null") as unknown;
+    expect(restoreProgress(raw, level, "great", "1.0.0", () => 0)?.slots).toEqual(["t:0", null, null, null]);
     expect(restoreCycle(raw, [7, 8], 7)).toEqual({ cycleIds: [7, 8], currentCycleIndex: 0 });
   });
 
   it("restores a completion marker without replaying completion", () => {
     const storage = new MemoryStorage();
-    let state = createPuzzle(level, "better", () => 0);
+    let state = createPuzzle(level, "great", () => 0);
     for (let index = 0; index < level.target_word.length; index += 1) {
       state = reducePuzzle(state, { type: "acquire", tileId: `t:${index}` }).state;
       state = reducePuzzle(state, { type: "drop", slotIndex: index }).state;
     }
     expect(state.completionRecorded).toBe(true);
     expect(saveProgress(storage, "learner", state, "1.0.0", [7], 0)).toBe(true);
-    const raw = JSON.parse(storage.getItem(progressKey("learner", "better")) ?? "null") as unknown;
-    const restored = restoreProgress(raw, level, "better", "1.0.0", () => 0);
+    const raw = JSON.parse(storage.getItem(progressKey("learner")) ?? "null") as unknown;
+    const restored = restoreProgress(raw, level, "great", "1.0.0", () => 0);
     expect(restored?.phase).toBe("completing");
     expect(restored?.completionRecorded).toBe(true);
   });
@@ -60,7 +60,7 @@ describe("progress snapshots", () => {
     const invalid = {
       schema_version: 1,
       content_version: "1.0.0",
-      tier: "mvp",
+      tier: "great",
       level_id: 7,
       slots: ["t:1", "t:1", null, null],
       removedFoilIds: [],
@@ -70,7 +70,7 @@ describe("progress snapshots", () => {
       cycleIds: [7, 8],
       currentCycleIndex: 1,
     };
-    expect(restoreProgress(invalid, level, "mvp", "1.0.0")).toBeNull();
+    expect(restoreProgress(invalid, level, "great", "1.0.0")).toBeNull();
     expect(restoreCycle(invalid, [7, 8], 7)).toBeNull();
   });
 });

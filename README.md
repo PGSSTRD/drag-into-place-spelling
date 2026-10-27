@@ -27,8 +27,11 @@ standalone release can be considered. Failed audio is nonfatal at runtime, but
 the release media gate remains blocked until reviewed local media and license
 records are provided.
 
-This delivery implements the Foundation, MVP and Better static gameplay path.
-Great moving mode, release ZIP/icon tooling, automated browser E2E, and physical
-container/device verification remain outside this delivery. The engine uses a
-development `sub_app_id`; the approved Curious Reader identifier and production
-content are still required before release.
+The learner-facing implementation is Great: target letters and foils move
+left-to-right, can be stopped and dragged into the answer, and recycle until
+placed or removed. Foils reveal position hints. Reduced-motion mode presents
+the same puzzle with stationary tiles. Production media, release ZIP/icon
+tooling, automated browser E2E, and physical container/device verification
+remain outstanding. The engine uses a development `sub_app_id`; the approved
+Curious Reader identifier and production content are still required before
+release.

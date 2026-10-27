@@ -1,8 +1,8 @@
 # UISPEC - Drag Into Place Spelling
 
-**Version:** 0.2.0<br>
-**Status:** Draft - awaiting product, accessibility and design review; prototype evidence recorded<br>
-**Last update:** 2026-10-22<br>
+**Version:** 2.0.3<br>
+**Status:** Draft - Great implementation, pointer and tap-to-stop regression evidence recorded; awaiting product, accessibility and design review<br>
+**Last update:** 2026-10-27<br>
 **Author:** Copilot
 
 ## 1. Authority and visual intent
@@ -13,8 +13,8 @@ outcomes, timings, movement or persistence here. This is a proposed reproducible
 design, not a screenshot-derived description of an existing application.
 
 Use a friendly, uncluttered, image-led activity with one dominant playfield.
-No ads, external links, scores, countdowns, sign-in or leaderboard. Adult-facing
-tier controls must not obscure the learner's letters or answer positions.
+No ads, external links, scores, countdowns, sign-in, tier selector or
+leaderboard.
 
 ## 2. Design tokens and responsive geometry (U-01)
 
@@ -43,11 +43,11 @@ Portrait layout, top to bottom:
                  [Target image]
                  [Replay word]
  [slot 1] [slot 2] ...              answer in reading order
- [hint 1] [hint 2] ...              reserved below each slot in Better/Great
+ [hint 1] [hint 2] ...              reserved below each slot
             [Learner status]
- [shuffled letter pool]            MVP/Better or reduced-motion Great
- [top moving lane   ->]            ordinary Great only
- [lower moving lane ->]            ordinary Great only
+ [shuffled letter pool]            Great with reduced motion
+ [top moving lane   ->]            Great
+ [lower moving lane ->]            Great
 ```
 
 `*` Pause is present only in ordinary moving Great. Never show both the
@@ -68,11 +68,12 @@ All supported default-zoom viewports must fit without horizontal scrolling;
 browser text zoom may vertically scroll non-drag content while the focused
 control remains reachable. The measurable minimum viewports are D-08.
 
-Pool cells are visually unordered; answer slots are visually ordered. Hint
-glyphs are pale but readable, fixed under the corresponding position, and
-hidden until revealed. A correctly filled slot suppresses its visible hint
-without deleting its recorded reveal state. Hints are generated uppercase
-glyphs using the bundled font, not missing external image assets.
+Pool cells are visually unordered; moving lanes are left-to-right; answer slots
+are visually ordered. Hint glyphs are pale but readable, fixed under the
+corresponding position, and hidden until revealed. A correctly filled slot
+suppresses its visible hint without deleting its recorded reveal state. Hints
+are generated uppercase glyphs using the bundled font, not missing external
+image assets.
 
 ## 3. Screens, states and visibility (U-02)
 
@@ -81,24 +82,23 @@ glyphs using the bundled font, not missing external image assets.
 | Loading | Local illustration/spinner and "Getting your letters ready..." | No gameplay; bounded by D-06 |
 | Ready, new puzzle | Picture, slots and pool/lanes as static preview; "Let's spell!" Start button | Start unlocks sound and enables play/motion |
 | Ready, saved puzzle | Restored locked slots/hints and "Keep going!" Resume button | Resume unlocks sound and enables remaining letters |
-| Playing | Picture/replay, slots, applicable hints, pool/lanes, sound and settings | Acquire tile, select/drop, replay, mute, open settings; Great motion can pause |
+| Playing | Picture/replay, slots, hints, Great lanes or reduced-motion pool, sound and settings | Acquire/stop tile, select/drop, replay, mute, open settings; motion can pause |
 | Selected/dragging | Selected outline or elevated tile under pointer; no duplicate source tile | Matching input can drop; Escape/cancel returns it |
 | Placement feedback | Result cue on destination/tile, short status announcement | New acquisitions/replay/settings disabled; mute remains available |
 | Completing | Locked answer, word celebration, "You spelled it!" | Gameplay/replay/settings disabled; mute remains available; next puzzle starts automatically |
 | Paused/hidden | On manual pause: "Paused" overlay and Resume; hidden page has no visible work | Resume restores play; no clock/audio/motion advancement while hidden |
-| Settings dialog | Tier selection MVP/Better/Great, sound toggle, Close | Opening cancels selection and pauses activity; changing tier uses D-05 save/restore and returns to Ready |
+| Settings dialog | Sound toggle, Close | Opening cancels selection and pauses activity; closing resumes the same Great puzzle unless another pause reason applies |
 | Fatal load/content error | Friendly message, Retry, short diagnostic code | Retry restarts load; no interactive partial puzzle |
 | Nonfatal media/save notice | Nonblocking status strip, while puzzle remains usable | Sound enable/retry control when relevant; no false progress-save indicator |
 
 On a new automatic puzzle, continue playing without another Start, unless
-the browser again blocks audio; manual tier switches show Ready. Pause/settings
-and hidden-page reasons are independent: returning from a hidden page must
+the browser again blocks audio. Pause/settings and hidden-page reasons are
+independent: returning from a hidden page must
 not dismiss an explicit pause or open settings. Resume does not play missed
 audio from the background. Feedback resumes from its paused position.
 
-MVP has no hints or foils and hides Pause. Better reserves hint cells and adds
-foils, but has no movement/Pause. Great shows lanes/Pause unless reduced motion
-is active, in which case show static tiles and a "Motion reduced" status.
+Great is the only implementation. It shows moving lanes and Pause; when
+reduced motion is active, use static tiles and a "Motion reduced" status.
 Never visually identify which tiles are foils.
 
 ### Controls and copy (U-03)
@@ -110,7 +110,6 @@ Never visually identify which tiles are foils.
 | Speaker by picture | "Hear the word"; plays the target-word cue without revealing written spelling |
 | Sound toggle | "Sound on" / "Sound off", with pressed state; persists per user |
 | Settings | Opens an accessible dialog, traps focus, returns focus on close |
-| Tier selector | Labeled "Activity"; radio group with "MVP - letters", "Better - letters and hints", "Great - moving letters" |
 | Pause / Resume motion | Labeled button; no play continues behind a manual pause overlay |
 | Retry | "Try loading again"; repeats boot, not a page with an unchecked snapshot |
 | Enable sound | "Enable sound"; visible only when playback was blocked/unavailable |
@@ -132,21 +131,25 @@ space 2: A". Locked tiles are no longer actionable, but remain readable.
 
 - Pointer drag follows D-03; use `touch-action: none` on draggable tiles only,
   not on all controls or the entire document.
-- Tap/click a tile to select it, then an empty slot to place. Selecting the
+- Tap/click a moving tile to select it and stop its motion immediately. Drag
+  it in a later gesture or tap an empty slot to place it. Selecting the
   selected tile again cancels; choosing another available tile changes selection.
 - Tab follows controls -> available tiles -> answer positions in reading order.
   Enter/Space selects a tile or places it in a focused slot. Escape cancels a
   selection or closes settings. Occupied slots are readable but not drop actions.
-- For keyboard/switch access in Great, focusing a tile pauses lane motion;
-  focus/selection keeps its logical tile stable. Leaving the playfield without
-  a selection resumes unless another pause reason applies.
+- For keyboard/switch access in Great, keyboard navigation that focuses a tile
+  pauses lane motion; focus/selection keeps its logical tile stable. A
+  pointer-generated focus during tap or drag does not activate this pause.
+  Beginning pointer interaction clears a keyboard-focus pause. Leaving the
+  playfield without a selection resumes unless another pause reason applies.
 - Announce outcomes once in a polite live region. After a correct placement,
   focus the next available tile; after wrong placement keep focus on that tile;
   after a removed foil focus the next available tile. On next puzzle focus the
   first available tile; do not move focus during pointer dragging.
 - Honor `prefers-reduced-motion`: remove bounce/confetti/translations, retain
   static check/outline/announcement for the same feedback duration, and use
-  D-04's static Great alternative. Muting does not suppress visual/ARIA cues.
+  D-04's static reduced-motion presentation. Muting does not suppress
+  visual/ARIA cues.
 
 ## 5. Acceptance scenarios (U-05)
 
@@ -154,11 +157,11 @@ The timing values and domain outcomes referenced here are authoritative in
 DEVSPEC, not duplicated constants in UI code.
 
 ```gherkin
-Scenario: Start an offline MVP puzzle
+Scenario: Start the offline Great puzzle
   Given a valid English pack and no saved game
   When loading completes and I activate Start
-  Then I see a target picture, one empty slot per target letter and shuffled target tiles
-  And I see no hints, foils or moving lanes
+  Then I see a target picture, one empty slot per target letter, and target/foil tiles moving left to right
+  And Great hints and foils are available
 
 Scenario: Correct placement locks
   Given CAT with its first slot empty
@@ -168,13 +171,13 @@ Scenario: Correct placement locks
   And C is not draggable again
 
 Scenario: Wrong target is not a foil
-  Given CAT in Better with A available
+  Given CAT in Great with A available
   When I place A in the first empty slot
   Then I receive the gentle correction cue and A returns to the pool
   And no hint appears and A is not removed
 
 Scenario: A foil reveals one position
-  Given CAT in Better with foil B and all hints hidden
+  Given CAT in Great with foil B and all hints hidden
   When I place B in the second empty slot
   Then B disappears and only the second position reveals A below it
   And the second slot remains empty
@@ -214,7 +217,7 @@ Scenario: Settings, pause and focus
   Given an active Great puzzle
   When I open Settings
   Then motion and active time pause and focus stays inside the dialog
-  When I close Settings without changing tier
+  When I close Settings
   Then focus returns to Settings and the prior puzzle resumes unless manually paused
 
 Scenario: Failed load versus failed audio
@@ -228,7 +231,7 @@ Scenario: Failed load versus failed audio
 
 ## 6. Design approval evidence
 
-Before release, capture Ready, all three Playing layouts, selection, correct,
+Before release, capture Ready, both Playing layouts, selection, correct,
 wrong, revealed hint, pause, completion, settings, load failure and nonfatal
 notice at minimum portrait/landscape sizes and one tablet size. Record focus,
 screen-reader and contrast review. Screenshots support review; interactive
@@ -239,26 +242,56 @@ defined in DEVSPEC. No design approval has been granted in this draft.
 
 ## 7. Prototype implementation evidence and gaps
 
-The user approved implementation through the static Better tier on 2026-10-22;
-that approval is not product, accessibility, design or release approval. The
-normative U-01-U-05 requirements above remain unchanged.
+The 2026-10-22 static prototype is historical evidence, not implementation or
+approval of the normative Great design. Product, accessibility, design and
+release approval remain outstanding.
 
-The current prototype presents the picture, Start/Resume, word replay, sound
-toggle, answer positions, a static letter pool and Better hints/foils. Browser
-smoke checks confirmed `file://` content/image loading, tap-to-place, a mouse
-drag, correct locking, foil removal with one position hint, and CAT completion
-followed by automatic advance. Missing speech files produce the specified
-nonfatal sound notice; they do not satisfy the pronunciation requirements.
+The current static prototype presents the picture, Start/Resume, word replay,
+sound toggle, answer positions, a static letter pool and foil/hint behavior.
+Browser smoke checks confirmed `file://` content/image loading, tap-to-place,
+a mouse drag, correct locking, foil removal with one position hint, and CAT
+completion followed by automatic advance. Missing speech files produce the
+specified nonfatal sound notice; they do not satisfy the pronunciation
+requirements or verify Great's moving behavior.
 
-The present tier control is a header `<select>` for MVP and Better rather than
-the specified Settings dialog/radio group. Great lanes, the Settings dialog,
+The 2026-10-22 prototype evidence records a header `<select>` for MVP and
+Better rather than the specified Settings dialog. That historical control is
+not part of the Great design. Great lanes, the Settings dialog,
 focus trap/return, full 320x568/landscape/tablet review, screen-reader and
 contrast review, 200% zoom review, and reduced-motion review are not
 implemented or verified. Pointer/tap/keyboard behavior has not received the
-full U-04 acceptance review. These are recorded as implementation gaps, not
-changes to the normative design.
+full U-04 acceptance review. These are recorded as implementation gaps, not changes to the normative design.
+
+### Great implementation evidence (2026-10-27)
+
+The current interface presents Great lane previews before Start, then moving
+tiles and foils, pause/resume, keyboard-focus pause, position hints, and a
+stationary tile pool under reduced-motion preference. A browser smoke check
+verified lane movement and pause stability, a tile remaining stationary after
+selection, and a foil disappearing while revealing one hint. This does not
+verify dragging a moving tile, all U-02/U-04 states, focus behavior, screen
+readers, contrast, zoom, full viewport coverage or physical devices. The
+specified Settings dialog and complete design review remain outstanding; the
+implementation evidence does not alter U-01–U-05 or grant design approval.
+
+A follow-up browser regression check verified keyboard Tab focus pauses
+motion, pointer interaction clears that pause, and dragging a moving target
+letter to its correct slot completes without the keyboard-pause status. It does
+not replace the complete U-04, viewport, accessibility or physical-device
+review.
+
+An additional browser smoke check tapped a moving tile and verified that it
+remained at the same position for one second, then dragged that tile in a
+separate gesture into its correct slot. The puzzle completed without the
+keyboard-pause status. This does not replace full U-04, accessibility, viewport
+or physical-device review.
 
 ## Spec change log
 
+2026-10-27 — Copilot — Clarified that tapping a moving tile stops it immediately and recorded separate-gesture drag evidence.
+2026-10-27 — Copilot — Clarified keyboard-versus-pointer focus pause behavior and recorded the drag regression check.
+2026-10-27 — Copilot — Added current Great interface evidence and retained outstanding accessibility, design and interaction review gates.
+2026-10-26 — Copilot — Replaced tier-specific presentation with one Great experience including hints, foils, moving lanes and reduced-motion presentation; formal design approval remains outstanding.
+2026-10-26 — Copilot — Retired MVP presentation and defined Better as the minimum tier while retaining Great; formal design approval remains outstanding.
 2026-10-22 — Copilot — Recorded static Better prototype presentation evidence and UI/accessibility gaps without changing normative design requirements.
 2026-10-21 — Copilot — Added the initial draft responsive design, complete screen/control states, accessible interactions and Gherkin acceptance scenarios; removed nothing.

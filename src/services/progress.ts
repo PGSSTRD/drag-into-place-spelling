@@ -16,39 +16,13 @@ function reportStorageFailure(code: "SAVE_INVALID" | "SAVE_UNAVAILABLE") {
   console.warn(code);
 }
 
-export function progressKey(userId: string | null, tier: Tier): string {
+export function progressKey(userId: string | null): string {
   const user = userId || "guest";
-  return `${KEY_PREFIX}${encodeURIComponent(user)}:english:${tier}`;
+  return `${KEY_PREFIX}${encodeURIComponent(user)}:english`;
 }
 
 export function settingsKey(userId: string | null): string {
   return `${KEY_PREFIX}${encodeURIComponent(userId || "guest")}:english:settings`;
-}
-
-export function loadTier(storage: Storage, userId: string | null): Tier {
-  try {
-    const settings = JSON.parse(storage.getItem(settingsKey(userId)) ?? "null") as { tier?: unknown } | null;
-    return settings?.tier === "better" ? "better" : "mvp";
-  } catch {
-    return "mvp";
-  }
-}
-
-export function saveTier(storage: Storage, userId: string | null, tier: Tier): boolean {
-  try {
-    let muted = false;
-    try {
-      const previous = JSON.parse(storage.getItem(settingsKey(userId)) ?? "null") as { muted?: unknown } | null;
-      muted = previous?.muted === true;
-    } catch {
-      muted = false;
-    }
-    storage.setItem(settingsKey(userId), JSON.stringify({ tier, muted }));
-    return true;
-  } catch {
-    reportStorageFailure("SAVE_UNAVAILABLE");
-    return false;
-  }
 }
 
 export function saveProgress(
@@ -60,7 +34,7 @@ export function saveProgress(
   currentCycleIndex: number,
 ): boolean {
   try {
-    storage.setItem(progressKey(userId, state.tier), JSON.stringify({
+    storage.setItem(progressKey(userId), JSON.stringify({
       schema_version: 1,
       content_version: contentVersion,
       tier: state.tier,
@@ -173,10 +147,9 @@ export function restoreCycle(
 export function readProgress(
   storage: Storage,
   userId: string | null,
-  tier: Tier,
 ): ProgressRead {
   try {
-    const raw = storage.getItem(progressKey(userId, tier));
+    const raw = storage.getItem(progressKey(userId));
     if (raw === null) return { kind: "missing" };
     try {
       return { kind: "value", snapshot: JSON.parse(raw) as unknown };

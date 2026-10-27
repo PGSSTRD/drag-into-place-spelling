@@ -1,8 +1,8 @@
 # DEVSPEC - Drag Into Place Spelling
 
-**Version:** 0.2.0<br>
-**Status:** Draft - implementation in progress; release not approved<br>
-**Last update:** 2026-10-22<br>
+**Version:** 2.0.3<br>
+**Status:** Draft - Great implementation, pointer and tap-to-stop regression evidence recorded; release not approved<br>
+**Last update:** 2026-10-27<br>
 **Author:** Copilot
 
 ## 1. Authority and reading order
@@ -13,10 +13,10 @@ to [UISPEC](./UISPEC.md); [TESTSPEC](./TESTSPEC.md) verifies both. Test ordering
 must not override the module dependencies here.
 
 The [external container contract](../third-party-game-spec.md), v1.8, governs
-integration. This spec selects its two-tier Layout A, not an optional book/core
-content tier. A Foundation/MVP/Better static prototype now implements part of
-the contracts below; section 9.1 records evidence and gaps. Requirements remain
-normative, and this prototype is not a release candidate.
+integration. This spec selects its Layout A, not an optional book/core content
+tier. Great is the sole game implementation. A historical static prototype is
+recorded in section 9.1 as evidence only; it is not a release candidate and
+does not define an alternate runtime tier.
 
 ## Part I - Functional requirements
 
@@ -95,9 +95,9 @@ be confused with a repeated target letter.
 
 Model behavior in a pure reducer driven by commands; coordinates and media are
 adapters, not the source of correctness. Store `puzzleOccurrence`, level ID,
-tier, slot-to-tile mapping, removed foil IDs, revealed-hint indices, attempt
-count and active elapsed milliseconds. A new occurrence is allocated when a
-new puzzle starts, even if its level ID appeared in an earlier cycle.
+slot-to-tile mapping, removed foil IDs, revealed-hint indices, attempt count
+and active elapsed milliseconds. A new occurrence is allocated when a new
+puzzle starts, even if its level ID appeared in an earlier cycle.
 
 | Command/condition | Required result |
 |---|---|
@@ -105,15 +105,14 @@ new puzzle starts, even if its level ID appeared in an earlier cycle.
 | Acquire a locked/removed tile or a second pointer | Ignore; do not mutate state |
 | Drop outside all slots or on an occupied slot | Neutral cancellation; no attempt, no hint and no negative audio |
 | Drop a target onto an empty matching slot | Increment attempts once, occupy/lock that tile, positive animation and contextual audio for the destination position |
-| Drop a target onto an empty nonmatching slot | Increment attempts once, negative audio and bounce to a new available pool position; no hint |
-| Drop a foil onto an empty slot in Better/Great | Increment attempts once, negative audio, remove foil from this occurrence, reveal that slot's expected-letter hint |
+| Drop a target onto an empty nonmatching slot | Increment attempts once, play negative audio and return/requeue the tile after feedback; no hint. Great motion requeues at the lane scheduler's tail; reduced-motion Great returns it to a free shuffled cell |
+| Drop a foil onto an empty slot in Great | Increment attempts once, negative audio, remove foil from this occurrence, reveal that slot's expected-letter hint |
 | Cancel (`Escape`, pointer cancel, lost capture, blur, resize, hidden page) | Neutral cancellation; preserve logical availability and return/requeue tile |
 | All slots filled | Enter completing state once, freeze puzzle input/motion, finish final-letter feedback, then celebrate and play full-word audio; advance once |
 
 One accepted drop on an empty slot is one attempt. Acquiring, moving or
 cancelling is not. No per-attempt analytics are emitted. Correct placements
-cannot be undone. Foils are never instantiated in MVP, even if present in
-content. Better and Great use the full foil array.
+cannot be undone. Great instantiates the full content-defined foil array.
 
 Audio ordering: process logical results synchronously; do not await media
 before locking a correct tile. Serialize letter/negative cues in drop order.
@@ -136,9 +135,17 @@ playfield rectangle. Drop hit-testing uses the tile center against current
 slot rectangles; shared-edge ties choose the lower slot index. No overlapping
 slot rectangles or partially off-screen manual tiles are allowed.
 
-Only one drag or tap/keyboard selection may exist. A pointer movement of more
-than 8 CSS px starts a drag; a shorter press-release selects a tile for
-tap-to-place. Clicking/tapping an empty slot with a selected tile dispatches
+Hold pointer capture on the stable playfield rather than the moving tile:
+acquiring a moving tile removes it from its lane, but must not interrupt the
+active pointer gesture. Pointer-generated focus is not keyboard lane focus and
+must not pause other moving tiles.
+
+Only one drag or tap/keyboard selection may exist. Pointer-down on an
+available tile acquires it immediately and freezes its movement when
+applicable, so a tap visibly stops a moving tile before any drag. A pointer
+movement of more than 8 CSS px starts a drag; a shorter press-release leaves
+the tile selected for tap-to-place or a later drag. Tapping the selected tile
+again cancels it. Clicking/tapping an empty slot with a selected tile dispatches
 the same drop command. Keyboard selection/drop uses the same reducer.
 Dragging is disabled during feedback, pause, completion or fatal load error.
 
@@ -153,8 +160,9 @@ cells, and preserves placements/hints. Never accept a drop using stale geometry.
 
 ## 5. Moving mode (D-04)
 
-Great uses the same content, correctness and hints as Better. Use two horizontal
-lanes with at least 44 CSS px tile height and 8 px vertical separation.
+Great is the sole implementation and includes the shared spelling behavior,
+foil removal and position hints, plus moving letters and foils. Use two
+horizontal lanes with at least 44 CSS px tile height and 8 px vertical separation.
 Each tile travels linearly from fully outside the left edge to fully outside
 the right edge in 8,000 active milliseconds. Drive motion with one
 `requestAnimationFrame` clock, not per-tile interval timers.
@@ -175,9 +183,10 @@ from background never teleports tiles. Under continuous unpaused operation,
 every queued tile must begin another pass within 30 seconds for all supported
 layouts and content limits.
 
-Reduced-motion preference uses stationary shuffled cells in Great, keeping
-foils/hints and correctness unchanged. A facilitator may pause/resume motion;
-pause freezes the activity until Resume. There is no failure on timeout.
+Reduced-motion preference uses stationary shuffled cells as an accessible
+presentation of Great, keeping foils/hints and correctness unchanged. A
+facilitator may pause/resume motion; pause freezes the activity until Resume.
+There is no failure on timeout.
 
 ## 6. Progression and persistence (D-05)
 
@@ -186,20 +195,20 @@ cycle boundary reshuffle and avoid an immediate repeat of the last level if
 more than one level exists. One-level packs repeat indefinitely. Tests inject
 RNG and clock; production randomness is not a security mechanism.
 
-Persist after each accepted drop, mode/settings change, puzzle initialization,
-completion transition and pause/page-hide checkpoint. Save under
-`drag-into-place:v1:<encoded-user>:english:<tier>` in `localStorage`, where
-the opaque `cr_user_id` is used only as a namespace, with `guest` when absent.
-Do not create or persist a separate user/device identifier.
+Persist after each accepted drop, settings change, puzzle initialization,
+completion transition and pause/page-hide checkpoint. Great is the sole
+implementation. Save under
+`drag-into-place:v1:<encoded-user>:english` in `localStorage`, where the opaque
+`cr_user_id` is used only as a namespace, with `guest` when absent. Do not
+create or persist a separate user/device identifier.
 
-Snapshot fields: `schema_version=1`, `content_version`, tier, shuffled cycle
-IDs, current cycle index, current occurrence counter, level ID, slot-to-tile
-IDs (or null), removed foil IDs, revealed hints, attempts, elapsed active
+Snapshot fields: `schema_version=1`, `content_version`, shuffled cycle IDs,
+current cycle index, current occurrence counter, level ID, slot-to-tile IDs
+(or null), removed foil IDs, revealed hints, attempts, elapsed active
 milliseconds, phase (`playing`/`completed_pending_advance`) and
-`completion_recorded`. Settings (mute and selected tier) use a user-scoped
-settings key. Moving positions, pointer state, audio buffers and animation
-progress are ephemeral; restore an incomplete Great puzzle with all remaining
-tiles requeued.
+`completion_recorded`. Settings (mute) use a user-scoped settings key. Moving
+positions, pointer state, audio buffers and animation progress are ephemeral;
+restore an incomplete Great puzzle with all remaining tiles requeued.
 
 Active elapsed time starts at Start/Resume (or automatic puzzle activation),
 not while Ready/loading, and excludes placement/completion feedback, hidden
@@ -211,8 +220,9 @@ Validate the entire snapshot against current content and invariants before
 use. A content-version/schema mismatch, invalid JSON, duplicate tile binding
 or invalid slot letter discards only this namespace's unusable snapshot,
 logs a diagnostic and shows a nonfatal "new puzzle" notice. Keep valid settings.
-Changing tier saves the old tier and restores/starts the new one. User change
-never restores another user's state. No reset-progress control in v1.
+Changing user never restores another user's state. No reset-progress control
+in v1. Migration from prototype-only MVP/Better settings or snapshots is out
+of scope for this from-scratch product specification.
 
 Completion handling saves `completed_pending_advance`, marks
 `completion_recorded` before bridge invocation and never re-emits that
@@ -276,7 +286,7 @@ but no thrown gameplay error, batching, queue, retry or outbound I/O.
       "type": "level_completed",
       "lang": "english",
       "level_id": 1,
-      "tier": "mvp",
+      "tier": "great",
       "attempts": 3,
       "duration_ms": 4200,
       "score": 3,
@@ -296,8 +306,11 @@ byte fallback with those same bits. It is a dedup token, never an identity.
 
 | Event | Moment | `data` fields |
 |---|---|---|
-| `session_started` | First Start/Resume gesture in a page lifecycle, once | `type`, `lang`, `tier` |
-| `level_completed` | First transition to fully filled slots per occurrence | `type`, `lang`, `level_id`, `tier`, `attempts`, `duration_ms`, `score`, `max_score` |
+| `session_started` | First Start/Resume gesture in a page lifecycle, once | `type`, `lang`, `tier` (`great`) |
+| `level_completed` | First transition to fully filled slots per occurrence | `type`, `lang`, `level_id`, `tier` (`great`), `attempts`, `duration_ms`, `score`, `max_score` |
+
+The `tier` field is the constant value `great`; there is no learner-selectable
+tier. No legacy MVP-completion mapping is required.
 
 `score` is number of filled positions and `max_score` word length; completion
 therefore has equal values, not a penalized child-facing grade. Duration is
@@ -313,9 +326,9 @@ dropped with a diagnostic; the game must not retry it or block.
 | M1 Toolchain/content | Scaffold React/TypeScript; lock dependencies; implement schema, fixtures, media validator and local-path audit | Approved proposed decisions | Valid fixture passes; each invalid fixture fails with field/path; typecheck passes |
 | M2 Domain | Implement tiles, reducer, cycles, injectable RNG/clock and completion guards | M1 | D-02/D-05 invariant tests pass, including BOOK and one-level cycle |
 | M3 Offline services | Implement loader, audio sequencing, bounded errors, persistence and diagnostics | M1; M2 for snapshot shape | `file://` load/restore/failure tests pass; no indefinite loading |
-| M4 Static UI | Implement responsive presentation and pointer/tap/keyboard adapters | M2, M3 | Full MVP puzzle passes UI and accessible-input cases |
-| M5 Better | Add foils, disappearance and position hints | M4 | Better cases pass and MVP regression remains green |
-| M6 Great | Add FIFO lanes, pause/recycle and reduced-motion static alternative | M5 | Great timing/solvability tests pass on all supported viewports |
+| M4 Static UI foundation | Implement responsive puzzle presentation and pointer/tap/keyboard adapters as a build step | M2, M3 | Static interaction foundation passes UI and accessible-input cases; it is not a separate product mode |
+| M5 Foils and hints | Add foil validation, disappearance and position-hint reveal to the Great puzzle | M4 | Great foil/hint cases pass, including persistence and repeated-letter coverage |
+| M6 Great movement | Add FIFO lanes, tap-to-stop, pause/recycle and reduced-motion static presentation | M5 | Great movement timing/solvability tests pass on all supported viewports |
 | M7 Integration/release | Implement bridge, build audits, ZIP tool, icon and device runbook | M3 for bridge; M4-M6 for complete release | Bridge contract tests and all offline/device/package gates pass |
 
 Tests accompany each module, not just M7. M3 work independent of M2 may proceed
@@ -324,18 +337,17 @@ in parallel; persistence cannot finalize before the domain snapshot contract.
 ### 9.1 Approved static prototype evidence and remaining work
 
 This is an implementation-status record, not a waiver or replacement of D-01
-through D-10 exit criteria. The user approved implementation through Better
-and approved the code deliverable on 2026-10-22; release approval remains
-outstanding.
+through D-10 exit criteria. The 2026-10-22 prototype evidence predates this
+Great-only specification and does not constitute approval of Great or release.
 
 | Module | Evidence in the current prototype | Status / unmet exit criteria |
 |---|---|---|
 | M1 | React 19.1.1, TypeScript 5.9.2, Vite 7.1.7, Ajv 8.17.1; Node 24.20.0/npm 11.19.0; content schema and reference/license validator; CAT fixture | Partial. Unit validation works, but `npm run validate:content` fails because production word/letter recordings, `assets/audios/incorrect.wav`, `assets/fonts/reader.woff2` and their licenses are missing. Individual invalid-fixture coverage is incomplete. |
-| M2 | Pure reducer, value-based duplicate matching, attempts, random wrong-tile relocation, Better foil removal/hints, per-user snapshot validation, cycle order and completion marker; six domain and four progress tests | Core behavior is present; full injected-clock/invariant matrix and all F-01-F-10 fixture coverage remain outstanding. |
+| M2 | Pure reducer, value-based duplicate matching, attempts, random wrong-tile relocation, historical foil removal/hints, per-user snapshot validation, cycle order and completion marker; six domain and four progress tests | Historical static-core behavior is present; full injected-clock/invariant matrix and all F-01-F-10 fixture coverage remain outstanding. |
 | M3 | Bounded XHR content loader, serialized HTML audio cues with watchdog, local progress/settings, and fire-and-forget bridge envelope | Partial. HTTP development uses XHR rather than the specified fetch path; preload settlement, hidden-page audio suspension (the active clock pauses), and full failure-generation tests remain outstanding. `sub_app_id` is a development placeholder pending Q-02. |
-| M4 | Responsive static UI, pointer capture, 8 px threshold, clamping, center hit-testing, tap/keyboard placement, live status, MVP/Better tier control | Focused browser checks pass. Full viewport, focus/screen-reader, contrast, cancellation and automated component/E2E acceptance remains outstanding. |
-| M5 | Better tier displays per-position hints and removes foils; MVP excludes foils; domain/browser smoke checks exercised both tiers | Focused behavior is present; full T-09/T-10 and regression suite remains outstanding. |
-| M6 | Not included in the approved scope | Great moving lanes and their reduced-motion/pause/recycle behavior are not implemented. |
+| M4 | At the time of prototype evidence, responsive static UI, pointer capture, 8 px threshold, clamping, center hit-testing, tap/keyboard placement, live status and a historical MVP/Better tier control | Focused browser checks pass. This historical evidence is not normative. Full viewport, focus/screen-reader, contrast, cancellation and automated component/E2E acceptance remains outstanding. |
+| M5 | Historical static prototype displayed per-position hints and removed foils; these mechanics are retained in the Great specification | Focused behavior is present. Full T-09/T-10 and regression suite remains outstanding. |
+| M6 | Great moving lanes, tap-to-stop selection, pause, reduced-motion static presentation and FIFO recycle scheduler are implemented; focused scheduler tests cover 12 tiles at lane widths 320, 568, 768 and 1024 CSS px. | Partial. Full Great drag/recycle/persistence, viewport/device, performance and acceptance coverage remain outstanding. |
 | M7 | Bridge envelope generation and call boundary are implemented | Partial. Release audit, ZIPs, icon, release configuration and device/container evidence are not implemented. |
 
 Commands currently present in `package.json` are:
@@ -353,6 +365,38 @@ plain `npm ci` was not run. The production build and `file://` smoke check
 succeed, but the content audit correctly blocks a release. npm reported five
 advisories during installation; the registry audit request timed out, so their
 details and remediation are unknown.
+
+### 9.2 Great implementation evidence recorded 2026-10-27
+
+The current Great implementation adds a pure two-lane scheduler with 8,000 ms
+left-to-right travel, alternating lane opportunities, queue-tail recycling and
+stopped-tile release/requeue behavior. The React presentation includes static
+Ready previews, pause/resume, keyboard-focus pause and a stationary pool when
+reduced motion is requested. Great is the only selectable implementation;
+foils are always instantiated and reveal the dropped position's hint.
+
+`tests/movement.test.ts` adds four focused cases for initial lane order and
+movement, stop/requeue, duplicate-free recycling, and the 30-second queue bound
+with 12 tiles at lane widths 320, 568, 768 and 1024 CSS px. The final focused
+run passed typecheck, all 20 unit tests and the production build. A browser
+smoke check observed moving tiles, a stable pause, a stopped tile, foil removal
+with one revealed hint and the reduced-motion pool.
+
+This evidence is partial, not an M6 or release sign-off. A follow-up browser
+regression check on the development server verified that Tab focus pauses
+motion, pointer interaction clears that pause, and dragging A into its correct
+answer slot completes without showing the keyboard-pause message. It does not
+verify a production `file://` artifact or full automated input coverage. Full
+D-02/D-04 invariants, save/reload and occurrence recovery, viewport and
+physical-WebView coverage, measured motion performance, standalone audit,
+packaging and independent QA remain outstanding. `npm run validate:content`
+still fails because production audio, the shared correction cue, the reader
+font and complete license records are missing. Release therefore remains
+blocked.
+
+A further browser check tapped a moving tile, confirmed its position remained
+fixed across a one-second interval, then dragged that same tile in a separate
+gesture into its answer slot.
 
 ## Part II - Non-functional requirements
 
@@ -487,7 +531,7 @@ reservations, promotion or publishing.
 
 | ID | Question / owner | Blocks |
 |---|---|---|
-| Q-01 | Product owner: formal approval of proposed limits, timings, scoring and Draft behavior; user approved implementation through Better on 2026-10-22, but the product owner remains unassigned | Product/release approval; implementation scope through Better is authorized |
+| Q-01 | Product owner: formal approval of proposed limits, timings, scoring and Draft behavior; the user validated Great-only scope including foils/hints on 2026-10-26, but the product owner remains unassigned | Product/release approval |
 | Q-02 | Curious Learning: approved engine slug, `sub_app_id`, language catalog entry and promotion permissions | Release packaging/upload |
 | Q-03 | Content owner: provide production level set, contextual recordings, illustrations, icon, font and redistribution evidence | Production content gate |
 | Q-04 | Engineering/QA: select baseline device and minimum OS/WebView versions; Node.js 24.20.0/npm 11.19.0 selected for the prototype on 2026-10-22 | Performance/support claims; device and OS/WebView selection |
@@ -497,7 +541,8 @@ reservations, promotion or publishing.
 
 | Date | Decision | State / rationale |
 |---|---|---|
-| 2026-10-21 | React/TypeScript offline web game, all three tiers, repository-level workflow | Confirmed by sponsor; resolves native-workshop versus current container target |
+| 2026-10-21 | React/TypeScript offline web game, repository-level workflow | Confirmed by sponsor; resolves native-workshop versus current container target. Earlier three-tier direction is superseded. |
+| 2026-10-26 | Great is the sole product implementation and includes foil removal/hint reveal plus moving tiles | User-validated task scope; formal product approval remains outstanding |
 | 2026-10-21 | Layout A engine + English language pack | Proposed; no shared book/content-unit tier is needed |
 | 2026-10-21 | Compare duplicate letters by value; contextual audio by destination index | Proposed; repeated letters must remain solvable |
 | 2026-10-21 | Runtime-rendered letter glyph hints, not a required authored hint sprite | Proposed deviation from brief's media consideration; same per-position clue, avoids sprite/language coupling |
@@ -540,5 +585,10 @@ dates or invent a change-log entry for untouched specs.
 
 ## Spec change log
 
+2026-10-27 — Copilot — Specified immediate pointer-down acquisition for moving tiles and recorded tap-stop-then-drag browser evidence.
+2026-10-27 — Copilot — Clarified stable pointer capture and separated pointer-generated focus from keyboard lane pause; recorded browser regression evidence.
+2026-10-27 — Copilot — Recorded partial Great scheduler, presentation and test evidence without claiming module exit or release approval.
+2026-10-26 — Copilot — Reconciled the behavior and build sequence to one Great implementation with foils/hints and moving tiles; formal product approval remains outstanding.
+2026-10-26 — Copilot — Retired MVP as a runtime tier, made Better the default minimum, and defined legacy save/report handling; formal product approval remains outstanding.
 2026-10-22 — Copilot — Recorded prototype implementation evidence, selected toolchain and remaining module/release gaps without changing normative contracts.
 2026-10-21 — Copilot — Added the initial draft behavioral contracts, module sequence, offline architecture, delivery runbook, explicit decisions and specification lifecycle; removed nothing.

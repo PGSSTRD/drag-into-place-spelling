@@ -1,8 +1,8 @@
 # PRD - Drag Into Place Spelling
 
-**Version:** 0.2.0<br>
-**Status:** Draft - awaiting product approval; prototype exists; release not approved<br>
-**Last update:** 2026-10-22<br>
+**Version:** 2.0.1<br>
+**Status:** Draft - Great implementation evidence recorded; awaiting product approval; release not approved<br>
+**Last update:** 2026-10-27<br>
 **Author:** Copilot<br>
 **Product owner:** To be assigned by the project sponsor
 
@@ -21,15 +21,21 @@ documented reason required for deviation.
 ### Sources and provenance
 
 - [Original workshop brief](../Drag%20Into%20Place%20Spec%20Brief.md), dated
-  2017-04-11: pedagogical objective, MVP/Better/Great gameplay and constraints.
+  2017-04-11: pedagogical objective, shared gameplay fundamentals and
+  constraints; this product specifies Great Implementation only.
 - [Curious Reader third-party contract](../third-party-game-spec.md), v1.8,
   2026-08-19: modern offline web-container, packaging and reporting obligations.
 - [Guru Banavar's SDAD article](https://medium.com/@guruduth.banavar/spec-driven-ai-development-engineering-discipline-for-the-ai-coding-era-22a678067b1c):
   the four-artifact methodology, traceability and human approval gates. This
   specification is an original application of that method, not a copy of the article.
-- Sponsor confirmation on 2026-10-21: specify all three gameplay tiers as phased
-  delivery, use React/TypeScript for the offline web container, and persist the
-  planning/spec-maintenance workflow in this repository.
+- Sponsor confirmation on 2026-10-21: use React/TypeScript for the offline web
+  container and persist the planning/spec-maintenance workflow in this
+  repository. The earlier multi-tier planning direction is superseded by the
+  Great-only scope below.
+- User-validated task scope on 2026-10-26: specify Great as the sole product
+  implementation, including foil removal and position-hint reveal behavior
+  described in the source brief's Better section. This task validation does not
+  replace formal product approval.
 
 There is no existing game implementation to reverse-engineer. Exact visual
 styling, numeric limits, audio sequencing and edge-case policies below are
@@ -55,33 +61,30 @@ improvement without a separate research study.
 | ID | Requirement and observable acceptance |
 |---|---|
 | P-01 | Show a pictorial target, one ordered answer position per letter, and a randomized set of draggable target-letter instances. Completing CAT requires exactly three correct placements. |
-| P-02 | Evaluate a drop against its answer position, not the identity of a specific duplicate tile. Correct placements lock, celebrate and pronounce the contextual letter; incorrect target letters receive gentle negative audio and return to an available randomized location. |
+| P-02 | Evaluate a drop against its answer position, not the identity of a specific duplicate tile. Correct placements lock, celebrate and pronounce the contextual letter; incorrect target letters receive gentle negative audio and re-enter the available-tile scheduler after feedback. |
 | P-03 | After the last correct placement, celebrate, pronounce the full word and advance automatically once. Every valid word remains reachable, including words with repeated letters. |
 | P-04 | Keep manually dragged tiles fully on-screen and make correctly placed letters non-draggable. Touch, mouse and an accessible non-drag interaction must produce the same spelling results. |
-| P-05 | In the Better tier, add content-defined foils and per-position hints below the answer. A foil dropped on an empty answer position disappears and reveals that position's hint. A wrong target letter is not a foil. |
-| P-06 | In the Great tier, move unplaced target letters and foils left-to-right, allowing the learner to stop and drag one. An unused target letter must return after leaving the screen; missing a moving tile never makes a puzzle unsolvable. |
+| P-05 | Include content-defined foils and per-position hints below the answer. A foil dropped on an empty answer position disappears and reveals that position's hint. A wrong target letter is not a foil. |
+| P-06 | Move unplaced target letters and foils left-to-right, allowing the learner to stop a tile and drag it to the answer. Any unplaced target letter or foil must return after leaving the screen; missing a moving target tile never makes a puzzle unsolvable. |
 | P-07 | Load English/Roman-alphabet content from validated, locally packaged JSON and media. Support 1-8-letter words, repeated letters and up to four foils per puzzle in the first release. These limits are proposed scope decisions, not limits imposed by the original brief. |
 | P-08 | Reach playable state offline in at most 10 seconds on the agreed baseline device, with no attempted external network requests. A failed load must show a recoverable error rather than an endless loading screen. |
-| P-09 | Preserve meaningful puzzle progress and settings across reloads on the same device, separated by language, tier and container user. Storage failure must not prevent in-memory play and must be disclosed. |
+| P-09 | Preserve meaningful puzzle progress and settings across reloads on the same device, separated by language and container user. Great is the only implementation; storage failure must not prevent in-memory play and must be disclosed. |
 | P-10 | Report coarse session and puzzle milestones only through the container bridge; work normally when that bridge is absent. Do not create identities, collect names, add trackers or perform game-side network reporting. |
 | P-11 | Deliver Curious Reader-compatible ZIPs, a tile icon, locally licensed media and a reproducible build/test procedure. A developer-server demonstration alone is not release evidence. |
-| P-12 | Maintain versioned, traceable specifications; use them in each new task plan, require tests and human approval, and offer a separate specification reconciliation task after approved work. Reconciliation reports both additions and removals. |
+| P-12 | Maintain versioned, traceable specifications; use all four in each new task plan, cite applicable requirement IDs, dependencies, acceptance criteria and validation, and require tests plus explicit human approval. After approved work, offer a separate specification-update task; it updates Status, Last update and a bottom change log on altered specs, and reports additions, removals and replacements. |
 
 ## 4. Scope and phases
 
 | Phase | Included | Gate to declare the phase complete |
 |---|---|---|
-| Foundation | Local build, schema validation, media loading, responsive shell, offline packaging | Invalid content is diagnosed; packaged fixtures load from `file://` |
-| MVP | Static target letters, image, answer slots, letter/word audio, supportive feedback, progression, persistence, accessibility, bridge | P-01-P-04 and P-07-P-12 pass for static mode; human gameplay review approved |
-| Better | All MVP behavior plus foils, hints and foil disappearance | P-05 passes without changing MVP mode behavior |
-| Great | All Better behavior plus moving letters, pause-on-pickup, safe recycling | P-06 passes; static and Better modes remain selectable and tested |
-| Release | Production media, physical-device verification, operator handoff | All applicable requirements pass and product, engineering and QA sign off |
+| Foundation | Local build, schema validation, media loading, responsive shell and offline packaging | Invalid content is diagnosed; packaged fixtures load from `file://` |
+| Great | Complete game: pictured spelling, answer positions, letter/word audio, supportive feedback, progression, persistence, accessibility, bridge, foils, hints, moving target/foil lanes, pause-on-pickup and safe recycling | P-01-P-12 pass for the Great implementation; human gameplay review approved |
+| Release | Production media, physical-device verification and operator handoff | All applicable requirements pass and product, engineering and QA sign off |
 
-Provide three facilitator-selectable tiers named **MVP**, **Better** and
-**Great**, with MVP selected on a fresh install. Great inherits Better's foils
-and hints. Tier choice does not automatically increase based on performance.
-There are no paid features, accounts, server backend or connection-dependent
-features.
+Great is the sole learner-facing implementation; there is no tier selector,
+static Better mode or MVP delivery phase. Reduced-motion and accessible input
+alternatives are accommodations within Great, not separate tiers. There are no
+paid features, accounts, server backend or connection-dependent features.
 
 ### Non-goals
 
@@ -101,8 +104,8 @@ features.
 |---|---|---|
 | Functional correctness | 100% of phase-applicable acceptance tests pass; no open blocker/critical defects | Automated results plus manual device checklist |
 | Offline readiness | 10/10 cold launches become playable within 10 seconds, with zero outbound attempts | Timestamped `file://` baseline-device runs and container diagnostics |
-| Progress integrity | Correct placements, removed foils and revealed hints survive 10/10 save/reload trials | Restore tests for all tiers, including duplicate letters |
-| Interaction usability | At least 4 of 5 consented, facilitated trial participants complete a three-letter MVP puzzle after at most one demonstration | Anonymized observation checklist; no child identifiers in telemetry |
+| Progress integrity | Correct placements, removed foils and revealed hints survive 10/10 save/reload trials | Great restore tests, including duplicate letters and moving-tile requeue |
+| Interaction usability | At least 4 of 5 consented, facilitated trial participants complete a three-letter Great puzzle after at most one demonstration | Anonymized observation checklist; no child identifiers in telemetry |
 | Delivery integrity | Every referenced required media asset exists, validates and is locally licensed; ZIPs merge with zero overwrites | Content audit, license manifest and archive inspection |
 | Accessibility | Entire puzzle can be completed without dragging; essential feedback remains understandable while muted/reduced-motion | Keyboard, tap-to-place, screen-reader and reduced-motion review |
 
@@ -112,7 +115,7 @@ do not substitute automated test results for it.
 
 ## 6. Ownership, risks and approval
 
-The product owner approves intent, tier behavior and learner-facing language.
+The product owner approves intent, Great behavior and learner-facing language.
 Engineering owns architecture/offline compatibility. QA must independently
 review the acceptance suite rather than treating its AI-generated first draft
 as approval. Human security, architecture and business-logic review are release
@@ -125,15 +128,30 @@ decisions require review before their implementation milestone starts.
 
 ### Prototype evidence (2026-10-22)
 
-A Foundation/MVP/Better static prototype now exists. It has passing focused
-unit, typecheck and build checks, plus browser smoke checks for local-file
-loading, placement, progression and Better foils/hints. These results do not
-establish any release measure in section 5: the content audit fails on missing
-licensed audio/font assets, and packaging, device, independent QA and usability
-gates remain outstanding. Product intent and P-01-P-12 acceptance thresholds
-are unchanged.
+A static prototype predating this Great-only specification was recorded on
+2026-10-22. Historical focused unit, typecheck and build checks, plus browser
+smoke checks for local-file loading, placement, progression and foil/hint
+behavior, do not verify Great moving-tile behavior or establish any release
+measure in section 5. The content audit failed on missing licensed audio/font
+assets; packaging, device, independent QA and usability gates remain
+outstanding. This historical prototype is not a second product tier.
+
+### Great implementation evidence (2026-10-27)
+
+The Great implementation now includes left-to-right moving letter/foil lanes,
+tap-to-stop selection, pause and reduced-motion presentation, foil removal
+with position-hint reveal, and FIFO recycling for unplaced tiles. Typecheck,
+all 20 unit tests and the production build passed; a browser smoke check
+verified movement, pause stability, stopped-tile selection, foil/hint behavior
+and reduced-motion presentation. These checks do not establish the full P-01–
+P-12 acceptance suite or the release measures in section 5. Production media
+and licenses remain missing, and physical-device, Curious Reader, independent
+QA, accessibility, usability and release reviews remain outstanding.
 
 ## Spec change log
 
+2026-10-27 — Copilot — Recorded the implemented Great interaction and focused validation evidence while retaining product and release approval gates.
+2026-10-26 — Copilot — Replaced multi-tier scope with Great as the sole product implementation, carrying forward foils/hints and specifying moving tiles; formal product approval remains outstanding.
+2026-10-26 — Copilot — Retired MVP as a current phase and selectable tier, established Better as the minimum/default tier, and retained Great; formal product approval remains outstanding.
 2026-10-22 — Copilot — Recorded approved static-prototype evidence and outstanding release gates without changing product intent.
 2026-10-21 — Copilot — Added the initial draft product requirements, confirmed three-tier scope, provenance, measurable outcomes and approval gates; removed nothing.

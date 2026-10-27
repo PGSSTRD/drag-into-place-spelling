@@ -1,8 +1,8 @@
 # TESTSPEC - Drag Into Place Spelling
 
-**Version:** 0.2.0<br>
-**Status:** Draft - partial unit/browser smoke checks executed; full acceptance suite not executed; awaiting independent QA review<br>
-**Last update:** 2026-10-22<br>
+**Version:** 2.0.3<br>
+**Status:** Draft - partial unit/browser regression checks executed; full acceptance suite not executed; awaiting independent QA review<br>
+**Last update:** 2026-10-27<br>
 **Author:** Copilot<br>
 **Independent QA owner:** To be assigned
 
@@ -45,7 +45,7 @@ Do not use real delays for reducer/scheduler timing tests.
 
 | Fixture ID | Definition | Purpose |
 |---|---|---|
-| F-01 | Valid CAT: letters C/A/T, foils B/D, three position-specific letter clips, image and word clip | Baseline all tiers |
+| F-01 | Valid CAT: letters C/A/T, foils B/D, three position-specific letter clips, image and word clip | Baseline Great puzzle |
 | F-02 | Valid BOOK: letters B/O/O/K, foils A/Z, four indexed clips | Duplicate-instance matching and restore |
 | F-03 | Valid A and ELEPHANT, with four allowed non-target foils for ELEPHANT | Minimum/maximum word and 12-tile layout |
 | F-04 | One-level pack; separate three-level pack with stable IDs and distinct images/audio | Infinite replay, cycle coverage and no boundary repeat |
@@ -72,17 +72,17 @@ choosing only the easiest example.
 | T-01 | P-07; D-01 | Load F-01-F-06 and each individual invalid mutation | Valid packs pass; invalid ones fail with precise field/path; no partial playable pack; traversal/absolute/unknown fields rejected |
 | T-02 | P-01/P-07; D-01/D-03 | Shuffle CAT/BOOK with fixed seeds; run 1,000 valid seeded layouts | Exact letter multiset, unique tile IDs, no overlap/out-of-bounds cells; deterministic seed results; do not assert every shuffle differs |
 | T-03 | P-02/P-04; D-02 | Drop correct tile, then attempt reacquisition/move by pointer, tap and keyboard | Exactly one locked mapping and attempt; positive/contextual cue once; locked tile cannot move |
-| T-04 | P-02; D-02/D-03 | Drop target A onto CAT's C position; include case with one/no alternative pool cell | One attempt and gentle cue; tile remains available in free randomized/previous cell per policy; no hint/removal |
+| T-04 | P-02; D-02/D-03 | In reduced-motion Great, drop target A onto CAT's C position; include case with one/no alternative pool cell | One attempt and gentle cue; tile remains available in a free shuffled/previous cell per policy; no hint/removal |
 | T-05 | P-02/P-04; D-02/D-03 | Drop outside/on occupied slot; Escape, pointercancel, lost capture, blur and resize | No attempts, correction cues, hints or loss of tile; availability restored; occupied tile unchanged |
 | T-06 | P-02/P-03; D-01/D-02 | Complete BOOK with swapped O instance IDs | All positions accept correct letter values; each tile used once; destination-index audio used |
 | T-07 | P-03; D-02/D-06 | Final correct drop, repeated pointerup and stale callbacks; F-10 media variants | One completion/advance; final-letter cue before word cue; advance waits for animation/audio or watchdog; mute/failure never hangs |
 | T-08 | P-03; D-05 | Complete two cycles of F-04 using fixed RNG, plus one-level pack | Every level once per cycle; no immediate boundary repeat for multi-level; one-level replay works |
-| T-09 | P-05; D-02 | Drop B on CAT's empty second slot in Better; repeat in Great; try occupied/outside | Empty drop removes only B, reveals only index 1, one attempt and negative cue; neutral drops don't consume foil |
-| T-10 | P-05; D-02 | Run CAT in MVP with foils in JSON; reveal then fill hint slot in Better | MVP never instantiates foils/hints; filled slot suppresses hint presentation but keeps reveal state |
-| T-11 | P-06; D-04 | Advance fake time through entry/travel/exit; acquire/cancel/wrong/correct/foil; run 100 passes | Direction and travel time per D-04; exactly one instance per ID; unplaced targets recycle, placed/removed never respawn; queued wait <=30 s |
-| T-12 | P-06; D-04/D-08 | Manual pause, keyboard focus, feedback, hidden page, reduced motion and resume | Correct pause reasons compose; active clock excludes pauses, no teleport, reduced-motion Great uses static cells |
-| T-13 | P-09; D-05 | Save/reload each accepted outcome in every tier, including BOOK and Great mid-pass | Placements, hints, removals, attempts/cycle and elapsed time match; remaining Great tiles requeue without duplicates |
-| T-14 | P-09; D-05 | Change user/tier, content/schema version; corrupt F-08 snapshots; simulate storage throw | No cross-user/tier restore; stale/corrupt state reset with diagnostic/notice; settings preserved; in-memory play survives storage denial |
+| T-09 | P-05; D-02 | In Great, drop B on CAT's empty second slot; repeat with occupied/outside drops | Empty drop removes only B, reveals only index 1, one attempt and negative cue; neutral drops don't consume foil |
+| T-10 | P-05; D-02 | Start Great with CAT foils in JSON; reveal then fill a hint slot | Great instantiates the full foil/hint content; filling a hinted slot suppresses hint presentation but keeps reveal state |
+| T-11 | P-06; D-03/D-04 | Advance fake time through entry/travel/exit; tap to stop, verify stationary position, then drag the same tile in a separate gesture; cancel, wrong/correct/foil; run 100 passes | Tiles travel left-to-right; pointer-down acquires and freezes the selected tile immediately; short release retains selection; a later drag moves it without losing pointer capture; pointer-generated focus does not trigger keyboard pause; exactly one instance per ID; unplaced targets/foils recycle, placed/removed never respawn; queued wait <=30 s |
+| T-12 | P-06; D-03/D-04/D-08 | Manual pause, keyboard focus, pointer-generated focus/drag, feedback, hidden page, reduced motion and resume | Keyboard focus pauses lanes; pointer-generated focus does not; pointer input clears keyboard-focus pause; pause reasons compose, active clock excludes pauses, no teleport, reduced-motion Great uses static cells |
+| T-13 | P-09; D-05 | Save/reload each accepted Great outcome, including BOOK and mid-pass | Placements, hints, removals, attempts/cycle and elapsed time match; remaining moving tiles requeue without duplicates |
+| T-14 | P-09; D-05 | Change user and content/schema version; corrupt F-08 snapshots; simulate storage throw | No cross-user restore; stale/corrupt state resets with diagnostic/notice; settings are preserved where valid; in-memory play survives storage denial |
 | T-15 | P-03/P-09/P-10; D-05/D-07 | Reload before/after completion marker save, bridge post and next-puzzle save | No completed-pending event replay; restored pending advances; crash window permits telemetry loss, never promises exactly-once delivery |
 | T-16 | P-08; D-06/D-08 | XHR status 0/200/non-success, HTTP errors, empty/stalled responses, Retry and late old completion | Valid nonempty local data accepted; settled preloads; <=10 s Ready/error; Retry invalidates old generation; silent audio fallback only with notice/diagnostic |
 
@@ -95,12 +95,12 @@ constant and confirm the independent clock cannot advance while paused.
 
 | ID | References | Procedure and pass criteria |
 |---|---|---|
-| T-17 | P-04; D-03; U-01/U-04 | Drag each corner/edge with noncentral grab offset; tile stays fully inside playfield; center-based hit tests, shared-edge tie and >8 px drag threshold match D-03; second pointers cannot steal tile |
+| T-17 | P-04; D-03; U-01/U-04 | Tap a moving tile and verify it stops; then drag it in a separate gesture to a slot. Drag each corner/edge with noncentral grab offset, including a moving tile removed from its lane; tile stays fully inside playfield and pointer capture survives acquisition; pointer focus does not trigger keyboard pause; center-based hit tests, shared-edge tie and >8 px drag threshold match D-03; second pointers cannot steal tile |
 | T-18 | P-04; U-03/U-04/U-05 | Complete CAT and BOOK by keyboard only and by tap-select/place; cancel/change selection; correct focus progression; hidden hints not announced; one outcome live announcement |
 | T-19 | P-04/P-06; D-03/D-04; U-01/U-02 | Resize/rotate during drag, feedback and Great; no stale hit-testing, lost tile, clipped answer/hint pairs or active background motion |
-| T-20 | P-01/P-05/P-06; U-01/U-02/U-03 | Capture all specified states and control visibility for each tier; no foil styling clues, child-facing grade, written target spelling or duplicate pool/lane surfaces |
+| T-20 | P-01/P-05/P-06; U-01/U-02/U-03 | Capture Great's moving and reduced-motion states and control visibility; no foil styling clues, child-facing grade, written target spelling or duplicate pool/lane surfaces |
 | T-21 | P-04; D-08; U-01/U-04 | Verify 44 px targets, contrast ratios, focus trap/return, labels, reading order, 200% text zoom, muted cues, reduced motion and screen reader; no color/audio-only essential feedback |
-| T-22 | P-03/P-09; D-02/D-05/D-06; U-02/U-03 | Exercise Start/Resume, replay, sound toggle, autoplay rejection, Settings tier changes, explicit pause plus hidden-page return; state and control enablement match U-02 |
+| T-22 | P-03/P-09; D-02/D-05/D-06; U-02/U-03 | Exercise Start/Resume, replay, sound toggle, autoplay rejection, Settings open/close, explicit pause plus hidden-page return; state and control enablement match U-02 |
 | T-23 | P-08/P-09; D-06/D-08; U-02/U-03 | Trigger content, image, audio, font and storage failures; fatal cases offer Retry, nonfatal ones preserve play with notices; no raw paths/IDs/stack traces in learner UI |
 
 Each U-05 Gherkin scenario must be implemented as a named component/E2E
@@ -112,7 +112,7 @@ insufficient.
 
 | ID | References | Procedure and pass criteria |
 |---|---|---|
-| T-24 | P-10; D-07 | Record bridge strings for first gesture and completion; exactly one event per milestone, expected schema/fields, fresh UUID v4/variant, UTC timestamp, URL ID or empty string, stable `sub_app_id`, JSON-finite data, no `options`; score always accompanied by max_score |
+| T-24 | P-10; D-07 | Record bridge strings for first gesture and completion; exactly one event per milestone with `tier: "great"`, expected schema/fields, fresh UUID v4/variant, UTC timestamp, URL ID or empty string, stable `sub_app_id`, JSON-finite data, no `options`; score always accompanied by max_score |
 | T-25 | P-10; D-07/D-08 | Bridge absent/throws; invalid data and payload size boundary tests; UUID APIs unavailable | Absence silently no-ops; other failures diagnosed without breaking gameplay; byte count (including multibyte values) <65,536; no retries/queues/network/per-tap events; fallback IDs retain v4 format |
 | T-26 | P-08/P-11; D-06/D-08/D-09 | Audit production JS/CSS/HTML/JSON/font/media and archive | Relative base; zero external URLs/root-relative runtime dependencies, source maps, forbidden SDK/runtime registrations; no file-path fetch or Cache Storage; image true-format and complete audio inventory |
 | T-27 | P-08/P-09; D-05/D-06/D-09 | Launch extracted merged production assets under `file://` with network unavailable; complete/reload all modes | Playable <=10 s on 10/10 cold starts, real media, zero external attempts, progress restored; no unexplained console errors |
@@ -150,13 +150,15 @@ assertions in the tables above.
 
 Follow D-09's clean-machine sequence once M1 supplies the scripts. During
 development run the smallest relevant test groups after typecheck; before
-phase approval run all applicable groups and static-tier regressions.
+phase approval run all applicable groups, including Great moving and
+reduced-motion presentation.
 Release requires the full sequence plus physical/manual gates.
 
 Production-artifact dry run:
 
 1. Build and package from a clean lockfile install; record commit/revision,
-   Node/npm versions, schema/content version, tier, seed and ZIP hashes.
+   Node/npm versions, schema/content version, Great build variant, seed and
+   ZIP hashes.
 2. Extract engine then English pack into an empty test folder; assert no
    overwrite and inspect root `index.html`.
 3. Open `index.html?cr_lang=english` as a local file, not through a dev server.
@@ -164,7 +166,7 @@ Production-artifact dry run:
    must run without that stub.
 4. Disable network before boot. Collect attempted-request logs, console
    diagnostics, startup timing and state captures. Play CAT/BOOK and maximum
-   content in every tier, reload, mute, rotate and background/restore.
+   Great content, reload, mute, rotate and background/restore.
 5. Repeat on agreed physical Android/iOS WebViews in airplane mode; coordinate
    container diagnostic/event-sync verification with Curious Learning.
 6. Store concise results with case ID, expected/actual, PASS/FAIL/BLOCKED,
@@ -212,18 +214,18 @@ reported as "added only". Re-run the affected coverage/link/consistency checks.
 
 ## 9. Implementation evidence recorded 2026-10-22
 
-The user approved the Foundation/MVP/Better static code deliverable on
-2026-10-22. The following focused unit evidence is real but partial; no
-acceptance group is declared passed in full.
+The 2026-10-22 static code deliverable is historical prototype evidence and
+does not verify the Great implementation. The following focused unit evidence
+is real but partial; no acceptance group is declared passed in full.
 
 | Evidence | Results | Partial coverage |
 |---|---|---|
 | [content.test.ts](../../tests/content.test.ts) | 3 passing unit tests | T-01: valid English pack, letter multiset mismatch, encoded traversal; remaining F-05/F-06 variants and file-format cases are untested. |
-| [domain.test.ts](../../tests/domain.test.ts) | 6 passing unit tests | Subsets of T-03 through T-10: repeated-letter matching, foil removal/hint, wrong target relocation, MVP foil omission, neutral occupied drop and one-level cycle. Does not cover full pointer/audio/timing/cycle matrices. |
-| [progress.test.ts](../../tests/progress.test.ts) | 4 passing unit tests | Subsets of T-13 through T-15: user/tier key, partial snapshot and cycle restore, completion marker and duplicate bindings. No ten-trial or physical storage matrix. |
+| [domain.test.ts](../../tests/domain.test.ts) | 6 passing unit tests | Subsets of T-03 through T-10: repeated-letter matching, foil removal/hint, wrong target relocation, historical prototype behavior, neutral occupied drop and one-level cycle. These are historical results, not verification of Great moving behavior. Does not cover full pointer/audio/timing/cycle matrices. |
+| [progress.test.ts](../../tests/progress.test.ts) | 4 passing unit tests | Subsets of T-13 through T-15: user-scoped key, partial snapshot and cycle restore, completion marker and duplicate bindings. No ten-trial or physical storage matrix. |
 | [bridge.test.ts](../../tests/bridge.test.ts) | 3 passing unit tests | T-24/T-25 subsets: envelope schema, finite/size validation and UUID v4 shape. No recording/throwing bridge or container dedup test. |
 | Typecheck and production build | `npm run typecheck` and `npm run build` passed with Node 24.20.0/npm 11.19.0. | Does not establish runtime asset completeness or any device gate. |
-| Browser smoke checks | Production output opened from `file://`; CAT load, tap placement, Better foil/hint and completion/advance observed. A mouse drag was also observed in the local HTTP preview. | Not automated E2E; no instrumented outbound-request counter, viewport matrix, keyboard-only completion, accessibility scan or 10-cold-launch trial. T-17/T-18/T-27 are not passed in full. |
+| Browser smoke checks | Production output opened from `file://`; CAT load, tap placement, foil/hint and completion/advance observed. A mouse drag was also observed in the local HTTP preview. | Not automated E2E; no instrumented outbound-request counter, viewport matrix, keyboard-only completion, accessibility scan or 10-cold-launch trial. Great moving behavior and T-17/T-18/T-27 are not passed in full. |
 
 `npm run validate:content` fails as expected: the English demo pack references
 missing production word/letter MP3s, the shared incorrect WAV and reader WOFF2,
@@ -240,7 +242,44 @@ implemented. Physical Android/iOS WebView, Curious Reader container, licensed
 media, independent QA, accessibility and usability reviews remain blocked or
 unrun; no release criterion is inferred from the passing unit/build checks.
 
+### Great implementation evidence recorded 2026-10-27
+
+The focused unit run passed 20 tests across five files, including four new
+scheduler tests in [movement.test.ts](../../tests/movement.test.ts). These
+exercise alternating-lane movement, stopped-tile queue recovery, duplicate-free
+recycling and the 30-second return bound for 12 tiles at lane widths 320, 568,
+768 and 1024 CSS px. Typecheck and production build also passed.
+
+A development-server browser smoke check observed moving lane content, stable
+manual pause, a selected tile holding its position, a foil being removed with
+one position hint revealed, and reduced-motion presentation using the static
+pool. It is not a production-artifact, automated E2E, full drag, keyboard,
+screen-reader, performance or device test. T-11/T-12 and related presentation
+groups remain partial until their complete procedures pass.
+
+The follow-up browser regression check verified keyboard Tab focus pauses
+motion, pointer interaction clears that pause, and a moving A tile can be
+dragged into its correct answer slot without the keyboard-pause status. This is
+a focused smoke check, not a complete automated T-11/T-12/T-17 run or
+production-artifact test.
+
+An additional browser smoke check tapped a moving C tile, confirmed its
+bounding-box position was unchanged for one second, then dragged it in a
+separate pointer gesture into the empty answer slot. The puzzle completed
+without the keyboard-pause status. Typecheck, all 20 unit tests and the
+production build passed, and `git diff --check` was clean. This remains
+focused manual evidence, not full automated T-11/T-12/T-17 coverage.
+
+`npm run validate:content` remains blocked by missing pronunciation audio,
+shared correction audio, reader font and complete license records. No T-01,
+T-26, T-27 or release/media gate is declared passed from the code checks above.
+
 ## Spec change log
 
+2026-10-27 — Copilot — Added a distinct tap-stop-then-drag acceptance procedure and recorded browser regression evidence.
+2026-10-27 — Copilot — Clarified keyboard-versus-pointer pause assertions in T-11/T-12/T-17 and recorded the drag regression smoke check.
+2026-10-27 — Copilot — Added focused Great scheduler, browser smoke and build evidence while keeping full acceptance and release gates outstanding.
+2026-10-26 — Copilot — Replaced multi-tier and legacy-migration checks with single-Great coverage for foil/hint behavior, moving tiles and reduced motion; full acceptance suite and independent QA remain outstanding.
+2026-10-26 — Copilot — Replaced MVP-specific acceptance with Better-default, legacy-save, pending-report, and Great regression coverage; full test execution and independent QA remain outstanding.
 2026-10-22 — Copilot — Recorded partial unit/build/browser evidence and explicitly retained missing-media, E2E, device and release gates.
 2026-10-21 — Copilot — Added the initial draft fixtures, 32 traceable test groups, offline/device protocols, coverage matrix and approval/spec-maintenance gates; removed nothing.
