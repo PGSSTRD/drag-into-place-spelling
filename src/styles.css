@@ -30,15 +30,15 @@ h1 { margin: 8px 0; font-size: 1.4rem; }
 .lock-mark { position: absolute; right: 1px; top: 0; font-size: 14px; line-height: 1; }
 .hint { min-height: 24px; color: #53657e; font-weight: 700; }
 .hint.visible { color: #65758b; }
-.status { order: 6; min-height: 24px; margin: 0; text-align: center; }
+.status { order: 6; min-height: 24px; margin: 4px 0 0; text-align: center; }
 .tile-pool { order: 7; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 100%; }
-.moving-lanes { order: 7; position: relative; width: min(100%, 760px); min-height: 124px; overflow: hidden; }
+.moving-lanes { order: 7; position: relative; width: min(100%, 760px); min-height: 132px; padding: 6px 0; overflow: hidden; }
 .moving-lane { position: relative; height: 60px; width: 100%; }
 .moving-lane .tile { position: absolute; top: 4px; left: 0; }
 .moving-lane.preview { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px; height: auto; min-height: 60px; }
 .moving-lane.preview .tile { position: static; }
 .lane-help, .motion-label { min-height: 24px; text-align: center; color: #53657e; }
-.motion-label { order: 6; }
+.motion-label { order: 4; margin: 0; }
 .pause-overlay { position: absolute; z-index: 4; inset: 0; display: grid; place-content: center; justify-items: center; gap: 12px; background: rgb(247 250 252 / 92%); }
 .pause-overlay p { margin: 0; font-size: 1.25rem; font-weight: 700; }
 .tile { border-style: solid; touch-action: none; cursor: grab; }
@@ -54,7 +54,8 @@ h1 { margin: 8px 0; font-size: 1.4rem; }
   .replay { grid-row: 2; }
   .answers, .status, .tile-pool, .moving-lanes { grid-column: 2; }
   .answers { grid-row: 1; }
-  .status { grid-row: 2; }
+  .status { grid-row: 2; margin: 0; }
+  .motion-label { order: 6; }
   .tile-pool, .moving-lanes { grid-row: 3; align-self: start; }
 }
 @media (prefers-reduced-motion: reduce) {

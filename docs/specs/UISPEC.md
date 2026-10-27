@@ -1,7 +1,7 @@
 # UISPEC - Drag Into Place Spelling
 
-**Version:** 2.0.3<br>
-**Status:** Draft - Great implementation, pointer and tap-to-stop regression evidence recorded; awaiting product, accessibility and design review<br>
+**Version:** 2.0.7<br>
+**Status:** Draft - Great implementation, compact spacing and selection-outline evidence recorded; awaiting product, accessibility and design review<br>
 **Last update:** 2026-10-27<br>
 **Author:** Copilot
 
@@ -34,7 +34,8 @@ leaderboard.
 Validate actual rendered contrast, not just token values. Correctness must not
 depend on color: use a checkmark/lock for correct and bounce plus gentle
 correction cue for incorrect. Selected tile uses a thick outline and "selected"
-accessible state, separate from keyboard focus. Never flash.
+accessible state, separate from keyboard focus. Keep the entire selection
+outline visible and unclipped, including on moving-lane tiles. Never flash.
 
 Portrait layout, top to bottom:
 
@@ -53,6 +54,10 @@ Portrait layout, top to bottom:
 `*` Pause is present only in ordinary moving Great. Never show both the
 static pool and moving lanes. Keep answer rows immediately above their hints;
 when slots wrap, each slot and its hint remain one paired grid item.
+Keep the motion-status row above the answer row so it does not separate answer
+hints from learner feedback. The baseline-to-baseline distance from the hint
+text to the learner-status text below it should be about 40 CSS px and must not
+exceed 48 CSS px in the supported portrait layout.
 Calculate columns as the largest count of 44 px cells and 8 px gaps that fits
 the available width, capped at word length; center incomplete final rows.
 Preserve left-to-right then top-to-bottom order and accessible position labels.
@@ -286,8 +291,23 @@ separate gesture into its correct slot. The puzzle completed without the
 keyboard-pause status. This does not replace full U-04, accessibility, viewport
 or physical-device review.
 
+After the compact spacing update, a browser check revealed a foil in reduced-
+motion play and measured 40 CSS px baseline-to-baseline between its hint and
+the "Here's a hint." status at 390x844. CSS text-range measurements at
+320x568 and 768x1024 also measured 40 CSS px. This is focused layout evidence,
+not the complete U-01 viewport or design review.
+
+After the selected-outline fix, a browser check captured a selected tile at
+the top of a moving lane. Its full outline was visible; measured upper
+clearance from the clipping container was 4.4 CSS px. This focused check does
+not replace the complete U-01 viewport or accessibility review.
+
 ## Spec change log
 
+2026-10-27 — Copilot — Recorded browser evidence that the full selected-tile outline remains visible in a moving lane.
+2026-10-27 — Copilot — Required the full selected-tile outline to remain visible, including in moving lanes.
+2026-10-27 — Copilot — Recorded approved compact answer-hint-to-status spacing evidence and retained full visual review gates.
+2026-10-27 — Copilot — Specified compact spacing between answer hints and learner feedback while reserving motion status above the answer row.
 2026-10-27 — Copilot — Clarified that tapping a moving tile stops it immediately and recorded separate-gesture drag evidence.
 2026-10-27 — Copilot — Clarified keyboard-versus-pointer focus pause behavior and recorded the drag regression check.
 2026-10-27 — Copilot — Added current Great interface evidence and retained outstanding accessibility, design and interaction review gates.

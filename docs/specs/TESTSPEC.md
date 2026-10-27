@@ -1,7 +1,7 @@
 # TESTSPEC - Drag Into Place Spelling
 
-**Version:** 2.0.3<br>
-**Status:** Draft - partial unit/browser regression checks executed; full acceptance suite not executed; awaiting independent QA review<br>
+**Version:** 2.0.7<br>
+**Status:** Draft - partial unit/browser regression checks executed; compact spacing and selected-outline checks recorded; full acceptance suite not executed; awaiting independent QA review<br>
 **Last update:** 2026-10-27<br>
 **Author:** Copilot<br>
 **Independent QA owner:** To be assigned
@@ -95,10 +95,10 @@ constant and confirm the independent clock cannot advance while paused.
 
 | ID | References | Procedure and pass criteria |
 |---|---|---|
-| T-17 | P-04; D-03; U-01/U-04 | Tap a moving tile and verify it stops; then drag it in a separate gesture to a slot. Drag each corner/edge with noncentral grab offset, including a moving tile removed from its lane; tile stays fully inside playfield and pointer capture survives acquisition; pointer focus does not trigger keyboard pause; center-based hit tests, shared-edge tie and >8 px drag threshold match D-03; second pointers cannot steal tile |
+| T-17 | P-04; D-03; U-01/U-04 | Tap a moving tile and verify it stops; then drag it in a separate gesture to a slot. Verify the complete selected-tile outline is visible, including at the upper edge of a moving lane. Drag each corner/edge with noncentral grab offset, including a moving tile removed from its lane; tile stays fully inside playfield and pointer capture survives acquisition; pointer focus does not trigger keyboard pause; center-based hit tests, shared-edge tie and >8 px drag threshold match D-03; second pointers cannot steal tile |
 | T-18 | P-04; U-03/U-04/U-05 | Complete CAT and BOOK by keyboard only and by tap-select/place; cancel/change selection; correct focus progression; hidden hints not announced; one outcome live announcement |
 | T-19 | P-04/P-06; D-03/D-04; U-01/U-02 | Resize/rotate during drag, feedback and Great; no stale hit-testing, lost tile, clipped answer/hint pairs or active background motion |
-| T-20 | P-01/P-05/P-06; U-01/U-02/U-03 | Capture Great's moving and reduced-motion states and control visibility; no foil styling clues, child-facing grade, written target spelling or duplicate pool/lane surfaces |
+| T-20 | P-01/P-05/P-06; U-01/U-02/U-03 | Capture Great's moving and reduced-motion states and control visibility; in portrait measure hint-text to learner-status-text baseline distance (about 40 CSS px, no more than 48 px); motion-status row stays above answers; no foil styling clues, child-facing grade, written target spelling or duplicate pool/lane surfaces |
 | T-21 | P-04; D-08; U-01/U-04 | Verify 44 px targets, contrast ratios, focus trap/return, labels, reading order, 200% text zoom, muted cues, reduced motion and screen reader; no color/audio-only essential feedback |
 | T-22 | P-03/P-09; D-02/D-05/D-06; U-02/U-03 | Exercise Start/Resume, replay, sound toggle, autoplay rejection, Settings open/close, explicit pause plus hidden-page return; state and control enablement match U-02 |
 | T-23 | P-08/P-09; D-06/D-08; U-02/U-03 | Trigger content, image, audio, font and storage failures; fatal cases offer Retry, nonfatal ones preserve play with notices; no raw paths/IDs/stack traces in learner UI |
@@ -270,12 +270,28 @@ without the keyboard-pause status. Typecheck, all 20 unit tests and the
 production build passed, and `git diff --check` was clean. This remains
 focused manual evidence, not full automated T-11/T-12/T-17 coverage.
 
+After the compact spacing update, a browser check revealed a foil in reduced-
+motion play and measured a 40 CSS px baseline distance between hint and status
+at 390x844. CSS text-range measurements at 320x568 and 768x1024 also measured
+40 CSS px. Typecheck, all 20 unit tests, production build and `git diff --check`
+passed. T-20 and the full viewport/design review remain partial.
+
+After the selected-outline fix, a browser check confirmed the complete outline
+was visible on a tile at the top of a moving lane, with 4.4 CSS px clearance
+from the clipping container. Typecheck, all 20 unit tests, production build
+and `git diff --check` passed. This is focused evidence for T-17, not complete
+pointer/accessibility or viewport acceptance.
+
 `npm run validate:content` remains blocked by missing pronunciation audio,
 shared correction audio, reader font and complete license records. No T-01,
 T-26, T-27 or release/media gate is declared passed from the code checks above.
 
 ## Spec change log
 
+2026-10-27 — Copilot — Recorded selected-outline browser evidence and focused validation while retaining full T-17 gates.
+2026-10-27 — Copilot — Added a selected-outline clipping assertion for moving-lane tiles to T-17.
+2026-10-27 — Copilot — Recorded approved compact spacing measurements and focused validation while retaining full acceptance gates.
+2026-10-27 — Copilot — Added a measurable visual acceptance check for compact answer-hint-to-status spacing.
 2026-10-27 — Copilot — Added a distinct tap-stop-then-drag acceptance procedure and recorded browser regression evidence.
 2026-10-27 — Copilot — Clarified keyboard-versus-pointer pause assertions in T-11/T-12/T-17 and recorded the drag regression smoke check.
 2026-10-27 — Copilot — Added focused Great scheduler, browser smoke and build evidence while keeping full acceptance and release gates outstanding.
