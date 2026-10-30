@@ -15,7 +15,7 @@
     "validate:content": "tsx scripts/validate-content.ts"
   },
   "dependencies": {
-    "ajv": "8.17.1",
+    "ajv": "^8.20.0",
     "react": "19.1.1",
     "react-dom": "19.1.1"
   },
@@ -24,7 +24,7 @@
     "@types/react-dom": "19.1.9",
     "tsx": "4.20.5",
     "typescript": "5.9.2",
-    "vite": "7.1.7",
-    "vitest": "3.2.4"
+    "vite": "^7.3.7",
+    "vitest": "^5.0.5"
   }
 }
