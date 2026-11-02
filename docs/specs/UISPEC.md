@@ -1,8 +1,8 @@
 # UISPEC - Drag Into Place Spelling
 
-**Version:** 2.0.7<br>
-**Status:** Draft - Great implementation, compact spacing and selection-outline evidence recorded; awaiting product, accessibility and design review<br>
-**Last update:** 2026-10-27<br>
+**Version:** 2.0.8<br>
+**Status:** Draft - Great implementation and current-level audio notice behavior specified and implemented; awaiting product, accessibility and design review<br>
+**Last update:** 2026-11-02<br>
 **Author:** Copilot
 
 ## 1. Authority and visual intent
@@ -94,7 +94,7 @@ image assets.
 | Paused/hidden | On manual pause: "Paused" overlay and Resume; hidden page has no visible work | Resume restores play; no clock/audio/motion advancement while hidden |
 | Settings dialog | Sound toggle, Close | Opening cancels selection and pauses activity; closing resumes the same Great puzzle unless another pause reason applies |
 | Fatal load/content error | Friendly message, Retry, short diagnostic code | Retry restarts load; no interactive partial puzzle |
-| Nonfatal media/save notice | Nonblocking status strip, while puzzle remains usable | Sound enable/retry control when relevant; no false progress-save indicator |
+| Nonfatal media/save notice | Nonblocking status strip, while puzzle remains usable | Show the sound-unavailable notice if any required cue for the current level is missing or fails; recompute on level change and do not carry a warning onto a complete level. Show sound enable/retry when playback is blocked; never show a false progress-save indicator |
 
 On a new automatic puzzle, continue playing without another Start, unless
 the browser again blocks audio. Pause/settings and hidden-page reasons are
@@ -123,7 +123,12 @@ Learner messages: initial "Drag a letter, or choose a letter then a space.";
 correct "Nice work!"; incorrect "Try another space."; foil "Here's a hint.";
 completion "You spelled it!"; restored invalid save "Let's start a new puzzle.";
 storage failure "You can play, but your progress can't be saved.";
-audio failure "Sound isn't available. You can still play."; fatal content
+audio failure "Sound isn't available. You can still play." Show this notice
+while any required current-level cue (full word, any letter-position cue, or
+the shared incorrect-placement cue) is unavailable. Recompute it when the
+level changes; a successful cue does not hide it while another required cue
+for that level remains unavailable. A complete level has no sound-unavailable
+notice. A browser playback block uses the Enable sound control. Fatal content
 error "We couldn't load this activity. Try again." Never display stack traces,
 raw paths, user IDs or blame the learner.
 
@@ -304,6 +309,7 @@ not replace the complete U-01 viewport or accessibility review.
 
 ## Spec change log
 
+2026-11-02 — Copilot — Specified current-level sound-notice visibility and recovery on level changes; implementation is present, with UI review outstanding.
 2026-10-27 — Copilot — Recorded browser evidence that the full selected-tile outline remains visible in a moving lane.
 2026-10-27 — Copilot — Required the full selected-tile outline to remain visible, including in moving lanes.
 2026-10-27 — Copilot — Recorded approved compact answer-hint-to-status spacing evidence and retained full visual review gates.

@@ -11,7 +11,7 @@ import {
 import type { ContentPack, Level } from "./domain/content";
 import { loadContentPack } from "./services/loadContent";
 import { readProgress, restoreCycle, restoreProgress, saveProgress } from "./services/progress";
-import { playAudioCue, unlockAudio } from "./services/audio";
+import { areAudioCuesAvailable, playAudioCue, unlockAudio } from "./services/audio";
 import { postGameEvent } from "./services/bridge";
 import "./styles.css";
 
@@ -70,6 +70,8 @@ export default function App() {
   const [game, setGame] = useReducer(reducer, null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [audioStatus, setAudioStatus] = useState<{ levelId: number; unavailable: boolean } | null>(null);
+  const [audioBlocked, setAudioBlocked] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [drag, setDrag] = useState<{ id: string; x: number; y: number } | null>(null);
   const [feedbackBusy, setFeedbackBusy] = useState(false);
@@ -95,8 +97,11 @@ export default function App() {
   const sessionStarted = useRef(false);
   const startedRef = useRef(false);
   const movementRef = useRef<MovementState | null>(null);
+  const activeAudioLevelId = useRef<number | null>(null);
+  const failedAudioPaths = useRef(new Map<number, Set<string>>());
   const lanesRef = useRef<HTMLDivElement | null>(null);
   const playfieldRef = useRef<HTMLElement | null>(null);
+  activeAudioLevelId.current = game?.level.level_id ?? null;
   const setMotion = (next: MovementState) => {
     movementRef.current = next;
     setMovement(next);
@@ -180,6 +185,47 @@ export default function App() {
     });
     return () => { alive = false; };
   }, []);
+
+  useEffect(() => {
+    if (!game) return;
+    let active = true;
+    const { level } = game;
+    const requiredAudioPaths = [
+      level.word_audio_path,
+      ...level.letter_audio_paths,
+      "assets/audios/incorrect.wav",
+    ];
+    void areAudioCuesAvailable(requiredAudioPaths).then((available) => {
+      if (!active || activeAudioLevelId.current !== level.level_id) return;
+      const failures = failedAudioPaths.current.get(level.level_id);
+      setAudioStatus({
+        levelId: level.level_id,
+        unavailable: !available || (failures?.size ?? 0) > 0,
+      });
+    });
+    return () => {
+      active = false;
+    };
+  }, [game?.level]);
+
+  function recordAudioFailure(levelId: number, path: string) {
+    let failures = failedAudioPaths.current.get(levelId);
+    if (!failures) {
+      failures = new Set();
+      failedAudioPaths.current.set(levelId, failures);
+    }
+    failures.add(path);
+    if (activeAudioLevelId.current === levelId) {
+      setAudioStatus({ levelId, unavailable: true });
+    }
+  }
+
+  function handleAudioResult(levelId: number, path: string, result: Awaited<ReturnType<typeof playAudioCue>>) {
+    if (result === "unavailable") recordAudioFailure(levelId, path);
+    if (activeAudioLevelId.current !== levelId) return;
+    if (result === "blocked") setAudioBlocked(true);
+    if (result === "played") setAudioBlocked(false);
+  }
 
   const puzzle = game?.puzzle ?? null;
   startedRef.current = started;
@@ -302,7 +348,8 @@ export default function App() {
       ? currentGame.level.letter_audio_paths[slotIndex]
       : "assets/audios/incorrect.wav";
     const cue = playAudioCue(cuePath, muted).then((played) => {
-      if (!played) setNotice("Sound isn't available. You can still play.");
+      handleAudioResult(currentGame.level.level_id, cuePath, played);
+      return played;
     });
 
     if (result.result === "correct" && result.state.phase === "completing") {
@@ -324,7 +371,10 @@ export default function App() {
         });
       }
       setMessage("You spelled it!");
-      const wordCue = cue.then(() => playAudioCue(currentGame.level.word_audio_path, muted));
+      const wordCue = cue.then(() => playAudioCue(currentGame.level.word_audio_path, muted)).then((played) => {
+        handleAudioResult(currentGame.level.level_id, currentGame.level.word_audio_path, played);
+        return played;
+      });
       Promise.all([wordCue, wait(1200)]).then(() => {
         advance(nextGame);
         setFeedbackBusy(false);
@@ -614,10 +664,15 @@ export default function App() {
         <img className="target-image" src={new URL(game.level.image_path, document.baseURI).href} alt={game.level.image_alt} onError={() => setError("CONTENT_INVALID")} />
         <button className="replay" disabled={!started || feedbackBusy || puzzle.phase !== "playing"} onClick={() => {
           playAudioCue(game.level.word_audio_path, muted).then((played) => {
-            if (!played) setNotice("Sound isn't available. You can still play.");
+            handleAudioResult(game.level.level_id, game.level.word_audio_path, played);
           });
         }}>Hear the word</button>
         <button className="sound-toggle" aria-label={muted ? "Sound off" : "Sound on"} aria-pressed={!muted} onClick={toggleMute}>{muted ? "Sound off" : "Sound on"}</button>
+        {audioBlocked && <button className="enable-sound" onClick={() => {
+          void unlockAudio().then((unlocked) => {
+            if (unlocked) setAudioBlocked(false);
+          });
+        }}>Enable sound</button>}
         {!reducedMotion && <p className="motion-label">{keyboardPause ? "Motion paused for keyboard access." : manualPause ? "Paused" : ""}</p>}
         {reducedMotion && <p className="motion-label">Motion reduced</p>}
         {manualPause && <div className="pause-overlay"><p>Paused</p><button className="start" onClick={() => {
@@ -651,6 +706,9 @@ export default function App() {
         </div>
         <p className="status" role="status" aria-live="polite">{message}</p>
         {notice && <p className="notice" role="status">{notice}</p>}
+        {audioStatus?.levelId === game.level.level_id && audioStatus.unavailable && (
+          <p className="notice" role="status">Sound isn't available. You can still play.</p>
+        )}
         {drag && <span className="drag-ghost" aria-hidden="true" style={{ left: drag.x, top: drag.y }}>{tileMap.get(drag.id)?.letter}</span>}
       </section>
     </main>

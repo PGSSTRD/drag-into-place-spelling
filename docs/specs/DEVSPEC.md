@@ -1,7 +1,7 @@
 # DEVSPEC - Drag Into Place Spelling
 
-**Version:** 2.0.9<br>
-**Status:** Draft - DOG depiction approved; content version 1.4.0; media and release gates outstanding<br>
+**Version:** 2.0.10<br>
+**Status:** Draft - DOG depiction approved; current-level audio availability behavior implemented; media validation and release gates outstanding<br>
 **Last update:** 2026-11-02<br>
 **Author:** Copilot
 
@@ -86,12 +86,13 @@ user-approved head-only DOG illustration with floppy ears and a symmetric
 muzzle. The user approved the DOG image as a sufficient depiction of a dog on
 2026-11-02. This visual approval does not constitute production-media approval
 or waive T-31.
-Structural content checks pass, but the referenced
-animal audio files have not yet been supplied: do not treat the expanded pack
-as media-valid until every clip exists, has a complete license record, and
-passes contextual pronunciation review. The SVGs remain repository-only
-placeholders and are not release media unless selected and approved through
-T-31.
+Full-word recordings for CAT, DOG, RABBIT and BIRD and the six indexed RABBIT
+clips are now present in the source tree. Indexed letter clips for CAT, DOG
+and BIRD are still missing, and the supplied animal recordings lack complete
+license records. Do not treat the expanded pack as media-valid until every
+referenced clip exists, has a complete license record and passes contextual
+pronunciation review. The SVGs remain repository-only placeholders and are
+not release media unless selected and approved through T-31.
 
 Reject missing/unknown fields, wrong types, invalid counts, duplicate level
 IDs and ambiguous legacy schemas. Report JSON field path and reason. This
@@ -280,9 +281,19 @@ HTML audio. A system-font fallback remains playable and is diagnosed.
 Required JSON/schema/image failure blocks that puzzle with Retry; never skip
 a bad puzzle silently. Audio decode/load failure is nonfatal: log the path and
 reason, supply a one-frame silent buffer for that failed asset, show a sound
-unavailable notice and allow play. Speech/image correctness still blocks
-release via build-time validation. Preload failures settle independently and
-never strand loading. No speech synthesis/remote pronunciation dependency.
+unavailable notice and allow play. Derive sound availability from the complete
+required cue set for the active level: its full-word cue, every
+letter-position cue, and the shared incorrect-placement cue. If any required
+cue is missing, unsupported, or fails to load/decode/play, show the notice for
+that level. Do not clear it merely because another cue succeeds. On level
+advance, recompute availability for the destination level; a complete level
+must not inherit a prior level's warning. Associate asynchronous availability
+results with the level occurrence that requested them so stale results cannot
+change the current level's notice. A browser playback-policy block is
+transient: show the Enable sound control and do not classify otherwise
+loadable assets as missing. Speech/image correctness still blocks release via
+build-time validation. Preload failures settle independently and never strand
+loading. No speech synthesis/remote pronunciation dependency.
 
 Sound defaults on for a new user, but must not play before a user gesture.
 Mute is persistent, replaying the picture's word audio requires an explicit
@@ -367,9 +378,9 @@ Great-only specification and does not constitute approval of Great or release.
 
 | Module | Evidence in the current prototype | Status / unmet exit criteria |
 |---|---|---|
-| M1 | React 19.1.1, TypeScript 5.9.2, Vite 7.1.7, Ajv 8.17.1; Node 24.20.0/npm 11.19.0; content schema and reference/license validator; CAT, DOG, RABBIT and BIRD source pack at content version 1.4.0 with local SVG illustrations | Partial. Unit validation and focused four-level structure/path checks pass; typecheck/build pass and emitted pack matches the source. `npm run validate:content` remains blocked by missing CAT and animal word/letter recordings, `assets/audios/incorrect.wav`, `assets/fonts/reader.woff2` and complete license records. Individual invalid-fixture coverage is incomplete. |
+| M1 | React 19.1.1, TypeScript 5.9.2, Vite 7.1.7, Ajv 8.17.1; Node 24.20.0/npm 11.19.0; content schema and reference/license validator; CAT, DOG, RABBIT and BIRD source pack at content version 1.4.0 with local SVG illustrations | Partial. Unit validation and focused four-level structure/path checks pass; typecheck/build pass and emitted pack matches the source. `npm run validate:content` remains blocked by missing CAT/DOG/BIRD indexed letter recordings, `assets/fonts/reader.woff2` and complete license records for supplied animal audio. Individual invalid-fixture coverage is incomplete. |
 | M2 | Pure reducer, value-based duplicate matching, attempts, random wrong-tile relocation, historical foil removal/hints, per-user snapshot validation, cycle order and completion marker; six domain and four progress tests | Historical static-core behavior is present; full injected-clock/invariant matrix and all F-01-F-10 fixture coverage remain outstanding. |
-| M3 | Bounded XHR content loader, serialized HTML audio cues with watchdog, local progress/settings, and fire-and-forget bridge envelope | Partial. HTTP development uses XHR rather than the specified fetch path; preload settlement, hidden-page audio suspension (the active clock pauses), and full failure-generation tests remain outstanding. `sub_app_id` is a development placeholder pending Q-02. |
+| M3 | Bounded XHR content loader, current-level audio cue availability checks, serialized HTML audio cues with watchdog, local progress/settings, and fire-and-forget bridge envelope | Partial. Current-level word, letter and shared correction cues are checked independently; unavailable state is level-scoped and browser playback blocks are distinguished. Three focused audio-service tests, typecheck, unit suite and build pass. HTTP development still uses XHR rather than the specified fetch path; broader preload settlement, hidden-page audio suspension (the active clock pauses), component/browser failure-generation tests and device checks remain outstanding. `sub_app_id` is a development placeholder pending Q-02. |
 | M4 | At the time of prototype evidence, responsive static UI, pointer capture, 8 px threshold, clamping, center hit-testing, tap/keyboard placement, live status and a historical MVP/Better tier control | Focused browser checks pass. This historical evidence is not normative. Full viewport, focus/screen-reader, contrast, cancellation and automated component/E2E acceptance remains outstanding. |
 | M5 | Historical static prototype displayed per-position hints and removed foils; these mechanics are retained in the Great specification | Focused behavior is present. Full T-09/T-10 and regression suite remains outstanding. |
 | M6 | Great moving lanes, tap-to-stop selection, pause, reduced-motion static presentation and FIFO recycle scheduler are implemented; focused scheduler tests cover 12 tiles at lane widths 320, 568, 768 and 1024 CSS px. | Partial. Full Great drag/recycle/persistence, viewport/device, performance and acceptance coverage remain outstanding. |
@@ -629,6 +640,7 @@ dates or invent a change-log entry for untouched specs.
 
 ## Spec change log
 
+2026-11-02 — Copilot — Specified and implemented current-level audio completeness, warning recovery on level changes, stale-result handling and playback-block distinction.
 2026-11-02 — Copilot — Recorded the user-approved DOG depiction, active SVG replacement and content-version 1.4.0 while retaining T-31 and release gates.
 2026-11-02 — Copilot — Recorded the simplified bird artwork, final image alt text and content-version 1.3.0 while retaining media and release gates.
 2026-11-02 — Copilot — Recorded the revised frontal bird illustration and required content-version bump while retaining missing-media and release gates.

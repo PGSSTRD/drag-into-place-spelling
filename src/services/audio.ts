@@ -1,35 +1,84 @@
+export type AudioCueResult = "played" | "unavailable" | "blocked" | "muted";
+
 const reportedFailures = new Set<string>();
-let queue: Promise<boolean> = Promise.resolve(true);
+let queue: Promise<AudioCueResult> = Promise.resolve("played");
 let queueBusy = false;
 let audioContext: AudioContext | null = null;
 let unlockFailureReported = false;
 
-export function playAudioCue(path: string, muted: boolean): Promise<boolean> {
-  if (muted) return Promise.resolve(true);
+export function playAudioCue(path: string, muted: boolean): Promise<AudioCueResult> {
+  if (muted) return Promise.resolve("muted");
   if (!queueBusy) return startQueuedCue(path).catch(() => {
     reportFailure(path);
-    return false;
+    return "unavailable";
   });
   const result = queue.then(() => startQueuedCue(path));
-  queue = result.catch(() => false);
+  queue = result.catch(() => "unavailable");
   return result.catch(() => {
     reportFailure(path);
-    return false;
+    return "unavailable";
   });
 }
 
-export function unlockAudio(): void {
+export async function areAudioCuesAvailable(paths: string[], timeoutMs = 4000): Promise<boolean> {
+  const results = await Promise.allSettled(paths.map((path) => checkOne(path, timeoutMs)));
+  return results.every((result) => result.status === "fulfilled" && result.value);
+}
+
+export async function unlockAudio(): Promise<boolean> {
   try {
     audioContext ??= new AudioContext();
     if (audioContext.state === "suspended") {
-      audioContext.resume().catch(reportUnlockFailure);
+      await audioContext.resume();
     }
+    return audioContext.state !== "suspended";
   } catch {
     reportUnlockFailure();
+    return false;
   }
 }
 
-function playOne(path: string): Promise<boolean> {
+function checkOne(path: string, timeoutMs: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    let audio: HTMLAudioElement;
+    try {
+      audio = new Audio();
+      audio.preload = "auto";
+      audio.src = new URL(path, document.baseURI).href;
+    } catch {
+      reportFailure(path);
+      resolve(false);
+      return;
+    }
+
+    let settled = false;
+    const timeout = window.setTimeout(() => finish(false), timeoutMs);
+
+    function finish(available: boolean) {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timeout);
+      audio.removeEventListener("canplay", onCanPlay);
+      audio.removeEventListener("error", onError);
+      audio.pause();
+      if (!available) reportFailure(path);
+      resolve(available);
+    }
+
+    function onCanPlay() { finish(true); }
+    function onError() { finish(false); }
+
+    audio.addEventListener("canplay", onCanPlay, { once: true });
+    audio.addEventListener("error", onError, { once: true });
+    try {
+      audio.load();
+    } catch {
+      finish(false);
+    }
+  });
+}
+
+function playOne(path: string): Promise<AudioCueResult> {
   return new Promise((resolve) => {
     let audio: HTMLAudioElement;
     try {
@@ -37,42 +86,52 @@ function playOne(path: string): Promise<boolean> {
       audio = new Audio(url);
     } catch {
       reportFailure(path);
-      resolve(false);
+      resolve("unavailable");
       return;
     }
     let settled = false;
-    const timeout = window.setTimeout(() => finish(true), 4000);
+    const timeout = window.setTimeout(() => finish("unavailable"), 4000);
 
-    function finish(failed: boolean) {
+    function finish(result: AudioCueResult) {
       if (settled) return;
       settled = true;
       window.clearTimeout(timeout);
       audio.removeEventListener("ended", onEnded);
       audio.removeEventListener("error", onError);
       audio.pause();
-      if (failed) reportFailure(path);
-      resolve(!failed);
+      if (result === "unavailable") reportFailure(path);
+      resolve(result);
     }
 
-    function onEnded() { finish(false); }
-    function onError() { finish(true); }
+    function onEnded() { finish("played"); }
+    function onError() { finish("unavailable"); }
 
     audio.addEventListener("ended", onEnded, { once: true });
     audio.addEventListener("error", onError, { once: true });
     try {
-      audio.play().catch(() => finish(true));
+      audio.play().catch((reason: unknown) => {
+        if (isPlaybackBlocked(reason)) {
+          finish("blocked");
+        } else {
+          finish("unavailable");
+        }
+      });
     } catch {
-      finish(true);
+      finish("unavailable");
     }
   });
 }
 
-function startQueuedCue(path: string): Promise<boolean> {
+function isPlaybackBlocked(reason: unknown): boolean {
+  return reason instanceof DOMException && reason.name === "NotAllowedError";
+}
+
+function startQueuedCue(path: string): Promise<AudioCueResult> {
   queueBusy = true;
   const result = playOne(path).finally(() => {
     queueBusy = false;
   });
-  queue = result.catch(() => false);
+  queue = result.catch(() => "unavailable");
   return result;
 }
 

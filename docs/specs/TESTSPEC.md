@@ -1,7 +1,7 @@
 # TESTSPEC - Drag Into Place Spelling
 
-**Version:** 2.1.3<br>
-**Status:** Draft - DOG visual approval recorded; full acceptance suite not executed; awaiting independent QA review<br>
+**Version:** 2.1.5<br>
+**Status:** Draft - DOG visual approval and current-level audio implementation approval recorded; focused audio tests pass; full acceptance suite not executed; awaiting independent QA review<br>
 **Last update:** 2026-11-02<br>
 **Author:** Copilot<br>
 **Independent QA owner:** To be assigned
@@ -56,7 +56,7 @@ reducer/scheduler timing tests.
 | F-08 | Valid partial/completed snapshots, invalid JSON, duplicate tile mapping, wrong letter, out-of-range index, stale schema/content | Restoration and namespace isolation |
 | F-09 | Bridge absent, recording bridge, throwing bridge; valid/invalid/oversized envelopes; duplicate UUID replay at container boundary | Contract and failure isolation |
 | F-10 | Audio resolves, rejects, is autoplay-blocked, stays pending, or fires stale callbacks | Sequencing, mute and bounded advance |
-| F-11 | Implemented source pack `content/lang/english/levels.json` at content version 1.4.0: CAT plus DOG, RABBIT, and BIRD using their repository SVG paths, stable IDs 1-4, target-letter arrays, two non-target foil instances per added level and expected indexed MP3 paths | Pack structure and media-reference intent; missing audio and its license records remain an explicit file/media validation failure until supplied |
+| F-11 | Implemented source pack `content/lang/english/levels.json` at content version 1.4.0: CAT plus DOG, RABBIT, and BIRD using their repository SVG paths, stable IDs 1-4, target-letter arrays, two non-target foil instances per added level and expected indexed MP3 paths. Full-word recordings for all four animals and six RABBIT letter clips are now present; CAT/DOG/BIRD letter clips, complete animal-audio license records and the reader font are still missing | Pack structure and media-reference intent; incomplete audio and license records remain explicit file/media validation failures |
 
 Generate short test audio locally with documented creation rights. It proves
 loading/ordering, not correct pronunciation; use independently reviewed
@@ -103,7 +103,7 @@ constant and confirm the independent clock cannot advance while paused.
 | T-20 | P-01/P-05/P-06; U-01/U-02/U-03 | Capture Great's moving and reduced-motion states and control visibility; in portrait measure hint-text to learner-status-text baseline distance (about 40 CSS px, no more than 48 px); motion-status row stays above answers; no foil styling clues, child-facing grade, written target spelling or duplicate pool/lane surfaces |
 | T-21 | P-04; D-08; U-01/U-04 | Verify 44 px targets, contrast ratios, focus trap/return, labels, reading order, 200% text zoom, muted cues, reduced motion and screen reader; no color/audio-only essential feedback |
 | T-22 | P-03/P-09; D-02/D-05/D-06; U-02/U-03 | Exercise Start/Resume, replay, sound toggle, autoplay rejection, Settings open/close, explicit pause plus hidden-page return; state and control enablement match U-02 |
-| T-23 | P-08/P-09; D-06/D-08; U-02/U-03 | Trigger content, image, audio, font and storage failures; fatal cases offer Retry, nonfatal ones preserve play with notices; no raw paths/IDs/stack traces in learner UI |
+| T-23 | P-08/P-09; D-06/D-08; U-02/U-03 | Trigger content, image, audio, font and storage failures; fatal cases offer Retry, nonfatal ones preserve play with notices; for a multi-level pack, verify the sound notice reflects the active level's full-word cue, every letter-position cue and shared incorrect-placement cue; show it when any required cue is unavailable, retain it after another cue succeeds, recompute on level advance, omit it on a complete level, and ignore stale results from the prior level; verify browser playback-policy blocks show Enable sound without misclassifying loadable assets; no raw paths/IDs/stack traces in learner UI |
 
 Each U-05 Gherkin scenario must be implemented as a named component/E2E
 test, not left as a prose-only scenario. Automate a DOM accessibility scan and
@@ -123,7 +123,7 @@ insufficient.
 | T-30 | P-04/P-06/P-08; D-08 | On approved baseline device measure 100 pointer moves and 60 s of Great; 10 cold launches | p95 response <=100 ms, p95 animation frame interval <=33.4 ms, all cold launches <=10 s; evidence includes device/build versions and raw observations |
 | T-31 | P-11; D-01/D-10 | Independently review production word-picture match, each contextual clip, full-word clip and licenses; verify actual published manifest/device | All content correct and legally distributable; no placeholder IDs/media; promotion alone not treated as release; staff Publish and device version verified |
 | T-32 | P-12; DEVSPEC section 15 lifecycle; all spec metadata | Dry-run a new task plan, completed/unapproved task, approved task and affected-spec update | Plan cites all four specs and relevant IDs; no approval inferred; approved work prompts separate reconciliation; altered specs update metadata/log and report added/removed/replaced items |
-| T-33 | P-01/P-03/P-07/P-11; D-01/D-05; U-01/U-03 | Validate and cycle F-11; inspect each expected image, foil set, word/letter audio path and license record | DOG/RABBIT/BIRD use stable IDs 2/3/4, matching target letters and SVG paths, accurate alt text, two non-target foils and one zero-based contextual clip per letter; the DOG is a head-only tan illustration with paired floppy ears and a symmetric muzzle, accepted by the user as a sufficient depiction of a dog on 2026-11-02; the BIRD illustration faces forward with two visible eyes, a centered beak, and no side-wing or outer-feather shapes; all four pack levels are reachable in a cycle. Missing audio/license records fail content validation until supplied; repository-only SVGs do not pass release review by themselves |
+| T-33 | P-01/P-03/P-07/P-11; D-01/D-05; U-01/U-03 | Validate and cycle F-11; inspect each expected image, foil set, word/letter audio path and license record | DOG/RABBIT/BIRD use stable IDs 2/3/4, matching target letters and SVG paths, accurate alt text, two non-target foils and one zero-based contextual clip per letter; the DOG is a head-only tan illustration with paired floppy ears and a symmetric muzzle, accepted by the user as a sufficient depiction of a dog on 2026-11-02; the BIRD illustration faces forward with two visible eyes, a centered beak, and no side-wing or outer-feather shapes; all four pack levels are reachable in a cycle. Missing CAT/DOG/BIRD letter clips and incomplete animal-audio license records fail content validation; repository-only SVGs do not pass release review by themselves |
 
 For T-26 use emitted-asset scanning plus instrumented runtime URL/API spies;
 a text search alone can miss dynamically constructed requests. Fail on
@@ -326,12 +326,36 @@ to 1.4.0. SVG/XML, license, active-reference and whitespace checks passed; all
 20 unit tests and the production build passed, and SHA-256 checks confirmed
 that emitted DOG SVG and pack files match their sources. This visual approval
 does not pass T-31: production-media review, audio/font completeness,
-independent QA, device and release gates remain outstanding. Content
-validation remains blocked by missing CAT/animal audio, shared correction
-audio, reader font and complete license records.
+independent QA, device and release gates remain outstanding. At the time of
+this DOG approval check, validation was also blocked by missing CAT/animal
+recordings and shared correction audio. Subsequent asset additions changed
+that inventory: all four full-word animal recordings, the six RABBIT letter
+clips and the shared incorrect WAV are now present. CAT/DOG/BIRD indexed
+letter clips and the reader font remain missing, and animal-audio license
+records are incomplete; see the current-level audio evidence below for the
+latest validation result.
+
+### Current-level audio availability implementation evidence recorded 2026-11-02
+
+The app now checks the active level's full-word cue, every letter-position
+cue and the shared incorrect-placement cue. Missing/unloadable cues show the
+notice only for that level; advancing to a complete level removes the old
+warning, and late results from an earlier level are ignored. Browser
+playback-policy rejection is handled separately with an Enable sound control.
+Three focused audio-service tests, all 23 unit tests, typecheck and the
+production build passed. `npm run validate:content` remains blocked by
+missing CAT/DOG/BIRD letter clips, missing `assets/fonts/reader.woff2` and
+incomplete license records for supplied animal audio. Component/browser
+verification of level transitions and T-23, contextual pronunciation review,
+physical-device audio checks and release gates remain outstanding. The user
+confirmed that the behavior works as intended and approved the implementation
+on 2026-11-02; this does not constitute specification, independent QA or
+release approval.
 
 ## Spec change log
 
+2026-11-02 — Copilot — Recorded user approval of the current-level audio implementation and corrected the current media-validation inventory while retaining Draft and QA gates.
+2026-11-02 — Copilot — Added current-level audio notice acceptance coverage and recorded focused implementation/test evidence; component/browser T-23 verification remains outstanding.
 2026-11-02 — Copilot — Recorded user approval of the DOG depiction, updated F-11 to content-version 1.4.0, and retained production-media gates.
 2026-11-02 — Copilot — Recorded the BirdEdit-guided removal of side wings/outer feathers, corrected alt text and content-version 1.3.0 while retaining release gates.
 2026-11-02 — Copilot — Recorded the revised two-eye frontal bird artwork, T-33 visual check and content-version 1.2.0 evidence without passing release gates.

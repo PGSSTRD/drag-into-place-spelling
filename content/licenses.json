@@ -1,6 +1,13 @@
 {
   "assets": [
     {
+      "path": "assets/audios/incorrect.wav",
+      "creator": "Project contributors",
+      "license": "CC0-1.0",
+      "source": "Created for this repository",
+      "notes": "Original synthesized two-note correction cue; no samples or external audio used."
+    },
+    {
       "path": "assets/images/cat.svg",
       "creator": "Project contributors",
       "license": "CC0-1.0",
