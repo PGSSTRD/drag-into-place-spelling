@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "content_version": "1.0.0",
+  "content_version": "1.4.0",
   "language": "english",
   "levels": [
     {
@@ -16,6 +16,52 @@
         "lang/english/audios/cat-2.mp3"
       ],
       "image_alt": "A cat sitting and looking forward"
+    },
+    {
+      "level_id": 2,
+      "target_word": "dog",
+      "letters": ["D", "O", "G"],
+      "foils": ["A", "B"],
+      "image_path": "assets/images/dog.svg",
+      "word_audio_path": "lang/english/audios/dog.mp3",
+      "letter_audio_paths": [
+        "lang/english/audios/dog-0.mp3",
+        "lang/english/audios/dog-1.mp3",
+        "lang/english/audios/dog-2.mp3"
+      ],
+      "image_alt": "A dog looking forward"
+    },
+    {
+      "level_id": 3,
+      "target_word": "rabbit",
+      "letters": ["R", "A", "B", "B", "I", "T"],
+      "foils": ["C", "D"],
+      "image_path": "assets/images/rabbit.svg",
+      "word_audio_path": "lang/english/audios/rabbit.mp3",
+      "letter_audio_paths": [
+        "lang/english/audios/rabbit-0.mp3",
+        "lang/english/audios/rabbit-1.mp3",
+        "lang/english/audios/rabbit-2.mp3",
+        "lang/english/audios/rabbit-3.mp3",
+        "lang/english/audios/rabbit-4.mp3",
+        "lang/english/audios/rabbit-5.mp3"
+      ],
+      "image_alt": "A rabbit looking forward"
+    },
+    {
+      "level_id": 4,
+      "target_word": "bird",
+      "letters": ["B", "I", "R", "D"],
+      "foils": ["A", "C"],
+      "image_path": "assets/images/bird.svg",
+      "word_audio_path": "lang/english/audios/bird.mp3",
+      "letter_audio_paths": [
+        "lang/english/audios/bird-0.mp3",
+        "lang/english/audios/bird-1.mp3",
+        "lang/english/audios/bird-2.mp3",
+        "lang/english/audios/bird-3.mp3"
+      ],
+      "image_alt": "A blue bird facing forward"
     }
   ]
 }

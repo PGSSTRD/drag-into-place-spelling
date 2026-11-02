@@ -1,8 +1,8 @@
 # TESTSPEC - Drag Into Place Spelling
 
-**Version:** 2.0.7<br>
-**Status:** Draft - partial unit/browser regression checks executed; compact spacing and selected-outline checks recorded; full acceptance suite not executed; awaiting independent QA review<br>
-**Last update:** 2026-10-27<br>
+**Version:** 2.1.3<br>
+**Status:** Draft - DOG visual approval recorded; full acceptance suite not executed; awaiting independent QA review<br>
+**Last update:** 2026-11-02<br>
 **Author:** Copilot<br>
 **Independent QA owner:** To be assigned
 
@@ -38,12 +38,13 @@ and in-container gates.
 
 ## 2. Deterministic fixtures
 
-Implementation must create these under `tests/fixtures/`, isolated from the
-production language pack. Use a seeded RNG, fake monotonic clock and an
-injected UUID source; assert seed and expected values in each randomized test.
-Do not use real delays for reducer/scheduler timing tests.
+Create F-01-F-10 under `tests/fixtures/`, isolated from the production language
+pack. F-11 refers to the current source language pack, not a synthetic fixture.
+Use a seeded RNG, fake monotonic clock and an injected UUID source; assert seed
+and expected values in each randomized test. Do not use real delays for
+reducer/scheduler timing tests.
 
-| Fixture ID | Definition | Purpose |
+| Fixture/content ID | Definition | Purpose |
 |---|---|---|
 | F-01 | Valid CAT: letters C/A/T, foils B/D, three position-specific letter clips, image and word clip | Baseline Great puzzle |
 | F-02 | Valid BOOK: letters B/O/O/K, foils A/Z, four indexed clips | Duplicate-instance matching and restore |
@@ -55,6 +56,7 @@ Do not use real delays for reducer/scheduler timing tests.
 | F-08 | Valid partial/completed snapshots, invalid JSON, duplicate tile mapping, wrong letter, out-of-range index, stale schema/content | Restoration and namespace isolation |
 | F-09 | Bridge absent, recording bridge, throwing bridge; valid/invalid/oversized envelopes; duplicate UUID replay at container boundary | Contract and failure isolation |
 | F-10 | Audio resolves, rejects, is autoplay-blocked, stays pending, or fires stale callbacks | Sequencing, mute and bounded advance |
+| F-11 | Implemented source pack `content/lang/english/levels.json` at content version 1.4.0: CAT plus DOG, RABBIT, and BIRD using their repository SVG paths, stable IDs 1-4, target-letter arrays, two non-target foil instances per added level and expected indexed MP3 paths | Pack structure and media-reference intent; missing audio and its license records remain an explicit file/media validation failure until supplied |
 
 Generate short test audio locally with documented creation rights. It proves
 loading/ordering, not correct pronunciation; use independently reviewed
@@ -69,14 +71,14 @@ choosing only the easiest example.
 
 | ID | References | Setup/action | Required assertions |
 |---|---|---|---|
-| T-01 | P-07; D-01 | Load F-01-F-06 and each individual invalid mutation | Valid packs pass; invalid ones fail with precise field/path; no partial playable pack; traversal/absolute/unknown fields rejected |
+| T-01 | P-07; D-01 | Load F-01-F-06 and F-11 and each individual invalid mutation | Valid schemas pass; invalid schemas fail with precise field/path; no partial playable pack; traversal/absolute/unknown fields rejected. F-11 structural data must match the animal words, images, letter arrays, foil counts and audio naming. Separately, file/media validation must diagnose absent audio and license records; structural acceptance alone does not pass T-01 |
 | T-02 | P-01/P-07; D-01/D-03 | Shuffle CAT/BOOK with fixed seeds; run 1,000 valid seeded layouts | Exact letter multiset, unique tile IDs, no overlap/out-of-bounds cells; deterministic seed results; do not assert every shuffle differs |
 | T-03 | P-02/P-04; D-02 | Drop correct tile, then attempt reacquisition/move by pointer, tap and keyboard | Exactly one locked mapping and attempt; positive/contextual cue once; locked tile cannot move |
 | T-04 | P-02; D-02/D-03 | In reduced-motion Great, drop target A onto CAT's C position; include case with one/no alternative pool cell | One attempt and gentle cue; tile remains available in a free shuffled/previous cell per policy; no hint/removal |
 | T-05 | P-02/P-04; D-02/D-03 | Drop outside/on occupied slot; Escape, pointercancel, lost capture, blur and resize | No attempts, correction cues, hints or loss of tile; availability restored; occupied tile unchanged |
 | T-06 | P-02/P-03; D-01/D-02 | Complete BOOK with swapped O instance IDs | All positions accept correct letter values; each tile used once; destination-index audio used |
 | T-07 | P-03; D-02/D-06 | Final correct drop, repeated pointerup and stale callbacks; F-10 media variants | One completion/advance; final-letter cue before word cue; advance waits for animation/audio or watchdog; mute/failure never hangs |
-| T-08 | P-03; D-05 | Complete two cycles of F-04 using fixed RNG, plus one-level pack | Every level once per cycle; no immediate boundary repeat for multi-level; one-level replay works |
+| T-08 | P-03; D-05 | Complete two cycles of F-04 and F-11 using fixed RNG, plus one-level pack | Every level once per cycle; no immediate boundary repeat for multi-level; the four F-11 levels are each reachable once per cycle; one-level replay works |
 | T-09 | P-05; D-02 | In Great, drop B on CAT's empty second slot; repeat with occupied/outside drops | Empty drop removes only B, reveals only index 1, one attempt and negative cue; neutral drops don't consume foil |
 | T-10 | P-05; D-02 | Start Great with CAT foils in JSON; reveal then fill a hint slot | Great instantiates the full foil/hint content; filling a hinted slot suppresses hint presentation but keeps reveal state |
 | T-11 | P-06; D-03/D-04 | Advance fake time through entry/travel/exit; tap to stop, verify stationary position, then drag the same tile in a separate gesture; cancel, wrong/correct/foil; run 100 passes | Tiles travel left-to-right; pointer-down acquires and freezes the selected tile immediately; short release retains selection; a later drag moves it without losing pointer capture; pointer-generated focus does not trigger keyboard pause; exactly one instance per ID; unplaced targets/foils recycle, placed/removed never respawn; queued wait <=30 s |
@@ -116,11 +118,12 @@ insufficient.
 | T-25 | P-10; D-07/D-08 | Bridge absent/throws; invalid data and payload size boundary tests; UUID APIs unavailable | Absence silently no-ops; other failures diagnosed without breaking gameplay; byte count (including multibyte values) <65,536; no retries/queues/network/per-tap events; fallback IDs retain v4 format |
 | T-26 | P-08/P-11; D-06/D-08/D-09 | Audit production JS/CSS/HTML/JSON/font/media and archive | Relative base; zero external URLs/root-relative runtime dependencies, source maps, forbidden SDK/runtime registrations; no file-path fetch or Cache Storage; image true-format and complete audio inventory |
 | T-27 | P-08/P-09; D-05/D-06/D-09 | Launch extracted merged production assets under `file://` with network unavailable; complete/reload all modes | Playable <=10 s on 10/10 cold starts, real media, zero external attempts, progress restored; no unexplained console errors |
-| T-28 | P-11; D-10 | Inspect/extract archives into empty directory and test merged content | Root index, no wrapper/lang in engine, lang-only pack, no overwrites/traversal/symlinks/maps, hashes/version manifest match; icon true PNG square >=192 px outside ZIP |
+| T-28 | P-11; D-10 | Inspect/extract archives into empty directory and test merged content | Root index, no wrapper/lang in engine, lang-only pack, only release-selected shared assets (repository-only animal placeholders excluded), no overwrites/traversal/symlinks/maps, hashes/version manifest match; icon true PNG square >=192 px outside ZIP |
 | T-29 | P-08/P-10/P-11; D-07/D-10 | In actual container, launch via registered template; play in airplane mode; reconnect | Correct English/user routing, zero NETGUARD_BLOCK, events accepted/stored offline and later synced; replaying identical payload_id deduplicates at container, not game |
 | T-30 | P-04/P-06/P-08; D-08 | On approved baseline device measure 100 pointer moves and 60 s of Great; 10 cold launches | p95 response <=100 ms, p95 animation frame interval <=33.4 ms, all cold launches <=10 s; evidence includes device/build versions and raw observations |
 | T-31 | P-11; D-01/D-10 | Independently review production word-picture match, each contextual clip, full-word clip and licenses; verify actual published manifest/device | All content correct and legally distributable; no placeholder IDs/media; promotion alone not treated as release; staff Publish and device version verified |
 | T-32 | P-12; DEVSPEC section 15 lifecycle; all spec metadata | Dry-run a new task plan, completed/unapproved task, approved task and affected-spec update | Plan cites all four specs and relevant IDs; no approval inferred; approved work prompts separate reconciliation; altered specs update metadata/log and report added/removed/replaced items |
+| T-33 | P-01/P-03/P-07/P-11; D-01/D-05; U-01/U-03 | Validate and cycle F-11; inspect each expected image, foil set, word/letter audio path and license record | DOG/RABBIT/BIRD use stable IDs 2/3/4, matching target letters and SVG paths, accurate alt text, two non-target foils and one zero-based contextual clip per letter; the DOG is a head-only tan illustration with paired floppy ears and a symmetric muzzle, accepted by the user as a sufficient depiction of a dog on 2026-11-02; the BIRD illustration faces forward with two visible eyes, a centered beak, and no side-wing or outer-feather shapes; all four pack levels are reachable in a cycle. Missing audio/license records fail content validation until supplied; repository-only SVGs do not pass release review by themselves |
 
 For T-26 use emitted-asset scanning plus instrumented runtime URL/API spies;
 a text search alone can miss dynamically constructed requests. Fail on
@@ -133,17 +136,17 @@ assertions in the tables above.
 
 | Product requirement | Test groups |
 |---|---|
-| P-01 | T-02, T-20, T-27 |
+| P-01 | T-02, T-20, T-27, T-33 |
 | P-02 | T-03, T-04, T-06 |
-| P-03 | T-07, T-08, T-15, T-22 |
+| P-03 | T-07, T-08, T-15, T-22, T-33 |
 | P-04 | T-03, T-05, T-17-T-19, T-21, T-30 |
 | P-05 | T-09, T-10, T-20 |
 | P-06 | T-11, T-12, T-19, T-30 |
-| P-07 | T-01, T-02, T-06, T-26 |
+| P-07 | T-01, T-02, T-06, T-26, T-33 |
 | P-08 | T-16, T-23, T-26, T-27, T-30 |
 | P-09 | T-13-T-15, T-22, T-27 |
 | P-10 | T-15, T-24, T-25, T-29 |
-| P-11 | T-26-T-29, T-31 |
+| P-11 | T-26-T-29, T-31, T-33 |
 | P-12 | T-32 |
 
 ## 7. Execution, evidence and gates
@@ -282,12 +285,59 @@ from the clipping container. Typecheck, all 20 unit tests, production build
 and `git diff --check` passed. This is focused evidence for T-17, not complete
 pointer/accessibility or viewport acceptance.
 
+### Four-level animal content implementation evidence recorded 2026-11-02
+
+At this implementation stage, the English source pack contained CAT, DOG,
+RABBIT and BIRD at `content_version` 1.3.0, with stable IDs 1-4, matching image paths, uppercase
+letter arrays, two non-target foils for each added level, and the specified
+zero-based MP3 references. Focused structure/path checks passed, and the
+production build's emitted `dist/lang/english/levels.json` matched the source
+pack by SHA-256. The 20 unit tests, typecheck, production build and
+`git diff --check` passed.
+
+`npm run validate:content` remains blocked: the 16 newly referenced animal
+MP3s do not exist and have no license records. Existing CAT audio, shared
+correction audio, reader font and their complete license records are also
+missing. This implementation evidence does not pass full T-01; T-08 cycle
+coverage and T-33's end-to-end content/media assertions have not been run.
+T-26/T-28/T-31, production pronunciation review, approval of repository-only
+illustrations for release, and all release/device gates remain unpassed or blocked.
+
+After feedback that the original bird beak was unclear and only one eye showed,
+`content/assets/images/bird.svg` was redrawn as a frontal bird with two
+symmetrical visible eyes and a simple centered triangular beak. A further
+review based on `Kladd/BirdEdit.png` removed both side-wing paths and the outer
+feather path, leaving the forward-facing body, face, beak, and feet. Its level
+alt text is now "A blue bird facing forward". Browser preview, SVG/XML and
+accessibility-label checks passed; the existing CC0 license record and level
+image path are unchanged. In accordance with D-01, content version was bumped
+to 1.3.0. The rebuilt SVG and language pack matched their sources by SHA-256;
+build, all 20 unit tests and `git diff --check` passed. This focused visual
+review does not pass full T-33 or any release gate.
+
 `npm run validate:content` remains blocked by missing pronunciation audio,
 shared correction audio, reader font and complete license records. No T-01,
 T-26, T-27 or release/media gate is declared passed from the code checks above.
 
+After the user approved the revised head-only DOG illustration as a sufficient
+depiction of a dog, it replaced `content/assets/images/dog.svg` without
+changing the level path or CC0-1.0 license record. The pack version was bumped
+to 1.4.0. SVG/XML, license, active-reference and whitespace checks passed; all
+20 unit tests and the production build passed, and SHA-256 checks confirmed
+that emitted DOG SVG and pack files match their sources. This visual approval
+does not pass T-31: production-media review, audio/font completeness,
+independent QA, device and release gates remain outstanding. Content
+validation remains blocked by missing CAT/animal audio, shared correction
+audio, reader font and complete license records.
+
 ## Spec change log
 
+2026-11-02 — Copilot — Recorded user approval of the DOG depiction, updated F-11 to content-version 1.4.0, and retained production-media gates.
+2026-11-02 — Copilot — Recorded the BirdEdit-guided removal of side wings/outer feathers, corrected alt text and content-version 1.3.0 while retaining release gates.
+2026-11-02 — Copilot — Recorded the revised two-eye frontal bird artwork, T-33 visual check and content-version 1.2.0 evidence without passing release gates.
+2026-11-02 — Copilot — Recorded implementation evidence for the four-level English pack while retaining unrun cycle and blocked media/release gates.
+2026-11-02 — Copilot — Added F-11 and acceptance coverage for the planned four-level English animal pack, indexed audio references, foil counts and outstanding-media gates.
+2026-11-02 — Copilot — Added a package assertion excluding the repository-only animal illustrations until they are approved as production media.
 2026-10-27 — Copilot — Recorded selected-outline browser evidence and focused validation while retaining full T-17 gates.
 2026-10-27 — Copilot — Added a selected-outline clipping assertion for moving-lane tiles to T-17.
 2026-10-27 — Copilot — Recorded approved compact spacing measurements and focused validation while retaining full acceptance gates.

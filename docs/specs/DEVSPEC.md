@@ -1,8 +1,8 @@
 # DEVSPEC - Drag Into Place Spelling
 
-**Version:** 2.0.3<br>
-**Status:** Draft - Great implementation, pointer and tap-to-stop regression evidence recorded; release not approved<br>
-**Last update:** 2026-10-27<br>
+**Version:** 2.0.9<br>
+**Status:** Draft - DOG depiction approved; content version 1.4.0; media and release gates outstanding<br>
+**Last update:** 2026-11-02<br>
 **Author:** Copilot
 
 ## 1. Authority and reading order
@@ -67,6 +67,31 @@ engine has no book tier.
 | `word_audio_path` | Existing MP3/WAV under `lang/english/audios/` |
 | `letter_audio_paths` | Exactly one existing MP3/WAV path per target position; pronunciation in that word's context, not an alphabet-name substitute |
 | `image_alt` | Nonempty learner-facing image description; do not expose file names |
+
+The English pack retains CAT as level 1 and implements these added levels with
+stable IDs and media references:
+
+| Level ID | Target word | Letters | Foil count | Image | Image alt | Word audio | Letter audio |
+|---:|---|---|---:|---|---|---|---|
+| 2 | `dog` | `D`, `O`, `G` | 2 | `assets/images/dog.svg` | A dog looking forward | `lang/english/audios/dog.mp3` | `lang/english/audios/dog-0.mp3` through `dog-2.mp3` |
+| 3 | `rabbit` | `R`, `A`, `B`, `B`, `I`, `T` | 2 | `assets/images/rabbit.svg` | A rabbit looking forward | `lang/english/audios/rabbit.mp3` | `lang/english/audios/rabbit-0.mp3` through `rabbit-5.mp3` |
+| 4 | `bird` | `B`, `I`, `R`, `D` | 2 | `assets/images/bird.svg` | A blue bird facing forward | `lang/english/audios/bird.mp3` | `lang/english/audios/bird-0.mp3` through `bird-3.mp3` |
+
+Each added level uses an accurate `image_alt` and exactly two uppercase foil
+instances whose letters do not occur in its target word; the general D-01
+allowance for duplicate foils still applies. These additions fit P-07's
+1-8-letter and maximum-four-foil limits. The additive pack uses `content_version` `1.4.0`; it includes the simplified
+bird SVG, with the side wings and outer feather shapes removed, and the
+user-approved head-only DOG illustration with floppy ears and a symmetric
+muzzle. The user approved the DOG image as a sufficient depiction of a dog on
+2026-11-02. This visual approval does not constitute production-media approval
+or waive T-31.
+Structural content checks pass, but the referenced
+animal audio files have not yet been supplied: do not treat the expanded pack
+as media-valid until every clip exists, has a complete license record, and
+passes contextual pronunciation review. The SVGs remain repository-only
+placeholders and are not release media unless selected and approved through
+T-31.
 
 Reject missing/unknown fields, wrong types, invalid counts, duplicate level
 IDs and ambiguous legacy schemas. Report JSON field path and reason. This
@@ -342,7 +367,7 @@ Great-only specification and does not constitute approval of Great or release.
 
 | Module | Evidence in the current prototype | Status / unmet exit criteria |
 |---|---|---|
-| M1 | React 19.1.1, TypeScript 5.9.2, Vite 7.1.7, Ajv 8.17.1; Node 24.20.0/npm 11.19.0; content schema and reference/license validator; CAT fixture | Partial. Unit validation works, but `npm run validate:content` fails because production word/letter recordings, `assets/audios/incorrect.wav`, `assets/fonts/reader.woff2` and their licenses are missing. Individual invalid-fixture coverage is incomplete. |
+| M1 | React 19.1.1, TypeScript 5.9.2, Vite 7.1.7, Ajv 8.17.1; Node 24.20.0/npm 11.19.0; content schema and reference/license validator; CAT, DOG, RABBIT and BIRD source pack at content version 1.4.0 with local SVG illustrations | Partial. Unit validation and focused four-level structure/path checks pass; typecheck/build pass and emitted pack matches the source. `npm run validate:content` remains blocked by missing CAT and animal word/letter recordings, `assets/audios/incorrect.wav`, `assets/fonts/reader.woff2` and complete license records. Individual invalid-fixture coverage is incomplete. |
 | M2 | Pure reducer, value-based duplicate matching, attempts, random wrong-tile relocation, historical foil removal/hints, per-user snapshot validation, cycle order and completion marker; six domain and four progress tests | Historical static-core behavior is present; full injected-clock/invariant matrix and all F-01-F-10 fixture coverage remain outstanding. |
 | M3 | Bounded XHR content loader, serialized HTML audio cues with watchdog, local progress/settings, and fire-and-forget bridge envelope | Partial. HTTP development uses XHR rather than the specified fetch path; preload settlement, hidden-page audio suspension (the active clock pauses), and full failure-generation tests remain outstanding. `sub_app_id` is a development placeholder pending Q-02. |
 | M4 | At the time of prototype evidence, responsive static UI, pointer capture, 8 px threshold, clamping, center hit-testing, tap/keyboard placement, live status and a historical MVP/Better tier control | Focused browser checks pass. This historical evidence is not normative. Full viewport, focus/screen-reader, contrast, cancellation and automated component/E2E acceptance remains outstanding. |
@@ -397,6 +422,19 @@ blocked.
 A further browser check tapped a moving tile, confirmed its position remained
 fixed across a one-second interval, then dragged that same tile in a separate
 gesture into its answer slot.
+
+### DOG artwork approval recorded 2026-11-02
+
+The approved head-only DOG SVG replaced the earlier image at
+`content/assets/images/dog.svg`; the level path and complete CC0-1.0 license
+record remain unchanged. The English pack content version is 1.4.0. The user
+approved the image as a sufficient depiction of a dog. SVG/XML and license
+checks passed, as did all 20 unit tests and the production build; SHA-256
+checks confirmed the emitted DOG SVG and language pack match their sources.
+`npm run validate:content` remains blocked by absent CAT/animal audio, shared
+correction audio, reader font and complete license records. This approval is
+for visual depiction only: the SVG remains repository-only placeholder media
+until the independent production review in T-31 passes.
 
 ## Part II - Non-functional requirements
 
@@ -492,10 +530,16 @@ must reject placeholders.
 ## 13. Packaging and authorized delivery (D-10)
 
 Choose Layout A: `<engine>-core.zip` contains root `index.html`, bundled JS/CSS,
-`assets/` and `content/licenses.json`, with no wrapper directory, `lang/`,
-source maps or dev files. `<engine>-lang-english.zip` contains only
-`lang/english/levels.json` and `lang/english/audios/`. They extract into one
-directory with no path collisions. No core/book ZIP or `cr_book` is needed.
+release-selected shared assets and `content/licenses.json`, with no wrapper
+directory, `lang/`, source maps or dev files. `<engine>-lang-english.zip`
+contains only `lang/english/levels.json` and `lang/english/audios/`. They extract
+into one directory with no path collisions. No core/book ZIP or `cr_book` is
+needed.
+
+The repository-only illustrations `content/assets/images/dog.svg`,
+`content/assets/images/rabbit.svg` and `content/assets/images/bird.svg` are
+placeholders, not approved production media. Keep them out of release archives
+unless they are selected as production content and pass T-31 review.
 
 Use MP3/WAV audio, true-format PNG/JPEG/WebP/SVG images and local WOFF2 font.
 Provide a separate true-PNG square icon, recommended 512x512 and never below
@@ -585,6 +629,12 @@ dates or invent a change-log entry for untouched specs.
 
 ## Spec change log
 
+2026-11-02 — Copilot — Recorded the user-approved DOG depiction, active SVG replacement and content-version 1.4.0 while retaining T-31 and release gates.
+2026-11-02 — Copilot — Recorded the simplified bird artwork, final image alt text and content-version 1.3.0 while retaining media and release gates.
+2026-11-02 — Copilot — Recorded the revised frontal bird illustration and required content-version bump while retaining missing-media and release gates.
+2026-11-02 — Copilot — Recorded implementation evidence for the four-level English animal pack while retaining missing-media, release and approval gates.
+2026-11-02 — Copilot — Specified the planned DOG, RABBIT and BIRD content records, stable IDs, two-foil counts and outstanding audio/release gates.
+2026-11-02 — Copilot — Marked the new animal illustrations as repository-only placeholders and required their exclusion from release archives until production review.
 2026-10-27 — Copilot — Specified immediate pointer-down acquisition for moving tiles and recorded tap-stop-then-drag browser evidence.
 2026-10-27 — Copilot — Clarified stable pointer capture and separated pointer-generated focus from keyboard lane pause; recorded browser regression evidence.
 2026-10-27 — Copilot — Recorded partial Great scheduler, presentation and test evidence without claiming module exit or release approval.
