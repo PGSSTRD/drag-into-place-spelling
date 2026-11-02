@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="A rabbit">
+  <rect width="128" height="128" rx="20" fill="#eaf2f8"/>
+  <path d="M47 54C36 33 33 10 43 9c11-1 18 22 21 42Zm34 0c11-21 14-44 4-45-11-1-18 22-21 42Z" fill="#f3dfc5" stroke="#14213d" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M47 43c-4-12-7-23-4-27 4 2 9 14 12 26Zm34 0c4-12 7-23 4-27-4 2-9 14-12 26Z" fill="#d98f91"/>
+  <path d="M36 64c0-20 12-32 28-32s28 12 28 32v7c0 24-12 39-28 39S36 95 36 71Z" fill="#f3dfc5" stroke="#14213d" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M51 64v2m26-2v2" stroke="#14213d" stroke-width="6" stroke-linecap="round"/>
+  <path d="m59 78 5-4 5 4-5 5Z" fill="#9a3412"/>
+  <path d="M64 82v6m0 0c-4 4-8 4-11 1m11-1c4 4 8 4 11 1" fill="none" stroke="#14213d" stroke-width="3" stroke-linecap="round"/>
+  <path d="M24 78h23m-23 8h24m34-8h23m-24 8h24" stroke="#14213d" stroke-width="2" stroke-linecap="round"/>
+</svg>

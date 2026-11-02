@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="A tan dog with short pointed ears and a long muzzle">
+  <rect width="128" height="128" rx="20" fill="#eaf2f8"/>
+  <path d="M42 43c-6-5-11-13-17-13-7 0-11 11-14 21-3 9-2 16 4 16 6 0 13-11 19-18 3-3 6-5 8-6Zm44 0c6-5 11-13 17-13 7 0 11 11 14 21 3 9 2 16-4 16-6 0-13-11-19-18-3-3-6-5-8-6Z" fill="#a66b3f" stroke="#14213d" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M40 38c7-7 14-9 24-9s17 2 24 9c8 9 11 20 10 34-1 20-15 33-34 33S31 92 30 72c-1-14 2-25 10-34Z" fill="#d6a76c" stroke="#14213d" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M49 56v2m30-2v2" stroke="#14213d" stroke-width="6" stroke-linecap="round"/>
+  <path d="M47 68c4-5 10-7 17-7s13 2 17 7l3 12c1 7-5 12-12 15-3 2-6 3-8 3s-5-1-8-3c-7-3-13-8-12-15Z" fill="#f3dfc5" stroke="#14213d" stroke-width="3" stroke-linejoin="round"/>
+  <path d="m56 70 8-5 8 5-8 8Z" fill="#14213d" stroke="#14213d" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M64 78v8m0 0c-4 5-8 5-11 2m11-2c4 5 8 5 11 2" fill="none" stroke="#14213d" stroke-width="3" stroke-linecap="round"/>
+</svg>
