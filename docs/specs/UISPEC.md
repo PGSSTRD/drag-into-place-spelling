@@ -1,8 +1,8 @@
 # UISPEC - Drag Into Place Spelling
 
-**Version:** 2.0.8<br>
-**Status:** Draft - Great implementation and current-level audio notice behavior specified and implemented; awaiting product, accessibility and design review<br>
-**Last update:** 2026-11-02<br>
+**Version:** 2.0.15<br>
+**Status:** Draft - Extra movement-copy removal implemented and user-approved; product, accessibility and design review outstanding<br>
+**Last update:** 2026-11-03<br>
 **Author:** Copilot
 
 ## 1. Authority and visual intent
@@ -25,7 +25,7 @@ leaderboard.
 | Primary action / on-primary text | `#174EA6` / `#FFFFFF` |
 | Correct / gentle correction | `#166534` / `#9A3412`; pair with icon/shape and words |
 | Focus | 3 px solid `#174EA6`, 2 px offset; visible independently of selection |
-| Type | Bundled reader font, system sans-serif fallback; body >=16 px; uppercase letter glyphs >=28 px |
+| Type | Locally bundled Lexend Latin regular (400), with system sans-serif fallback and swap display per D-01; retain existing weight rules and disabled font synthesis, without claiming a supplied bold face; body >=16 px; uppercase letter glyphs >=28 px |
 | Interactive target | At least 44x44 CSS px, including icon-button hit areas |
 | Spacing | 8 px grid, 8 px minimum outer padding plus safe-area insets; maximum content width 1,024 px |
 | Tile | White rounded square, 2 px primary border, visible letter; minimum 44x44 px |
@@ -96,6 +96,11 @@ image assets.
 | Fatal load/content error | Friendly message, Retry, short diagnostic code | Retry restarts load; no interactive partial puzzle |
 | Nonfatal media/save notice | Nonblocking status strip, while puzzle remains usable | Show the sound-unavailable notice if any required cue for the current level is missing or fails; recompute on level change and do not carry a warning onto a complete level. Show sound enable/retry when playback is blocked; never show a false progress-save indicator |
 
+Before Start/Resume, preview tiles and answer slots do not respond to pointer,
+click/tap or keyboard manipulation. They cannot select, drag, place or remove
+letters or change feedback. Saved slots and hints stay unchanged until
+"Keep going!" is activated. This is the D-03 input gate, not a static play mode.
+
 On a new automatic puzzle, continue playing without another Start, unless
 the browser again blocks audio. Pause/settings and hidden-page reasons are
 independent: returning from a hidden page must
@@ -112,12 +117,16 @@ Never visually identify which tiles are foils.
 |---|---|
 | Start / Resume | Text label; focus enters the first available tile after activation |
 | Picture | Informative `image_alt`; not the only way to replay audio |
-| Speaker by picture | "Hear the word"; plays the target-word cue without revealing written spelling |
+| Speaker by picture | "Hear the word"; always visible on the loaded puzzle, with unchanged size and position; disabled with a gray background and readable dark-gray text before Start/Resume, while muted, and during feedback/completion; enabled styling returns only when started, unmuted and otherwise available; native disabled semantics prevent activation and remove it from tab order |
 | Sound toggle | "Sound on" / "Sound off", with pressed state; persists per user |
 | Settings | Opens an accessible dialog, traps focus, returns focus on close |
 | Pause / Resume motion | Labeled button; no play continues behind a manual pause overlay |
 | Retry | "Try loading again"; repeats boot, not a page with an unchecked snapshot |
 | Enable sound | "Enable sound"; visible only when playback was blocked/unavailable |
+
+Do not add the preview sentence "Letters move from left to right."
+The user approved removing this unspecified explanatory copy on 2026-11-03;
+the left-to-right movement itself remains required by P-06.
 
 Learner messages: initial "Drag a letter, or choose a letter then a space.";
 correct "Nice work!"; incorrect "Try another space."; foil "Here's a hint.";
@@ -308,6 +317,16 @@ clearance from the clipping container was 4.4 CSS px. This focused check does
 not replace the complete U-01 viewport or accessibility review.
 
 ## Spec change log
+
+2026-11-03 — Copilot — Recorded the approved removal of unspecified movement-preview copy while preserving P-06 movement and the specified learner messages.
+2026-11-03 — Copilot — Recorded user approval of always-visible gray inactive replay and passing focused portrait/landscape, saved-mute and enablement checks.
+2026-11-03 — Copilot — Replaced hidden muted replay with the user-requested always-visible gray disabled button, preserving geometry and existing availability gates.
+2026-11-03 — Copilot — Recorded approval and measured portrait/landscape layout stability for hidden muted replay, with sound-on restoration and saved-mute checks passing.
+2026-11-03 — Copilot — Specified the user-requested hidden, disabled replay button while muted with its layout space preserved and existing sound-on enablement unchanged.
+
+2026-11-03 — Copilot — Made the existing Ready-state preview explicitly noninteractive until Start/Resume, following the approved started-state guard fix.
+
+2026-11-03 — Copilot — Named the approved local Lexend regular font in U-01 with existing sizes, weight rules and fallback preserved; full accessibility and design review remain outstanding.
 
 2026-11-02 — Copilot — Specified current-level sound-notice visibility and recovery on level changes; implementation is present, with UI review outstanding.
 2026-10-27 — Copilot — Recorded browser evidence that the full selected-tile outline remains visible in a moving lane.

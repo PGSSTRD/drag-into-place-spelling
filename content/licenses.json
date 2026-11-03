@@ -1,6 +1,153 @@
 {
   "assets": [
     {
+      "path": "assets/fonts/lexend-v26-latin-regular.woff2",
+      "creator": "The Lexend Project Authors",
+      "license": "OFL-1.1",
+      "source": "https://fonts.google.com/specimen/Lexend",
+      "notes": "Copyright 2018 The Lexend Project Authors (https://github.com/googlefonts/lexend), with Reserved Font Name RevReading Lexend. Supplied Lexend v26 Latin regular WOFF2. Commercial use, embedding and redistribution with software are permitted under OFL-1.1; the font may not be sold by itself. Retain the full copyright and license notice bundled at assets/fonts/OFL-Lexend.txt."
+    },
+    {
+      "path": "lang/english/audios/bird-0.mp3",
+      "creator": "Project contributors using ElevenLabs",
+      "license": "LicenseRef-ElevenLabs-Free-Plan",
+      "source": "https://elevenlabs.io",
+      "notes": "Generated using the ElevenLabs free plan, as reported by the contributor. No commercial license. Noncommercial publication requires elevenlabs.io or 11.ai in the title; this manifest alone does not satisfy that requirement. Subject to https://elevenlabs.io/terms; guidance: https://elevenlabs.io/docs/help-center/legal/can-i-publish-the-content-i-generate-on-the-platform (checked 2026-11-03). Distribution approval remains outstanding."
+    },
+    {
+      "path": "lang/english/audios/bird-1.mp3",
+      "creator": "Project contributors using ElevenLabs",
+      "license": "LicenseRef-ElevenLabs-Free-Plan",
+      "source": "https://elevenlabs.io",
+      "notes": "Generated using the ElevenLabs free plan, as reported by the contributor. No commercial license. Noncommercial publication requires elevenlabs.io or 11.ai in the title; this manifest alone does not satisfy that requirement. Subject to https://elevenlabs.io/terms; guidance: https://elevenlabs.io/docs/help-center/legal/can-i-publish-the-content-i-generate-on-the-platform (checked 2026-11-03). Distribution approval remains outstanding."
+    },
+    {
+      "path": "lang/english/audios/bird-2.mp3",
+      "creator": "Project contributors using ElevenLabs",
+      "license": "LicenseRef-ElevenLabs-Free-Plan",
+      "source": "https://elevenlabs.io",
+      "notes": "Generated using the ElevenLabs free plan, as reported by the contributor. No commercial license. Noncommercial publication requires elevenlabs.io or 11.ai in the title; this manifest alone does not satisfy that requirement. Subject to https://elevenlabs.io/terms; guidance: https://elevenlabs.io/docs/help-center/legal/can-i-publish-the-content-i-generate-on-the-platform (checked 2026-11-03). Distribution approval remains outstanding."
+    },
+    {
+      "path": "lang/english/audios/bird-3.mp3",
+      "creator": "Project contributors using ElevenLabs",
+      "license": "LicenseRef-ElevenLabs-Free-Plan",
+      "source": "https://elevenlabs.io",
+      "notes": "Generated using the ElevenLabs free plan, as reported by the contributor. No commercial license. Noncommercial publication requires elevenlabs.io or 11.ai in the title; this manifest alone does not satisfy that requirement. Subject to https://elevenlabs.io/terms; guidance: https://elevenlabs.io/docs/help-center/legal/can-i-publish-the-content-i-generate-on-the-platform (checked 2026-11-03). Distribution approval remains outstanding."
+    },
+    {
+      "path": "lang/english/audios/bird.mp3",
+      "creator": "Project contributors using ElevenLabs",
+      "license": "LicenseRef-ElevenLabs-Free-Plan",
+      "source": "https://elevenlabs.io",
+      "notes": "Generated using the ElevenLabs free plan, as reported by the contributor. No commercial license. Noncommercial publication requires elevenlabs.io or 11.ai in the title; this manifest alone does not satisfy that requirement. Subject to https://elevenlabs.io/terms; guidance: https://elevenlabs.io/docs/help-center/legal/can-i-publish-the-content-i-generate-on-the-platform (checked 2026-11-03). Distribution approval remains outstanding."
+    },
+    {
+      "path": "lang/english/audios/cat-0.mp3",
+      "creator": "Project contributors using ElevenLabs",
+      "license": "LicenseRef-ElevenLabs-Free-Plan",
+      "source": "https://elevenlabs.io",
+      "notes": "Generated using the ElevenLabs free plan, as reported by the contributor. No commercial license. Noncommercial publication requires elevenlabs.io or 11.ai in the title; this manifest alone does not satisfy that requirement. Subject to https://elevenlabs.io/terms; guidance: https://elevenlabs.io/docs/help-center/legal/can-i-publish-the-content-i-generate-on-the-platform (checked 2026-11-03). Distribution approval remains outstanding."
+    },
+    {
+      "path": "lang/english/audios/cat-1.mp3",
+      "creator": "Project contributors using ElevenLabs",
+      "license": "LicenseRef-ElevenLabs-Free-Plan",
+      "source": "https://elevenlabs.io",
+      "notes": "Generated using the ElevenLabs free plan, as reported by the contributor. No commercial license. Noncommercial publication requires elevenlabs.io or 11.ai in the title; this manifest alone does not satisfy that requirement. Subject to https://elevenlabs.io/terms; guidance: https://elevenlabs.io/docs/help-center/legal/can-i-publish-the-content-i-generate-on-the-platform (checked 2026-11-03). Distribution approval remains outstanding."
+    },
+    {
+      "path": "lang/english/audios/cat-2.mp3",
+      "creator": "Project contributors using ElevenLabs",
+      "license": "LicenseRef-ElevenLabs-Free-Plan",
+      "source": "https://elevenlabs.io",
+      "notes": "Generated using the ElevenLabs free plan, as reported by the contributor. No commercial license. Noncommercial publication requires elevenlabs.io or 11.ai in the title; this manifest alone does not satisfy that requirement. Subject to https://elevenlabs.io/terms; guidance: https://elevenlabs.io/docs/help-center/legal/can-i-publish-the-content-i-generate-on-the-platform (checked 2026-11-03). Distribution approval remains outstanding."
+    },
+    {
+      "path": "lang/english/audios/cat.mp3",
+      "creator": "Project contributors using ElevenLabs",
+      "license": "LicenseRef-ElevenLabs-Free-Plan",
+      "source": "https://elevenlabs.io",
+      "notes": "Generated using the ElevenLabs free plan, as reported by the contributor. No commercial license. Noncommercial publication requires elevenlabs.io or 11.ai in the title; this manifest alone does not satisfy that requirement. Subject to https://elevenlabs.io/terms; guidance: https://elevenlabs.io/docs/help-center/legal/can-i-publish-the-content-i-generate-on-the-platform (checked 2026-11-03). Distribution approval remains outstanding."
+    },
+    {
+      "path": "lang/english/audios/dog-0.mp3",
+      "creator": "Project contributors using ElevenLabs",
+      "license": "LicenseRef-ElevenLabs-Free-Plan",
+      "source": "https://elevenlabs.io",
+      "notes": "Generated using the ElevenLabs free plan, as reported by the contributor. No commercial license. Noncommercial publication requires elevenlabs.io or 11.ai in the title; this manifest alone does not satisfy that requirement. Subject to https://elevenlabs.io/terms; guidance: https://elevenlabs.io/docs/help-center/legal/can-i-publish-the-content-i-generate-on-the-platform (checked 2026-11-03). Distribution approval remains outstanding."
+    },
+    {
+      "path": "lang/english/audios/dog-1.mp3",
+      "creator": "Project contributors using ElevenLabs",
+      "license": "LicenseRef-ElevenLabs-Free-Plan",
+      "source": "https://elevenlabs.io",
+      "notes": "Generated using the ElevenLabs free plan, as reported by the contributor. No commercial license. Noncommercial publication requires elevenlabs.io or 11.ai in the title; this manifest alone does not satisfy that requirement. Subject to https://elevenlabs.io/terms; guidance: https://elevenlabs.io/docs/help-center/legal/can-i-publish-the-content-i-generate-on-the-platform (checked 2026-11-03). Distribution approval remains outstanding."
+    },
+    {
+      "path": "lang/english/audios/dog-2.mp3",
+      "creator": "Project contributors using ElevenLabs",
+      "license": "LicenseRef-ElevenLabs-Free-Plan",
+      "source": "https://elevenlabs.io",
+      "notes": "Generated using the ElevenLabs free plan, as reported by the contributor. No commercial license. Noncommercial publication requires elevenlabs.io or 11.ai in the title; this manifest alone does not satisfy that requirement. Subject to https://elevenlabs.io/terms; guidance: https://elevenlabs.io/docs/help-center/legal/can-i-publish-the-content-i-generate-on-the-platform (checked 2026-11-03). Distribution approval remains outstanding."
+    },
+    {
+      "path": "lang/english/audios/dog.mp3",
+      "creator": "Project contributors using ElevenLabs",
+      "license": "LicenseRef-ElevenLabs-Free-Plan",
+      "source": "https://elevenlabs.io",
+      "notes": "Generated using the ElevenLabs free plan, as reported by the contributor. No commercial license. Noncommercial publication requires elevenlabs.io or 11.ai in the title; this manifest alone does not satisfy that requirement. Subject to https://elevenlabs.io/terms; guidance: https://elevenlabs.io/docs/help-center/legal/can-i-publish-the-content-i-generate-on-the-platform (checked 2026-11-03). Distribution approval remains outstanding."
+    },
+    {
+      "path": "lang/english/audios/rabbit-0.mp3",
+      "creator": "Project contributors using ElevenLabs",
+      "license": "LicenseRef-ElevenLabs-Free-Plan",
+      "source": "https://elevenlabs.io",
+      "notes": "Generated using the ElevenLabs free plan, as reported by the contributor. No commercial license. Noncommercial publication requires elevenlabs.io or 11.ai in the title; this manifest alone does not satisfy that requirement. Subject to https://elevenlabs.io/terms; guidance: https://elevenlabs.io/docs/help-center/legal/can-i-publish-the-content-i-generate-on-the-platform (checked 2026-11-03). Distribution approval remains outstanding."
+    },
+    {
+      "path": "lang/english/audios/rabbit-1.mp3",
+      "creator": "Project contributors using ElevenLabs",
+      "license": "LicenseRef-ElevenLabs-Free-Plan",
+      "source": "https://elevenlabs.io",
+      "notes": "Generated using the ElevenLabs free plan, as reported by the contributor. No commercial license. Noncommercial publication requires elevenlabs.io or 11.ai in the title; this manifest alone does not satisfy that requirement. Subject to https://elevenlabs.io/terms; guidance: https://elevenlabs.io/docs/help-center/legal/can-i-publish-the-content-i-generate-on-the-platform (checked 2026-11-03). Distribution approval remains outstanding."
+    },
+    {
+      "path": "lang/english/audios/rabbit-2.mp3",
+      "creator": "Project contributors using ElevenLabs",
+      "license": "LicenseRef-ElevenLabs-Free-Plan",
+      "source": "https://elevenlabs.io",
+      "notes": "Generated using the ElevenLabs free plan, as reported by the contributor. No commercial license. Noncommercial publication requires elevenlabs.io or 11.ai in the title; this manifest alone does not satisfy that requirement. Subject to https://elevenlabs.io/terms; guidance: https://elevenlabs.io/docs/help-center/legal/can-i-publish-the-content-i-generate-on-the-platform (checked 2026-11-03). Distribution approval remains outstanding."
+    },
+    {
+      "path": "lang/english/audios/rabbit-3.mp3",
+      "creator": "Project contributors using ElevenLabs",
+      "license": "LicenseRef-ElevenLabs-Free-Plan",
+      "source": "https://elevenlabs.io",
+      "notes": "Generated using the ElevenLabs free plan, as reported by the contributor. No commercial license. Noncommercial publication requires elevenlabs.io or 11.ai in the title; this manifest alone does not satisfy that requirement. Subject to https://elevenlabs.io/terms; guidance: https://elevenlabs.io/docs/help-center/legal/can-i-publish-the-content-i-generate-on-the-platform (checked 2026-11-03). Distribution approval remains outstanding."
+    },
+    {
+      "path": "lang/english/audios/rabbit-4.mp3",
+      "creator": "Project contributors using ElevenLabs",
+      "license": "LicenseRef-ElevenLabs-Free-Plan",
+      "source": "https://elevenlabs.io",
+      "notes": "Generated using the ElevenLabs free plan, as reported by the contributor. No commercial license. Noncommercial publication requires elevenlabs.io or 11.ai in the title; this manifest alone does not satisfy that requirement. Subject to https://elevenlabs.io/terms; guidance: https://elevenlabs.io/docs/help-center/legal/can-i-publish-the-content-i-generate-on-the-platform (checked 2026-11-03). Distribution approval remains outstanding."
+    },
+    {
+      "path": "lang/english/audios/rabbit-5.mp3",
+      "creator": "Project contributors using ElevenLabs",
+      "license": "LicenseRef-ElevenLabs-Free-Plan",
+      "source": "https://elevenlabs.io",
+      "notes": "Generated using the ElevenLabs free plan, as reported by the contributor. No commercial license. Noncommercial publication requires elevenlabs.io or 11.ai in the title; this manifest alone does not satisfy that requirement. Subject to https://elevenlabs.io/terms; guidance: https://elevenlabs.io/docs/help-center/legal/can-i-publish-the-content-i-generate-on-the-platform (checked 2026-11-03). Distribution approval remains outstanding."
+    },
+    {
+      "path": "lang/english/audios/rabbit.mp3",
+      "creator": "Project contributors using ElevenLabs",
+      "license": "LicenseRef-ElevenLabs-Free-Plan",
+      "source": "https://elevenlabs.io",
+      "notes": "Generated using the ElevenLabs free plan, as reported by the contributor. No commercial license. Noncommercial publication requires elevenlabs.io or 11.ai in the title; this manifest alone does not satisfy that requirement. Subject to https://elevenlabs.io/terms; guidance: https://elevenlabs.io/docs/help-center/legal/can-i-publish-the-content-i-generate-on-the-platform (checked 2026-11-03). Distribution approval remains outstanding."
+    },
+    {
       "path": "assets/audios/incorrect.wav",
       "creator": "Project contributors",
       "license": "CC0-1.0",

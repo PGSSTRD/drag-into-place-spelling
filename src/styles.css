@@ -1,5 +1,13 @@
+@font-face {
+  font-family: "Lexend";
+  src: url("../content/assets/fonts/lexend-v26-latin-regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 :root {
-  font-family: "Reader", system-ui, sans-serif;
+  font-family: "Lexend", system-ui, sans-serif;
   color: #14213d;
   background: #f7fafc;
   font-size: 16px;
@@ -11,7 +19,7 @@ body { margin: 0; min-width: 320px; min-height: 100vh; }
 button, select { font: inherit; }
 button { color: inherit; }
 button:focus-visible, select:focus-visible { outline: 3px solid #174ea6; outline-offset: 2px; }
-.shell { width: min(100%, 1040px); min-height: 100vh; margin: 0 auto; padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); }
+.shell { width: min(100%, 1040px); min-height: 100vh; margin: 0 auto; padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); -webkit-user-select: none; user-select: none; }
 .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
 h1 { margin: 8px 0; font-size: 1.4rem; }
 .pause { min-height: 44px; border: 1px solid #174ea6; border-radius: 8px; background: #fff; padding: 8px 16px; }
@@ -20,6 +28,7 @@ h1 { margin: 8px 0; font-size: 1.4rem; }
 .target-image { width: clamp(64px, 20vw, 128px); height: clamp(64px, 20vw, 128px); object-fit: contain; }
 .playfield.completing .target-image { animation: celebrate 1200ms ease-in-out; }
 .replay { min-height: 44px; border: 0; border-radius: 8px; background: #174ea6; color: white; padding: 8px 16px; }
+.replay:disabled { background: #e5e7eb; color: #4b5563; cursor: default; }
 .sound-toggle { min-height: 44px; border: 1px solid #174ea6; border-radius: 8px; background: #fff; padding: 8px 16px; }
 .start { min-height: 44px; border: 0; border-radius: 8px; background: #174ea6; color: white; padding: 8px 18px; }
 .answers { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; }
@@ -37,7 +46,7 @@ h1 { margin: 8px 0; font-size: 1.4rem; }
 .moving-lane .tile { position: absolute; top: 4px; left: 0; }
 .moving-lane.preview { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px; height: auto; min-height: 60px; }
 .moving-lane.preview .tile { position: static; }
-.lane-help, .motion-label { min-height: 24px; text-align: center; color: #53657e; }
+.motion-label { min-height: 24px; text-align: center; color: #53657e; }
 .motion-label { order: 4; margin: 0; }
 .pause-overlay { position: absolute; z-index: 4; inset: 0; display: grid; place-content: center; justify-items: center; gap: 12px; background: rgb(247 250 252 / 92%); }
 .pause-overlay p { margin: 0; font-size: 1.25rem; font-weight: 700; }

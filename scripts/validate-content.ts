@@ -7,7 +7,7 @@ const levelsPath = resolve(root, "content/lang/english/levels.json");
 
 try {
   const pack = validateContentPack(JSON.parse(await readFile(levelsPath, "utf8")) as unknown);
-  const paths = new Set<string>(["assets/audios/incorrect.wav", "assets/fonts/reader.woff2"]);
+  const paths = new Set<string>(["assets/audios/incorrect.wav", "assets/fonts/lexend-v26-latin-regular.woff2"]);
   for (const level of pack.levels) {
     paths.add(level.image_path);
     paths.add(level.word_audio_path);

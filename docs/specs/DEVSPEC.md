@@ -1,8 +1,8 @@
 # DEVSPEC - Drag Into Place Spelling
 
-**Version:** 2.0.10<br>
-**Status:** Draft - DOG depiction approved; current-level audio availability behavior implemented; media validation and release gates outstanding<br>
-**Last update:** 2026-11-02<br>
+**Version:** 2.0.14<br>
+**Status:** Draft - Started-state guard fix approved; focused preview checks pass; audio distribution review, independent QA and release gates outstanding<br>
+**Last update:** 2026-11-03<br>
 **Author:** Copilot
 
 ## 1. Authority and reading order
@@ -80,27 +80,43 @@ stable IDs and media references:
 Each added level uses an accurate `image_alt` and exactly two uppercase foil
 instances whose letters do not occur in its target word; the general D-01
 allowance for duplicate foils still applies. These additions fit P-07's
-1-8-letter and maximum-four-foil limits. The additive pack uses `content_version` `1.4.0`; it includes the simplified
+1-8-letter and maximum-four-foil limits. The current pack uses `content_version` `1.4.1`; it includes the local Lexend font and the simplified
 bird SVG, with the side wings and outer feather shapes removed, and the
 user-approved head-only DOG illustration with floppy ears and a symmetric
 muzzle. The user approved the DOG image as a sufficient depiction of a dog on
 2026-11-02. This visual approval does not constitute production-media approval
 or waive T-31.
-Full-word recordings for CAT, DOG, RABBIT and BIRD and the six indexed RABBIT
-clips are now present in the source tree. Indexed letter clips for CAT, DOG
-and BIRD are still missing, and the supplied animal recordings lack complete
-license records. Do not treat the expanded pack as media-valid until every
-referenced clip exists, has a complete license record and passes contextual
-pronunciation review. The SVGs remain repository-only placeholders and are
-not release media unless selected and approved through T-31.
+All 20 referenced MP3s are present in the source tree: four full-word
+recordings and 16 indexed letter clips for CAT, DOG, RABBIT and BIRD.
+Each has a complete record in `content/licenses.json`, using the local
+identifier `LicenseRef-ElevenLabs-Free-Plan` rather than a CC0 claim.
+The contributor reports that all MP3s were generated using ElevenLabs'
+free plan. ElevenLabs' publication guidance checked on 2026-11-03 states
+that these recordings have no commercial license and that noncommercial
+publication requires "elevenlabs.io" or "11.ai" in the title.
+The manifest records this restriction but does not itself fulfill title
+attribution or establish distribution approval. See
+[ElevenLabs publication guidance](https://elevenlabs.io/docs/help-center/legal/can-i-publish-the-content-i-generate-on-the-platform)
+and [terms](https://elevenlabs.io/terms).
+The user approved the manifest update on 2026-11-03, not publication or
+release. The Lexend font and its OFL license notice are now bundled; contextual
+pronunciation, applicable terms and publication attribution still require
+T-31 review. The SVGs remain repository-only placeholders and are not release
+media unless selected and approved through T-31.
 
 Reject missing/unknown fields, wrong types, invalid counts, duplicate level
 IDs and ambiguous legacy schemas. Report JSON field path and reason. This
 extends the brief's illustrative level object into a precise schema; a raw
 array of legacy level objects requires an explicit conversion tool, not
 guessing at runtime. Required shared media are
-`assets/audios/incorrect.wav` and `assets/fonts/reader.woff2`. Animation is
-implemented locally in CSS/SVG; Rive is not required.
+`assets/audios/incorrect.wav` and `assets/fonts/lexend-v26-latin-regular.woff2`.
+The user selected and authorized integration of the supplied Lexend Latin
+regular WOFF2 on 2026-11-03. Load it locally as the CSS family `Lexend`,
+normal style and weight 400, with a system sans-serif fallback and swap
+display. Retain its copyright and OFL-1.1 license in
+`assets/fonts/OFL-Lexend.txt` and record attribution in `content/licenses.json`.
+This replaces the placeholder font filename, not historical validation
+records. Animation is implemented locally in CSS/SVG; Rive is not required.
 
 All paths use ZIP/web-style `/`, resolve relative to `index.html`, and must be
 nonempty, confined to the specified subtree and free of `..`, backslashes,
@@ -153,6 +169,15 @@ Suspend timers/audio while the page is hidden. Media callbacks carry an
 occurrence/generation token: stale callbacks cannot complete a new puzzle.
 
 ## 4. Geometry and interaction adapters (D-03)
+
+Before initial Start or saved-progress Resume, letters and answer slots are
+noninteractive previews. Guard pointer down/move/up, tile acquisition,
+selection/cancellation and drop entry points with the current started state,
+in addition to disabling controls. Input must not select or move a tile,
+capture a pointer, change slots/hints/attempts, or produce placement feedback
+before "Let's spell!" or "Keep going!" is activated. Preview tile focus must
+not change the keyboard-motion pause state. Start/Resume enables the existing
+input paths; it is not merely a movement toggle.
 
 Use Pointer Events with pointer capture, not HTML drag-and-drop. Convert
 client coordinates to the current playfield coordinate system. Preserve the
@@ -378,7 +403,7 @@ Great-only specification and does not constitute approval of Great or release.
 
 | Module | Evidence in the current prototype | Status / unmet exit criteria |
 |---|---|---|
-| M1 | React 19.1.1, TypeScript 5.9.2, Vite 7.1.7, Ajv 8.17.1; Node 24.20.0/npm 11.19.0; content schema and reference/license validator; CAT, DOG, RABBIT and BIRD source pack at content version 1.4.0 with local SVG illustrations | Partial. Unit validation and focused four-level structure/path checks pass; typecheck/build pass and emitted pack matches the source. `npm run validate:content` remains blocked by missing CAT/DOG/BIRD indexed letter recordings, `assets/fonts/reader.woff2` and complete license records for supplied animal audio. Individual invalid-fixture coverage is incomplete. |
+| M1 | React 19.1.1, TypeScript 5.9.2, Vite 7.1.7, Ajv 8.17.1; Node 24.20.0/npm 11.19.0; content schema and reference/license validator; CAT, DOG, RABBIT and BIRD source pack at content version 1.4.1 with local SVG illustrations; all 20 referenced MP3s and restricted-license records; local Lexend regular WOFF2 and OFL notice | Partial. On 2026-11-03, content validation, typecheck/build, all 23 unit tests and source/output hash checks passed; the production `file://` page decoded and applied Lexend to page and tile text. ElevenLabs free-plan distribution/title-attribution review and contextual pronunciation review remain outstanding. Individual invalid-fixture coverage is incomplete. |
 | M2 | Pure reducer, value-based duplicate matching, attempts, random wrong-tile relocation, historical foil removal/hints, per-user snapshot validation, cycle order and completion marker; six domain and four progress tests | Historical static-core behavior is present; full injected-clock/invariant matrix and all F-01-F-10 fixture coverage remain outstanding. |
 | M3 | Bounded XHR content loader, current-level audio cue availability checks, serialized HTML audio cues with watchdog, local progress/settings, and fire-and-forget bridge envelope | Partial. Current-level word, letter and shared correction cues are checked independently; unavailable state is level-scoped and browser playback blocks are distinguished. Three focused audio-service tests, typecheck, unit suite and build pass. HTTP development still uses XHR rather than the specified fetch path; broader preload settlement, hidden-page audio suspension (the active clock pauses), component/browser failure-generation tests and device checks remain outstanding. `sub_app_id` is a development placeholder pending Q-02. |
 | M4 | At the time of prototype evidence, responsive static UI, pointer capture, 8 px threshold, clamping, center hit-testing, tap/keyboard placement, live status and a historical MVP/Better tier control | Focused browser checks pass. This historical evidence is not normative. Full viewport, focus/screen-reader, contrast, cancellation and automated component/E2E acceptance remains outstanding. |
@@ -446,6 +471,49 @@ checks confirmed the emitted DOG SVG and language pack match their sources.
 correction audio, reader font and complete license records. This approval is
 for visual depiction only: the SVG remains repository-only placeholder media
 until the independent production review in T-31 passes.
+
+### MP3 license-manifest approval recorded 2026-11-03
+
+The user approved adding all 20 source MP3s to `content/licenses.json` with
+ElevenLabs free-plan provenance and restrictions. Focused inventory checks
+confirmed exactly one complete entry per MP3, no duplicate paths and
+preservation of all five existing non-MP3 records. `npm.cmd run build`
+passed typecheck and production compilation; source and emitted
+`dist/licenses.json` SHA-256 hashes matched. `git diff --check` passed.
+`npm.cmd run validate:content` reported only the absent reader font and its
+license record. No application unit/browser tests or pronunciation review
+were run for this metadata-only update. Earlier dated missing-audio evidence
+above is historical; this inventory supersedes it, without approving
+publication, independent QA or release.
+
+### Lexend integration approval recorded 2026-11-03
+
+The user approved integrating the supplied Lexend Latin regular WOFF2.
+CSS loads it locally with `@font-face`, weight 400 and swap display; the
+existing `font-synthesis: none` is preserved, and no bold font file is claimed.
+The validator now requires the actual filename. Copyright, OFL-1.1 attribution
+and the full upstream notice are bundled. The shared-media addition bumps
+the English pack to content version 1.4.1 without altering level data.
+Content validation, typecheck/build, all 23 unit tests and whitespace checks
+passed. Source/output hashes matched for font, OFL notice, manifest and pack;
+the emitted CSS font URL is relative and resolves. A production `file://`
+browser check confirmed a loaded Lexend face and Lexend as the primary
+page/tile family. This supersedes historical missing-font evidence but does
+not pass full viewport, accessibility, physical-device or release review.
+
+### Started-state guard approval recorded 2026-11-03
+
+The user approved explicit current-started-state checks in pointer handlers,
+acquisition/drop functions, tile click/focus and answer-slot click handling.
+Build/typecheck, all 23 existing unit tests and whitespace checks passed.
+Production `file://` checks in reduced-motion mode verified that attempted
+pointer drag, tile selection and answer clicks leave new and restored
+previews unchanged; correct placements work after Start/Resume and restored
+placements remain intact. Tests used isolated progress storage, cleaned up
+afterward. These browser checks were performed interactively, not added as
+automated repository tests. Full moving-lane/device acceptance was not rerun.
+The browser also reported an unavailable shared correction cue; these checks
+do not establish audio acceptance or resolve that warning.
 
 ## Part II - Non-functional requirements
 
@@ -640,6 +708,10 @@ dates or invent a change-log entry for untouched specs.
 
 ## Spec change log
 
+2026-11-03 — Copilot — Clarified the Ready-state input guards and recorded approved implementation with focused new/saved preview checks while preserving broader input, audio and release gates.
+2026-11-03 — Copilot — Recorded approved Lexend integration, content-version 1.4.1 and passing content, unit, build and file-browser checks while preserving independent QA and release gates.
+2026-11-03 — Copilot — Replaced the placeholder font requirement with the user-selected local Lexend regular WOFF2, CSS loading contract and bundled OFL notice; integration validation remains outstanding.
+2026-11-03 — Copilot — Recorded the approved 20-MP3 ElevenLabs free-plan manifest update and validation evidence while retaining font, attribution, distribution and release gates.
 2026-11-02 — Copilot — Specified and implemented current-level audio completeness, warning recovery on level changes, stale-result handling and playback-block distinction.
 2026-11-02 — Copilot — Recorded the user-approved DOG depiction, active SVG replacement and content-version 1.4.0 while retaining T-31 and release gates.
 2026-11-02 — Copilot — Recorded the simplified bird artwork, final image alt text and content-version 1.3.0 while retaining media and release gates.

@@ -1,8 +1,8 @@
 # TESTSPEC - Drag Into Place Spelling
 
-**Version:** 2.1.5<br>
-**Status:** Draft - DOG visual approval and current-level audio implementation approval recorded; focused audio tests pass; full acceptance suite not executed; awaiting independent QA review<br>
-**Last update:** 2026-11-02<br>
+**Version:** 2.1.12<br>
+**Status:** Draft - Extra movement-copy removal user-approved and build checks pass; full input, audio distribution and independent QA gates outstanding<br>
+**Last update:** 2026-11-03<br>
 **Author:** Copilot<br>
 **Independent QA owner:** To be assigned
 
@@ -56,7 +56,7 @@ reducer/scheduler timing tests.
 | F-08 | Valid partial/completed snapshots, invalid JSON, duplicate tile mapping, wrong letter, out-of-range index, stale schema/content | Restoration and namespace isolation |
 | F-09 | Bridge absent, recording bridge, throwing bridge; valid/invalid/oversized envelopes; duplicate UUID replay at container boundary | Contract and failure isolation |
 | F-10 | Audio resolves, rejects, is autoplay-blocked, stays pending, or fires stale callbacks | Sequencing, mute and bounded advance |
-| F-11 | Implemented source pack `content/lang/english/levels.json` at content version 1.4.0: CAT plus DOG, RABBIT, and BIRD using their repository SVG paths, stable IDs 1-4, target-letter arrays, two non-target foil instances per added level and expected indexed MP3 paths. Full-word recordings for all four animals and six RABBIT letter clips are now present; CAT/DOG/BIRD letter clips, complete animal-audio license records and the reader font are still missing | Pack structure and media-reference intent; incomplete audio and license records remain explicit file/media validation failures |
+| F-11 | Implemented source pack `content/lang/english/levels.json` at content version 1.4.1: CAT plus DOG, RABBIT, and BIRD using their repository SVG paths, stable IDs 1-4, target-letter arrays, two non-target foil instances per added level and expected indexed MP3 paths. All four word recordings and 16 indexed letter clips have complete ElevenLabs free-plan records; Lexend Latin regular WOFF2, its OFL notice and attribution are bundled | Pack structure, media references and license inventory; content validation passes, while pronunciation, publication attribution and distribution approval remain T-31 gates |
 
 Generate short test audio locally with documented creation rights. It proves
 loading/ordering, not correct pronunciation; use independently reviewed
@@ -102,8 +102,22 @@ constant and confirm the independent clock cannot advance while paused.
 | T-19 | P-04/P-06; D-03/D-04; U-01/U-02 | Resize/rotate during drag, feedback and Great; no stale hit-testing, lost tile, clipped answer/hint pairs or active background motion |
 | T-20 | P-01/P-05/P-06; U-01/U-02/U-03 | Capture Great's moving and reduced-motion states and control visibility; in portrait measure hint-text to learner-status-text baseline distance (about 40 CSS px, no more than 48 px); motion-status row stays above answers; no foil styling clues, child-facing grade, written target spelling or duplicate pool/lane surfaces |
 | T-21 | P-04; D-08; U-01/U-04 | Verify 44 px targets, contrast ratios, focus trap/return, labels, reading order, 200% text zoom, muted cues, reduced motion and screen reader; no color/audio-only essential feedback |
-| T-22 | P-03/P-09; D-02/D-05/D-06; U-02/U-03 | Exercise Start/Resume, replay, sound toggle, autoplay rejection, Settings open/close, explicit pause plus hidden-page return; state and control enablement match U-02 |
+| T-22 | P-03/P-04/P-09; D-02/D-03/D-05/D-06; U-02/U-03 | Before initial Start and saved-progress Resume, attempt pointer drag, tile click/tap/keyboard selection and answer activation: no tile selection, drag ghost, pointer capture, placement, hint/attempt or feedback change; saved placements remain intact. Check both moving previews and reduced motion. After Start/Resume, verify the same input paths work. Exercise replay, sound toggle, autoplay rejection, Settings open/close, explicit pause plus hidden-page return; state and control enablement match U-02 |
 | T-23 | P-08/P-09; D-06/D-08; U-02/U-03 | Trigger content, image, audio, font and storage failures; fatal cases offer Retry, nonfatal ones preserve play with notices; for a multi-level pack, verify the sound notice reflects the active level's full-word cue, every letter-position cue and shared incorrect-placement cue; show it when any required cue is unavailable, retain it after another cue succeeds, recompute on level advance, omit it on a complete level, and ignore stale results from the prior level; verify browser playback-policy blocks show Enable sound without misclassifying loadable assets; no raw paths/IDs/stack traces in learner UI |
+
+For T-20, verify that new and saved moving-lane previews omit the sentence
+"Letters move from left to right." Keep the specified U-03 learner messages
+and P-06 movement behavior unchanged.
+
+For T-20/T-22, toggle sound before and after Start and reload with saved mute.
+Replay must remain visible and exposed as a disabled button, with gray styling
+and no tab stop before Start/Resume, while muted and during feedback/completion.
+Compare the image, replay box,
+answer row, learner status and lane geometry before/after muting in portrait
+and landscape: no position or size change is allowed from disabling replay.
+Unmuting restores enabled styling without bypassing existing Start/feedback/
+completion enablement. Sound-toggle label width may change with its text;
+this is not a replay-space collapse.
 
 Each U-05 Gherkin scenario must be implemented as a named component/E2E
 test, not left as a prose-only scenario. Automate a DOM accessibility scan and
@@ -116,14 +130,14 @@ insufficient.
 |---|---|---|
 | T-24 | P-10; D-07 | Record bridge strings for first gesture and completion; exactly one event per milestone with `tier: "great"`, expected schema/fields, fresh UUID v4/variant, UTC timestamp, URL ID or empty string, stable `sub_app_id`, JSON-finite data, no `options`; score always accompanied by max_score |
 | T-25 | P-10; D-07/D-08 | Bridge absent/throws; invalid data and payload size boundary tests; UUID APIs unavailable | Absence silently no-ops; other failures diagnosed without breaking gameplay; byte count (including multibyte values) <65,536; no retries/queues/network/per-tap events; fallback IDs retain v4 format |
-| T-26 | P-08/P-11; D-06/D-08/D-09 | Audit production JS/CSS/HTML/JSON/font/media and archive | Relative base; zero external URLs/root-relative runtime dependencies, source maps, forbidden SDK/runtime registrations; no file-path fetch or Cache Storage; image true-format and complete audio inventory |
+| T-26 | P-08/P-11; D-01/D-06/D-08/D-09; U-01 | Audit production JS/CSS/HTML/JSON/font/media and archive | Relative base; zero external URLs/root-relative runtime dependencies, source maps, forbidden SDK/runtime registrations; no file-path fetch or Cache Storage; image true-format and complete audio inventory; local Lexend WOFF2 decodes and is applied under `file://`, its CSS URL resolves relatively, and the font, OFL notice and manifest are included in output |
 | T-27 | P-08/P-09; D-05/D-06/D-09 | Launch extracted merged production assets under `file://` with network unavailable; complete/reload all modes | Playable <=10 s on 10/10 cold starts, real media, zero external attempts, progress restored; no unexplained console errors |
 | T-28 | P-11; D-10 | Inspect/extract archives into empty directory and test merged content | Root index, no wrapper/lang in engine, lang-only pack, only release-selected shared assets (repository-only animal placeholders excluded), no overwrites/traversal/symlinks/maps, hashes/version manifest match; icon true PNG square >=192 px outside ZIP |
 | T-29 | P-08/P-10/P-11; D-07/D-10 | In actual container, launch via registered template; play in airplane mode; reconnect | Correct English/user routing, zero NETGUARD_BLOCK, events accepted/stored offline and later synced; replaying identical payload_id deduplicates at container, not game |
 | T-30 | P-04/P-06/P-08; D-08 | On approved baseline device measure 100 pointer moves and 60 s of Great; 10 cold launches | p95 response <=100 ms, p95 animation frame interval <=33.4 ms, all cold launches <=10 s; evidence includes device/build versions and raw observations |
 | T-31 | P-11; D-01/D-10 | Independently review production word-picture match, each contextual clip, full-word clip and licenses; verify actual published manifest/device | All content correct and legally distributable; no placeholder IDs/media; promotion alone not treated as release; staff Publish and device version verified |
 | T-32 | P-12; DEVSPEC section 15 lifecycle; all spec metadata | Dry-run a new task plan, completed/unapproved task, approved task and affected-spec update | Plan cites all four specs and relevant IDs; no approval inferred; approved work prompts separate reconciliation; altered specs update metadata/log and report added/removed/replaced items |
-| T-33 | P-01/P-03/P-07/P-11; D-01/D-05; U-01/U-03 | Validate and cycle F-11; inspect each expected image, foil set, word/letter audio path and license record | DOG/RABBIT/BIRD use stable IDs 2/3/4, matching target letters and SVG paths, accurate alt text, two non-target foils and one zero-based contextual clip per letter; the DOG is a head-only tan illustration with paired floppy ears and a symmetric muzzle, accepted by the user as a sufficient depiction of a dog on 2026-11-02; the BIRD illustration faces forward with two visible eyes, a centered beak, and no side-wing or outer-feather shapes; all four pack levels are reachable in a cycle. Missing CAT/DOG/BIRD letter clips and incomplete animal-audio license records fail content validation; repository-only SVGs do not pass release review by themselves |
+| T-33 | P-01/P-03/P-07/P-11; D-01/D-05; U-01/U-03 | Validate and cycle F-11; inspect each expected image, foil set, word/letter audio path and license record | DOG/RABBIT/BIRD use stable IDs 2/3/4, matching target letters and SVG paths, accurate alt text, two non-target foils and one zero-based contextual clip per letter; the DOG is a head-only tan illustration with paired floppy ears and a symmetric muzzle, accepted by the user as a sufficient depiction of a dog on 2026-11-02; the BIRD illustration faces forward with two visible eyes, a centered beak, and no side-wing or outer-feather shapes; all four pack levels are reachable in a cycle. Verify exactly one complete manifest entry per source MP3, preserving ElevenLabs free-plan restrictions; metadata completeness does not establish title attribution, commercial permission, pronunciation correctness or T-31 approval. Missing referenced files or incomplete license records fail content validation; repository-only SVGs do not pass release review by themselves |
 
 For T-26 use emitted-asset scanning plus instrumented runtime URL/API spies;
 a text search alone can miss dynamically constructed requests. Fail on
@@ -352,7 +366,113 @@ confirmed that the behavior works as intended and approved the implementation
 on 2026-11-02; this does not constitute specification, independent QA or
 release approval.
 
+### MP3 license-manifest evidence and approval recorded 2026-11-03
+
+All 20 source MP3s (four words and 16 indexed letter clips) now have exactly
+one complete entry in `content/licenses.json`. Focused checks confirmed exact
+file/manifest coverage, no duplicate paths, the restricted
+`LicenseRef-ElevenLabs-Free-Plan` identifier and unchanged contents of the
+five existing non-MP3 records. All records state the contributor-reported
+free-plan provenance, lack of a commercial license, required title attribution
+and outstanding distribution approval, consistent with D-01.
+
+`npm.cmd run build` passed typecheck and production compilation;
+`dist/licenses.json` matched the source by SHA-256. `git diff --check` passed.
+`npm.cmd run validate:content` failed only for missing
+`assets/fonts/reader.woff2` and its license record. This latest inventory
+supersedes earlier dated missing-audio statements without changing those
+historical results. No unit/browser tests, decoding or pronunciation review
+were run for this metadata-only update; the validator's media-signature
+checks do not establish correct pronunciation or legal distribution.
+
+The user explicitly approved the manifest update on 2026-11-03 and separately
+authorized specification reconciliation. Neither approval passes full T-33,
+T-31, independent QA or release. Noncommercial publication still requires
+"elevenlabs.io" or "11.ai" in the title under the linked D-01 guidance;
+recording it in this manifest does not satisfy that requirement. Commercial
+use is not licensed by these free-plan records.
+
+### Lexend font integration evidence and approval recorded 2026-11-03
+
+The user approved the local Lexend regular WOFF2 integration and separately
+authorized specification reconciliation. F-11 is now content version 1.4.1.
+`npm.cmd run validate:content` passed all four levels; typecheck/build, all
+23 unit tests and `git diff --check` passed. SHA-256 checks confirmed matching
+source/output font, OFL notice, manifest and pack. The emitted CSS uses a
+relative font URL resolving to the emitted font. A production `file://`
+browser check confirmed the Lexend face decoded with status `loaded`, and
+the page and letter tiles use Lexend as their primary computed family.
+
+This supersedes earlier missing-font inventory results without rewriting
+historical evidence. These are focused T-26 checks, not full T-26/T-27/T-31
+acceptance. Full viewport/typography, accessibility, physical-device,
+pronunciation, audio publication attribution and release review remain
+outstanding; passing metadata/signature validation does not grant audio
+commercial permission.
+
+### Started-state guard evidence and approval recorded 2026-11-03
+
+The user approved the explicit started-state input guards. Build/typecheck,
+all 23 existing unit tests and `git diff --check` passed. Interactive
+production `file://` checks in reduced-motion mode attempted mouse/synthetic
+pointer drag and answer clicks before Start, plus tile selection, pointer
+drag and answer clicks before saved-progress Resume; puzzle selections,
+slots and status remained unchanged. After Start and Resume, correct
+placements succeeded; restored placements were preserved. Isolated test
+progress was removed. These checks are focused T-17/T-22 evidence, not new
+automated repository tests or complete keyboard, moving-lane or device
+acceptance. The browser reported an unavailable correction cue; audio
+availability review remains outstanding, separate from the input fix.
+
+### Muted replay visibility approval and evidence recorded 2026-11-03
+
+The user approved hiding and disabling replay while muted, retaining its
+space with CSS `visibility: hidden`. Build/typecheck and whitespace checks
+passed. Interactive production HTTP checks at 566x600 and 800x400 compared
+image, replay-box, answer, status and lane geometry; all remained unchanged
+when sound was toggled. Muted replay was disabled and absent from accessible
+button queries; unmuting restored it. Reload preserved muted visibility, and
+Start enabled replay when sound was on. These focused T-20/T-22 checks are
+not automated repository tests or full device/accessibility acceptance.
+The DEVSPEC D-06 mute contract is unchanged.
+
+### Always-visible gray replay approval and evidence recorded 2026-11-03
+
+The user approved replacing hidden muted replay with an always-visible
+disabled control. Build/typecheck and whitespace checks passed. Production
+HTTP browser checks verified visible gray replay before Start and after
+reloading saved mute, with background `#E5E7EB` and text `#4B5563`.
+Starting unmuted enables replay; muting disables/grays it and unmuting
+restores availability. At 566x600 and 800x400, image, replay-box, answer and
+status rectangles were unchanged by toggling sound. These focused checks
+supersede the prior hidden-button requirement without erasing its dated
+evidence. Feedback/completion continue to use the same disabled condition;
+their complete sequences and physical-device acceptance were not rerun.
+No application unit tests were run for this presentation-only change.
+
+### Extra movement-copy removal evidence recorded 2026-11-03
+
+The user approved removing the unspecified preview sentence and unused
+`lane-help` CSS selector. Build/typecheck and whitespace checks passed.
+Exact searches confirmed neither the sentence nor selector remains in
+application source or emitted production assets. Movement logic and specified
+learner messages were untouched. This is focused output evidence for T-20,
+not a new browser, unit or complete movement acceptance test.
+
 ## Spec change log
+
+2026-11-03 — Copilot — Added the preview-copy absence check and recorded approved source/output removal evidence without changing movement or broader acceptance gates.
+
+2026-11-03 — Copilot — Recorded approval and passing focused checks for visible gray inactive replay, retaining prior visibility history and broader acceptance gates.
+
+2026-11-03 — Copilot — Replaced hidden-muted replay assertions with always-visible gray disabled-state checks, preserving prior dated evidence.
+2026-11-03 — Copilot — Added muted replay layout, persistence and accessibility checks with passing focused HTTP evidence and user approval, retaining broader acceptance gates.
+
+2026-11-03 — Copilot — Extended T-22 with explicit Start/Resume input-blocking checks and recorded approved guard-fix evidence without claiming full input or audio acceptance.
+
+2026-11-03 — Copilot — Updated F-11 and T-26 for approved Lexend integration and content-version 1.4.1, recording passing validation and focused file-browser font evidence without passing release gates.
+
+2026-11-03 — Copilot — Reconciled F-11 and T-33 with the approved 20-MP3 restricted-license inventory and build evidence while retaining font, attribution, distribution and release gates.
 
 2026-11-02 — Copilot — Recorded user approval of the current-level audio implementation and corrected the current media-validation inventory while retaining Draft and QA gates.
 2026-11-02 — Copilot — Added current-level audio notice acceptance coverage and recorded focused implementation/test evidence; component/browser T-23 verification remains outstanding.

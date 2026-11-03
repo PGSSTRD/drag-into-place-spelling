@@ -321,14 +321,14 @@ export default function App() {
 
   function acquire(tileId: string) {
     const current = puzzleRef.current;
-    if (!current || feedbackBusy) return;
+    if (!startedRef.current || !current || feedbackBusy) return;
     const result = reducePuzzle(current, { type: "acquire", tileId });
     setPuzzle(result.state, result.result);
   }
 
   function drop(slotIndex: number) {
     const current = puzzleRef.current;
-    if (!current || !game || feedbackBusy) return;
+    if (!startedRef.current || !current || !game || feedbackBusy) return;
     const currentGame = game;
     const result = reducePuzzle(current, { type: "drop", slotIndex });
     if (result.result === "neutral") {
@@ -390,7 +390,7 @@ export default function App() {
   }
 
   function onPointerDown(event: ReactPointerEvent<HTMLButtonElement>, id: string) {
-    if (!puzzle || puzzle.phase !== "playing" || feedbackBusy || pointer.current) return;
+    if (!startedRef.current || !puzzle || puzzle.phase !== "playing" || feedbackBusy || pointer.current) return;
     keyboardNavigation.current = false;
     setKeyboardPause(false);
     resumeClock();
@@ -412,6 +412,7 @@ export default function App() {
   }
 
   function onPointerMove(event: ReactPointerEvent<HTMLElement>) {
+    if (!startedRef.current) return;
     const current = pointer.current;
     if (!current || current.pointerId !== event.pointerId) return;
     if (!current.moved && Math.hypot(event.clientX - current.x, event.clientY - current.y) > 8) {
@@ -431,6 +432,7 @@ export default function App() {
   }
 
   function onPointerUp(event: ReactPointerEvent<HTMLElement>) {
+    if (!startedRef.current) return;
     const current = pointer.current;
     pointer.current = null;
     if (!current || current.pointerId !== event.pointerId) return;
@@ -521,13 +523,14 @@ export default function App() {
         aria-pressed={selectedId === tile.id}
         disabled={!started || puzzle.phase !== "playing" || feedbackBusy || manualPause}
         onFocus={() => {
+          if (!startedRef.current) return;
           if (keyboardNavigation.current) {
             setKeyboardPause(true);
             pauseClock();
           }
         }}
         onClick={() => {
-          if (ignoreClick.current) return;
+          if (!startedRef.current || ignoreClick.current) return;
           if (selectedId === tile.id) {
             const result = reducePuzzle(puzzleRef.current ?? puzzle, { type: "cancel" });
             setPuzzle(result.state, result.result);
@@ -569,7 +572,6 @@ export default function App() {
             renderTile(tileMap.get(movement.stopped.id)!, { left: `${movement.stopped.x}px` })}
         </div>
       ))}
-      {!started && <span className="lane-help">Letters move from left to right.</span>}
     </div>
   );
 
@@ -662,7 +664,7 @@ export default function App() {
       >
         {!started && <button className="start" onClick={startOrResume}>{hasSavedProgress ? "Keep going!" : "Let's spell!"}</button>}
         <img className="target-image" src={new URL(game.level.image_path, document.baseURI).href} alt={game.level.image_alt} onError={() => setError("CONTENT_INVALID")} />
-        <button className="replay" disabled={!started || feedbackBusy || puzzle.phase !== "playing"} onClick={() => {
+        <button className="replay" disabled={muted || !started || feedbackBusy || puzzle.phase !== "playing"} onClick={() => {
           playAudioCue(game.level.word_audio_path, muted).then((played) => {
             handleAudioResult(game.level.level_id, game.level.word_audio_path, played);
           });
@@ -692,7 +694,7 @@ export default function App() {
                   aria-label={`Space ${index + 1} of ${puzzle.slots.length}, ${tile ? `${tile.letter}, locked` : "empty"}`}
                   disabled={!started || tile !== null || puzzle.phase !== "playing" || feedbackBusy}
                   onClick={() => {
-                    if (ignoreClick.current) return;
+                    if (!startedRef.current || ignoreClick.current) return;
                     if (selectedId) drop(index);
                   }}
                 >
