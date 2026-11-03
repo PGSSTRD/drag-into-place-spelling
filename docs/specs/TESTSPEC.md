@@ -1,7 +1,7 @@
 # TESTSPEC - Drag Into Place Spelling
 
-**Version:** 2.1.12<br>
-**Status:** Draft - Extra movement-copy removal user-approved and build checks pass; full input, audio distribution and independent QA gates outstanding<br>
+**Version:** 2.1.13<br>
+**Status:** Draft - Stage 1 browser harness implementation human-approved; 30 smoke checks pass; full acceptance, audio distribution and independent QA gates outstanding<br>
 **Last update:** 2026-11-03<br>
 **Author:** Copilot<br>
 **Independent QA owner:** To be assigned
@@ -15,10 +15,11 @@ and policies. Test data below is synthetic, not production learning content.
 The [container contract](../third-party-game-spec.md) section 7 is a mandatory
 external release checklist.
 
-The repository now contains an application, dependency manifest and focused
-unit tests. The acceptance groups, production-artifact E2E, device, human and
-release checks below remain requirements; this document and partial test
-results do not constitute evidence that the complete game passes them.
+The repository now contains an application, dependency manifest, focused unit
+tests and a production-artifact browser harness smoke suite. The full
+acceptance groups, production-artifact E2E matrix, device, human and release
+checks below remain requirements; this document and partial test results do
+not constitute evidence that the complete game passes them.
 
 Layer testing:
 
@@ -63,6 +64,34 @@ loading/ordering, not correct pronunciation; use independently reviewed
 production recordings for the speech acceptance gate. Include a redistributable
 test image/font and license records. Do not download unlicensed media or
 record learner identities in fixtures.
+
+### Implemented stage 1 fixture foundation
+
+[Builders](../../tests/fixtures/browser-content.ts) and their
+[integrity tests](../../tests/fixtures/browser-fixtures.test.ts) implement the
+synthetic fixture inputs; [browser setup](../../tests/e2e/support/app.ts) and
+[pre-boot runtime adapters](../../tests/e2e/support/runtime.ts) apply them to
+isolated production copies. F-11 selects the unchanged authored pack.
+
+F-01-F-04 supply valid packs with distinct indexed tone/image assets, including
+BOOK and the 12-tile maximum. F-05/F-06 supply independent invalid schema/path
+variants plus missing/wrong-case paths. F-07 supplies malformed/truncated/empty
+JSON, staged missing/corrupt/wrong-format files, missing source and hashed
+fonts, and stalled XHR on either transport. F-08 supplies current-format
+partial/completed and invalid snapshots, seed-once storage and denied reads/
+writes. F-09 supplies bridge stubs, invalid/duplicate UUID inputs and exactly
+65,535/65,536/65,537 UTF-8 byte envelopes. F-10 supplies real or mocked audio,
+played/unavailable/blocked/pending outcomes and per-instance manual callbacks.
+Presence of these inputs does not mean every corresponding acceptance case
+has been implemented or run.
+
+Synthetic SVGs and 100 ms PCM tones are locally generated CC0 test assets,
+with staging license records/notices; copied Lexend retains its OFL notice.
+Real tone decoding/playback is not production pronunciation evidence.
+Current-format snapshot fixtures do not approve or resolve the normative
+occurrence-counter/completion-phase differences. Wrong-case asset acceptance
+still requires case-exact auditing on case-insensitive Windows; successful
+filesystem reads alone cannot verify it.
 
 ## 3. Core/domain acceptance cases
 
@@ -170,6 +199,25 @@ development run the smallest relevant test groups after typecheck; before
 phase approval run all applicable groups, including Great moving and
 reduced-motion presentation.
 Release requires the full sequence plus physical/manual gates.
+
+For the implemented stage 1 smoke suite, follow D-09 and the
+[README runbook](../../README.md#browser-testing-stage-1-harness-and-fixtures).
+`npm run test:e2e` first builds production output, then runs the HTTP and file
+projects with one worker, zero retries and a one-failure stop. Correct and
+rerun a failing test before continuing; do not skip it or weaken expected
+behavior. Install the pinned Chromium runtime with `npm run test:e2e:install`
+before the first run. Desktop `file://` uses the documented Chromium local-file
+flag; it is not evidence of physical WebView/container compatibility.
+
+Each case attaches console/server diagnostics and runtime API attempts,
+including across reloads. Uncaught application errors and detected external
+attempts fail the case; off-origin HTTP requests are blocked. Reports are
+`playwright-report/index.html` and `test-results/browser-results.json`, with
+failure screenshots/traces under `test-results/browser`. Retain required
+evidence before another run replaces these generated outputs. This harness
+does not yet supply the full assertion coverage manifest, emitted-asset audit,
+offline cold-launch trials, complete input/viewport/motion matrix or release
+packaging; preserve those gates below.
 
 Production-artifact dry run:
 
@@ -459,8 +507,56 @@ application source or emitted production assets. Movement logic and specified
 learner messages were untouched. This is focused output evidence for T-20,
 not a new browser, unit or complete movement acceptance test.
 
+### Browser acceptance stage 1 evidence and approval recorded 2026-11-03
+
+Source task: [browser acceptance suite](../tasks/draft/browser-acceptance-suite.md),
+stage 1: Harness and fixtures. After the tested implementation report, the user
+explicitly selected "Approve stage 1", then separately authorized this
+specification-update task. This is task approval, not approval of these Draft
+specifications, the full suite, later stages or release.
+
+The final run passed 63 unit tests across seven files (23 existing tests plus
+40 fixture integrity checks) and all 30 Chromium harness smoke executions,
+15 per transport. Production typecheck/build, four-level source content
+validation and whitespace checks passed. The final Playwright JSON report
+records 30 expected passes, zero unexpected/flaky results and zero skips;
+retries are disabled. The initial harness clock and error-screen locator
+failures stopped execution, were corrected and rerun before continuation,
+and the complete suite subsequently passed. Temporary staging was removed.
+
+These are executable [harness checks](../../tests/e2e/harness.spec.ts), not
+full acceptance-group results:
+
+| Smoke ID | Foundation / partial traceability | Verified evidence |
+|---|---|---|
+| H-01 | F-01; P-07/P-08; D-01/D-06; U-02; T-01/T-16/T-26 foundation | Production preview, local Lexend, real synthetic WAV decode and playback after a gesture |
+| H-02 (five variants) | F-02/F-03/F-04/F-11; P-07; D-01/D-09; U-02; T-01/T-33 | Separate staged packs boot; fresh contexts cannot read a previous test's storage |
+| H-03 | F-09/F-10; D-07/D-09; T-02/T-07/T-24/T-25 foundation | Exact seeded RNG sequence, sequential v4 UUIDs across reload, paused monotonic time, bridge recording and deterministic media outcomes; mock completion does not occur at 49 ms and does occur at 50 ms |
+| H-04 | F-08; P-09; D-05; U-02; T-13/T-14 foundation | Seed-once partial snapshot reaches Resume and survives reload |
+| H-05/H-06/H-07 | F-07; P-08; D-06; U-02; T-16/T-23 foundation | Malformed/missing/corrupt staging and pre-boot XHR stall injection over HTTP and file |
+| H-08 (two variants) | F-08/F-09; D-05/D-07; T-14/T-23/T-25 foundation | Denied-read/write storage and throwing-bridge adapters are observable |
+| H-09/H-10 | F-01; P-04; D-03; U-02/U-04; T-18/T-22 foundation | 320x568 emulated touch/reduced-motion setup and keyboard driver can activate Start |
+
+The 50 ms mock completion is a fixture lifecycle value, not a replacement for
+the D-02 feedback or D-06 audio-watchdog constants. H-07 verifies stall
+injection, not the application's timeout boundary. The integrity tests reject
+each catalogued schema/path defect with its field/path, check duplicate BOOK
+letters and the 12-tile maximum, validate current-format snapshot inputs and
+exact envelope byte sizes, and inspect generated non-silent WAV structure.
+They do not establish browser handling of every fixture.
+
+No T-01-T-33 group or U-05 scenario is marked fully passed by this stage.
+Complete spelling/input/movement/timing/restore/audio/failure/bridge/offline/
+layout/accessibility assertions, all required viewport/motion combinations
+and stages 2-8 remain outstanding. Physical Android/iOS WebViews, agreed
+baseline performance, Curious Reader integration/deduplication, independent
+QA/product/human review, media attribution/distribution and packaging remain
+separate gates. The historical evidence above is retained, not retroactively
+converted into automated acceptance.
+
 ## Spec change log
 
+2026-11-03 — Copilot — Recorded the approved stage 1 fixture foundation, sequential HTTP/file smoke suite and 63-unit/30-browser passing evidence without passing full acceptance or device/release gates.
 2026-11-03 — Copilot — Added the preview-copy absence check and recorded approved source/output removal evidence without changing movement or broader acceptance gates.
 
 2026-11-03 — Copilot — Recorded approval and passing focused checks for visible gray inactive replay, retaining prior visibility history and broader acceptance gates.

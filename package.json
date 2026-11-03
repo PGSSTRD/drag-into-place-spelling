@@ -12,6 +12,9 @@
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "test:unit": "vitest run",
+    "pretest:e2e": "npm run build",
+    "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install chromium",
     "validate:content": "tsx scripts/validate-content.ts"
   },
   "dependencies": {
@@ -20,6 +23,8 @@
     "react-dom": "19.1.1"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@types/node": "^24.10.0",
     "@types/react": "19.1.12",
     "@types/react-dom": "19.1.9",
     "tsx": "4.20.5",

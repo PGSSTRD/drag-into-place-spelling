@@ -1,7 +1,7 @@
 # DEVSPEC - Drag Into Place Spelling
 
-**Version:** 2.0.14<br>
-**Status:** Draft - Started-state guard fix approved; focused preview checks pass; audio distribution review, independent QA and release gates outstanding<br>
+**Version:** 2.0.15<br>
+**Status:** Draft - Stage 1 browser harness implementation human-approved; full browser acceptance, audio distribution review, independent QA and release gates outstanding<br>
 **Last update:** 2026-11-03<br>
 **Author:** Copilot
 
@@ -403,7 +403,7 @@ Great-only specification and does not constitute approval of Great or release.
 
 | Module | Evidence in the current prototype | Status / unmet exit criteria |
 |---|---|---|
-| M1 | React 19.1.1, TypeScript 5.9.2, Vite 7.1.7, Ajv 8.17.1; Node 24.20.0/npm 11.19.0; content schema and reference/license validator; CAT, DOG, RABBIT and BIRD source pack at content version 1.4.1 with local SVG illustrations; all 20 referenced MP3s and restricted-license records; local Lexend regular WOFF2 and OFL notice | Partial. On 2026-11-03, content validation, typecheck/build, all 23 unit tests and source/output hash checks passed; the production `file://` page decoded and applied Lexend to page and tile text. ElevenLabs free-plan distribution/title-attribution review and contextual pronunciation review remain outstanding. Individual invalid-fixture coverage is incomplete. |
+| M1 | React 19.1.1, TypeScript 5.9.2, Vite 7.1.7, Ajv 8.17.1; Node 24.20.0/npm 11.19.0; content schema and reference/license validator; CAT, DOG, RABBIT and BIRD source pack at content version 1.4.1 with local SVG illustrations; all 20 referenced MP3s and restricted-license records; local Lexend regular WOFF2 and OFL notice | Partial. On 2026-11-03, content validation, typecheck/build, all 23 existing unit tests and source/output hash checks passed; the production `file://` page decoded and applied Lexend to page and tile text. Stage 1 subsequently added schema/path fixture checks and the browser foundation in section 9.3; case-exact/true-format and full M1 exit coverage remain outstanding. ElevenLabs free-plan distribution/title-attribution review and contextual pronunciation review remain outstanding. |
 | M2 | Pure reducer, value-based duplicate matching, attempts, random wrong-tile relocation, historical foil removal/hints, per-user snapshot validation, cycle order and completion marker; six domain and four progress tests | Historical static-core behavior is present; full injected-clock/invariant matrix and all F-01-F-10 fixture coverage remain outstanding. |
 | M3 | Bounded XHR content loader, current-level audio cue availability checks, serialized HTML audio cues with watchdog, local progress/settings, and fire-and-forget bridge envelope | Partial. Current-level word, letter and shared correction cues are checked independently; unavailable state is level-scoped and browser playback blocks are distinguished. Three focused audio-service tests, typecheck, unit suite and build pass. HTTP development still uses XHR rather than the specified fetch path; broader preload settlement, hidden-page audio suspension (the active clock pauses), component/browser failure-generation tests and device checks remain outstanding. `sub_app_id` is a development placeholder pending Q-02. |
 | M4 | At the time of prototype evidence, responsive static UI, pointer capture, 8 px threshold, clamping, center hit-testing, tap/keyboard placement, live status and a historical MVP/Better tier control | Focused browser checks pass. This historical evidence is not normative. Full viewport, focus/screen-reader, contrast, cancellation and automated component/E2E acceptance remains outstanding. |
@@ -418,14 +418,16 @@ Commands currently present in `package.json` are:
 - `npm run typecheck`
 - `npm run test:unit`
 - `npm run validate:content`
+- `npm run test:e2e` (with an automatic production-build prerequisite)
+- `npm run test:e2e:install`
 
-The required `lint`, `build:standalone`, `test:e2e`, `audit:standalone` and
-`package` commands are not present. The lockfile was created and a clean
-install passed with `--ignore-scripts --no-audit --offline`; the documented
-plain `npm ci` was not run. The production build and `file://` smoke check
-succeed, but the content audit correctly blocks a release. npm reported five
-advisories during installation; the registry audit request timed out, so their
-details and remediation are unknown.
+The required `lint`, `build:standalone`, `audit:standalone` and `package`
+commands are not present. At the 2026-10-22 prototype checkpoint, the clean
+install used `--ignore-scripts --no-audit --offline`, plain `npm ci` was not
+run, missing media blocked content validation, and npm reported five
+advisories whose details could not be retrieved. Preserve that historical
+evidence; current stage 1 checks and their narrower approval are in section
+9.3. No clean-machine install or security-review gate is inferred from them.
 
 ### 9.2 Great implementation evidence recorded 2026-10-27
 
@@ -515,6 +517,45 @@ automated repository tests. Full moving-lane/device acceptance was not rerun.
 The browser also reported an unavailable shared correction cue; these checks
 do not establish audio acceptance or resolve that warning.
 
+### 9.3 Approved browser acceptance stage 1: harness and fixtures (2026-11-03)
+
+Source task: [browser acceptance suite](../tasks/draft/browser-acceptance-suite.md),
+stage 1 only. The user explicitly selected "Approve stage 1" after validation,
+then separately authorized specification reconciliation. This implements the
+M1 testing foundation for D-01/D-09, with fixtures for M2 invariants and M3
+offline/audio/storage/bridge tests; it does not change module dependencies or
+approve their remaining exit criteria.
+
+The locked `@playwright/test` 1.64.1 harness runs Chromium against copies of
+the production `dist` output over HTTP and `file://`. Each test has an
+independent context/storage and temporary staging folder. The HTTP server is
+suite-owned, bound to loopback on an allocated port; the file project starts
+no server and uses `--allow-file-access-from-files` for desktop local-module/
+XHR loading. Teardown closes only owned connections and removes staging,
+including on assertion failure. Authored content and existing servers are
+not modified. One worker, zero retries and a one-failure stop enforce
+incremental execution.
+
+Fixture builders and integrity checks live under `tests/fixtures/`; browser
+smoke cases and setup live under `tests/e2e/`. Pre-boot helpers supply seeded
+RNG, deterministic v4 UUIDs retained across reloads, opt-in paused monotonic
+time, isolated progress/settings, storage faults, bridge stubs, XHR stalls and
+staged asset faults. Mock media is isolated from native loading and exposes
+per-instance delayed callbacks; separate real local WAV/font checks preserve
+decode/playback evidence. Generated SVG/tone assets are synthetic CC0 inputs
+with staging notices; Lexend retains its OFL notice. These tones do not prove
+pronunciation, and current-format snapshots do not resolve the specification/
+serializer occurrence-counter and completion-phase differences.
+
+Validation passed: production typecheck/build, source content validation for
+four English levels, 63 unit tests (23 existing plus 40 fixture integrity
+checks), and 30 sequential browser smoke executions (15 HTTP, 15 file; no
+skips, retries or flaky results). The final JSON report records 30 expected
+passes and zero unexpected results. No generated staging folders remained
+after teardown. These results approve stage 1 implementation only, not full
+T-01-T-33, the U-05 scenarios, independent QA, physical devices, performance,
+container integration, packaging, media distribution or release.
+
 ## Part II - Non-functional requirements
 
 ## 10. Quality, safety and diagnostics (D-08)
@@ -567,7 +608,7 @@ game engine, backend or WASM dependency without a demonstrated requirement.
 | `src/components/`, `src/styles/` | Presentation and input adapters | Versioned |
 | `content/lang/english/`, `content/assets/`, `content/licenses.json` | Authored JSON, language audio, shared images/fonts/audio, license manifest | Versioned; originals retained |
 | `scripts/`, `tests/fixtures/`, `tests/unit/`, `tests/e2e/` | Validation, packaging and repeatable verification | Versioned |
-| `node_modules/`, `dist/`, `.vite/`, `coverage/`, `test-results/`, `artifacts/packages/` | Installed/generated output | Ephemeral; ignored and reproducible |
+| `node_modules/`, `dist/`, `.vite/`, `coverage/`, `test-results/`, `playwright-report/`, `artifacts/packages/` | Installed/generated output | Ephemeral; ignored and reproducible; preserve required release evidence separately |
 | Browser `localStorage` | On-device progress/settings | Durable per device; no cloud backup in scope |
 | Approved release evidence/archive store | Signed-off ZIP hashes, reports and device review records | Durable; externally backed up by release owner |
 
@@ -599,6 +640,29 @@ using the locked Playwright dependency. `build:standalone` stages engine plus
 the selected pack for local testing. `audit:standalone` inspects emitted output
 for network paths, root-relative references, maps, missing media and forbidden
 runtime modules. Packaging refuses an audit/content failure.
+
+Implemented stage 1 browser commands (not a substitute for the complete
+release sequence above):
+
+```text
+npm run test:e2e:install
+npm run test:e2e -- --project=http
+npm run test:e2e -- --project=file
+```
+
+`test:e2e:install` invokes the locked `playwright install chromium` command;
+the browser download needs internet once. `test:e2e` builds with
+`tsc --noEmit && vite build` before running both projects, unless a project
+selector is supplied. No Vite development server or physical phone is needed.
+On Windows, use `npm.cmd`/`npx.cmd` when execution policy blocks the PowerShell
+wrappers. The [README runbook](../../README.md#browser-testing-stage-1-harness-and-fixtures)
+documents focused reruns, fixture options and limits. HTML and JSON reports
+are generated at `playwright-report/index.html` and
+`test-results/browser-results.json`; failed cases retain screenshots/traces
+under `test-results/browser`. Console/server errors and runtime network API
+attempts are attached per case. Later runs replace reports, so archive evidence
+needed for approval separately. Static emitted-output/offline audits, complete
+acceptance assertions and release packaging remain future work.
 
 Local development may use `npm run dev`; this is never proof of offline support.
 No runtime credentials/environment secrets are needed. Approved engine slug and
@@ -708,6 +772,7 @@ dates or invent a change-log entry for untouched specs.
 
 ## Spec change log
 
+2026-11-03 — Copilot — Recorded the human-approved stage 1 production HTTP/file harness, implemented browser commands, isolated fixtures and passing smoke evidence while retaining full acceptance and release gates.
 2026-11-03 — Copilot — Clarified the Ready-state input guards and recorded approved implementation with focused new/saved preview checks while preserving broader input, audio and release gates.
 2026-11-03 — Copilot — Recorded approved Lexend integration, content-version 1.4.1 and passing content, unit, build and file-browser checks while preserving independent QA and release gates.
 2026-11-03 — Copilot — Replaced the placeholder font requirement with the user-selected local Lexend regular WOFF2, CSS loading contract and bundled OFL notice; integration validation remains outstanding.
