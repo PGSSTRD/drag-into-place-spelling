@@ -1,7 +1,7 @@
 # Full browser acceptance suite
 
 **Task ID:** `browser-acceptance-suite`  
-**Status:** Draft full-suite scope; stage 1 implemented, validated and explicitly human-approved; stages 2-8 not implemented  
+**Status:** Draft full-suite scope; stages 1-2 implementation human-approved; stages 3-8 not implemented
 **Created:** 2026-11-03  
 **Author:** Copilot
 
@@ -35,12 +35,12 @@ typecheck, build and development commands, but no project `test:e2e` command,
 Playwright dependency/configuration or repeatable production browser suite.
 Earlier interactive browser checks are evidence for their narrow scopes only.
 
-Stage 1 now provides production HTTP/file harness smoke checks and fixture
-builders; see the [implemented runbook and smoke inventory](../../../README.md#browser-testing-stage-1-harness-and-fixtures).
-This does not mark any T-01-T-33 group fully accepted or implement stages 2-8.
-The user's instruction was to implement stage 1 only and stop on a failing
-test before continuing. Full acceptance assertions, the completed coverage
-manifest and release handoff below remain future work.
+Stage 1 provides production HTTP/file harness smoke checks and fixture
+builders; see the [implemented runbook and smoke inventory](../../../README.md#browser-testing-stages-1-2-harness-content-and-core-spelling).
+Stage 2 adds content-validation and core-spelling assertions for T-01-T-10.
+These stages do not complete T-01-T-33; stages 3-8 and remaining partial
+T-01-T-10 variants remain future work. The original instruction to implement
+stage 1 only is retained as historical scope.
 
 Stage 1 verification (2026-11-03): 63 unit tests passed (including 40 fixture
 integrity checks); production typecheck/build and four-level content validation
@@ -61,6 +61,26 @@ update, the user explicitly selected "Approve reconciliation". DEVSPEC
 2.0.15 and TESTSPEC 2.1.13 record the implemented tooling, fixtures and partial
 evidence; both remain Draft. PRD and UISPEC were unchanged. This approves the
 documentation update, not the specifications wholesale or later stages.
+
+Stage 2 implementation evidence (2026-11-04): `tests/e2e/core.spec.ts` adds
+content rejection, authored-pack, 1,000-seed layout, six-viewport maximum-tile,
+mouse/touch/keyboard placement, wrong/neutral drop, swapped BOOK duplicate,
+completion/audio-order, cycle, foil and hint assertions. The final complete
+Playwright run passed all 60 executions (30 HTTP, 30 `file://`; no skips or
+retries); all 64 unit tests, content validation, typecheck and production build
+also passed. `tests/e2e/coverage.json` records per-group status: T-01, T-03,
+T-04, T-05, T-07 and T-09 remain partial for the listed variants. The stage 2
+implementation received explicit user approval on 2026-11-04, followed by
+authorization for this separate specification reconciliation. Approval
+covers the stage 2 implementation only; it does not pass the remaining
+acceptance groups or any physical-device, independent-QA,
+pronunciation/distribution or release gate.
+
+Separate specification reconciliation (2026-11-04): the user authorized
+updating DEVSPEC and TESTSPEC with stage 2 evidence while preserving their
+Draft status and partial gates. PRD and UISPEC remain unchanged. This
+documentation update does not approve the specifications wholesale or later
+stages.
 
 Deliver:
 

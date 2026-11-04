@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Level } from "../src/domain/content";
 import { createPuzzle, makeCycle, reducePuzzle } from "../src/domain/puzzle";
+import { contentFixtures } from "./fixtures/browser-content";
 
 const book: Level = {
   level_id: 1,
@@ -14,6 +15,34 @@ const book: Level = {
 };
 
 describe("puzzle reducer", () => {
+  it("creates deterministic, complete tile permutations for 1,000 seeded layouts", () => {
+    const levels = [
+      contentFixtures["F-01"].levels[0],
+      contentFixtures["F-02"].levels[0],
+      contentFixtures["F-03"].levels[1],
+    ];
+
+    for (let seed = 0; seed < 1000; seed += 1) {
+      for (const level of levels) {
+        const random = seededRandom(seed);
+        const repeated = seededRandom(seed);
+        const first = createPuzzle(level, "great", random);
+        const second = createPuzzle(level, "great", repeated);
+        const expectedIds = level.letters.map((_, index) => `t:${index}`)
+          .concat(level.foils.map((_, index) => `f:${index}`))
+          .sort();
+
+        expect(first.availableTileIds).toEqual(second.availableTileIds);
+        expect([...first.availableTileIds].sort()).toEqual(expectedIds);
+        expect(new Set(first.availableTileIds).size).toBe(expectedIds.length);
+        expect(first.tiles.map((tile) => tile.id).sort()).toEqual(expectedIds);
+        expect(first.tiles.map((tile) => tile.letter).sort()).toEqual(
+          [...level.letters, ...level.foils].sort(),
+        );
+      }
+    }
+  });
+
   it("accepts repeated letters by value, regardless of tile identity", () => {
     let state = createPuzzle(book, "great", () => 0);
     for (const [tileId, slotIndex] of [["t:0", 0], ["t:2", 1], ["t:1", 2], ["t:3", 3]] as const) {
@@ -67,3 +96,11 @@ describe("puzzle reducer", () => {
     expect(makeCycle([4], () => 0)).toEqual([4]);
   });
 });
+
+function seededRandom(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    return state / 4294967296;
+  };
+}

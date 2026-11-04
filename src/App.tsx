@@ -517,6 +517,7 @@ export default function App() {
     return (
       <button
         key={tile.id}
+        data-tile-id={tile.id}
         className={`tile${selectedId === tile.id ? " selected" : ""}${correctionId === tile.id ? " wrong" : ""}${drag?.id === tile.id ? " dragging" : ""}`}
         style={style}
         aria-label={`Letter ${tile.letter}`}

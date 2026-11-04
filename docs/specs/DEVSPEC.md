@@ -1,8 +1,8 @@
 # DEVSPEC - Drag Into Place Spelling
 
-**Version:** 2.0.15<br>
-**Status:** Draft - Stage 1 browser harness implementation human-approved; full browser acceptance, audio distribution review, independent QA and release gates outstanding<br>
-**Last update:** 2026-11-03<br>
+**Version:** 2.0.16<br>
+**Status:** Draft - Stage 2 browser acceptance implementation human-approved; partial T-01-T-10 variants, full browser acceptance, audio distribution review, independent QA and release gates outstanding<br>
+**Last update:** 2026-11-04<br>
 **Author:** Copilot
 
 ## 1. Authority and reading order
@@ -426,8 +426,9 @@ commands are not present. At the 2026-10-22 prototype checkpoint, the clean
 install used `--ignore-scripts --no-audit --offline`, plain `npm ci` was not
 run, missing media blocked content validation, and npm reported five
 advisories whose details could not be retrieved. Preserve that historical
-evidence; current stage 1 checks and their narrower approval are in section
-9.3. No clean-machine install or security-review gate is inferred from them.
+evidence; current stage 1-2 checks and their narrower approvals are in
+sections 9.3-9.4. No clean-machine install or security-review gate is inferred
+from them.
 
 ### 9.2 Great implementation evidence recorded 2026-10-27
 
@@ -556,6 +557,42 @@ after teardown. These results approve stage 1 implementation only, not full
 T-01-T-33, the U-05 scenarios, independent QA, physical devices, performance,
 container integration, packaging, media distribution or release.
 
+### 9.4 Approved browser acceptance stage 2: content validation and core spelling (2026-11-04)
+
+Source task: [browser acceptance suite](../tasks/draft/browser-acceptance-suite.md),
+stage 2, covering T-01-T-10 and their applicable P-01/P-02/P-03/P-05/P-07,
+D-01/D-02/D-03/D-05/D-06 and U-01-U-05 requirements. The user explicitly
+approved the tested stage 2 implementation on 2026-11-04 and then authorized
+this separate specification reconciliation. This approves the stage 2 task
+only; it does not approve these Draft specifications, complete the remaining
+acceptance variants or authorize release. No product behavior or module
+dependencies changed.
+
+`tests/e2e/core.spec.ts` exercises production builds over HTTP and `file://`.
+It rejects the invalid schema/path fixture matrix without entering a partial
+playable state, loads F-11 and a local image, verifies seeded CAT/BOOK/ELEPHANT
+tile permutations and 12-tile geometry at all six specified viewports, and
+checks mouse/touch/keyboard spelling, wrong and neutral drops, exchanged BOOK
+O identities, completion cue order, seeded F-04/F-11 cycles, one-level replay,
+foil removal and hint suppression. `tests/domain.test.ts` checks 1,000 seeds
+across F-01/F-02/F-03. Stable `data-tile-id` attributes make tile identity
+observable to browser assertions without changing visible or accessible text.
+The [stage 2 coverage manifest](../../tests/e2e/coverage.json) maps each check
+to its P/D/U/T references, fixture, transport, input method, motion mode and
+result.
+
+The final complete browser run passed 60 executions (30 HTTP and 30
+`file://`, with no skips or retries); all 64 unit tests, authored content
+validation, typecheck, production build and whitespace checks passed. This is
+focused evidence, not a declaration that all T-01-T-10 groups passed: the
+manifest keeps T-01, T-03, T-04, T-05, T-07 and T-09 partial for their
+remaining variants. Wrong-case staged-media verification, complete input
+reacquisition/cancellation coverage, one/no-cell relocation boundaries,
+failed/blocked/pending/stale completion audio, and neutral foil drops remain
+open. Full moving-tile acceptance, persistence/fault/accessibility/offline/
+bridge/release cases, physical devices, independent QA and media
+pronunciation/distribution review also remain outstanding.
+
 ## Part II - Non-functional requirements
 
 ## 10. Quality, safety and diagnostics (D-08)
@@ -641,13 +678,15 @@ the selected pack for local testing. `audit:standalone` inspects emitted output
 for network paths, root-relative references, maps, missing media and forbidden
 runtime modules. Packaging refuses an audit/content failure.
 
-Implemented stage 1 browser commands (not a substitute for the complete
+Implemented stage 1-2 browser commands (not a substitute for the complete
 release sequence above):
 
 ```text
 npm run test:e2e:install
 npm run test:e2e -- --project=http
 npm run test:e2e -- --project=file
+npm run test:e2e -- --project=http --grep "stage 2"
+npm run test:e2e -- --project=file --grep "stage 2"
 ```
 
 `test:e2e:install` invokes the locked `playwright install chromium` command;
@@ -655,8 +694,10 @@ the browser download needs internet once. `test:e2e` builds with
 `tsc --noEmit && vite build` before running both projects, unless a project
 selector is supplied. No Vite development server or physical phone is needed.
 On Windows, use `npm.cmd`/`npx.cmd` when execution policy blocks the PowerShell
-wrappers. The [README runbook](../../README.md#browser-testing-stage-1-harness-and-fixtures)
-documents focused reruns, fixture options and limits. HTML and JSON reports
+wrappers. The [README runbook](../../README.md#browser-testing-stages-1-2-harness-content-and-core-spelling)
+documents focused reruns, fixture options and limits. The stage 2 coverage
+manifest records partial results; it is not the full acceptance manifest.
+HTML and JSON reports
 are generated at `playwright-report/index.html` and
 `test-results/browser-results.json`; failed cases retain screenshots/traces
 under `test-results/browser`. Console/server errors and runtime network API
@@ -772,6 +813,7 @@ dates or invent a change-log entry for untouched specs.
 
 ## Spec change log
 
+2026-11-04 — Copilot — Recorded the user-approved stage 2 content/core-spelling browser evidence and partial T-01-T-10 limits without changing behavior or module dependencies.
 2026-11-03 — Copilot — Recorded the human-approved stage 1 production HTTP/file harness, implemented browser commands, isolated fixtures and passing smoke evidence while retaining full acceptance and release gates.
 2026-11-03 — Copilot — Clarified the Ready-state input guards and recorded approved implementation with focused new/saved preview checks while preserving broader input, audio and release gates.
 2026-11-03 — Copilot — Recorded approved Lexend integration, content-version 1.4.1 and passing content, unit, build and file-browser checks while preserving independent QA and release gates.

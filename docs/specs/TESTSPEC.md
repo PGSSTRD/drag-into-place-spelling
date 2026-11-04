@@ -1,8 +1,8 @@
 # TESTSPEC - Drag Into Place Spelling
 
-**Version:** 2.1.13<br>
-**Status:** Draft - Stage 1 browser harness implementation human-approved; 30 smoke checks pass; full acceptance, audio distribution and independent QA gates outstanding<br>
-**Last update:** 2026-11-03<br>
+**Version:** 2.1.14<br>
+**Status:** Draft - Stage 2 browser acceptance implementation human-approved; 60 HTTP/file executions pass; partial T-01-T-10 variants, full acceptance, audio distribution and independent QA gates outstanding<br>
+**Last update:** 2026-11-04<br>
 **Author:** Copilot<br>
 **Independent QA owner:** To be assigned
 
@@ -200,24 +200,26 @@ phase approval run all applicable groups, including Great moving and
 reduced-motion presentation.
 Release requires the full sequence plus physical/manual gates.
 
-For the implemented stage 1 smoke suite, follow D-09 and the
-[README runbook](../../README.md#browser-testing-stage-1-harness-and-fixtures).
+For the implemented stage 1 harness and stage 2 acceptance cases, follow D-09
+and the [README runbook](../../README.md#browser-testing-stages-1-2-harness-content-and-core-spelling).
 `npm run test:e2e` first builds production output, then runs the HTTP and file
 projects with one worker, zero retries and a one-failure stop. Correct and
 rerun a failing test before continuing; do not skip it or weaken expected
 behavior. Install the pinned Chromium runtime with `npm run test:e2e:install`
 before the first run. Desktop `file://` uses the documented Chromium local-file
-flag; it is not evidence of physical WebView/container compatibility.
+flag; it is not evidence of physical WebView/container compatibility. Use
+`--grep "stage 2"` with either project selector for the T-01-T-10 increment.
 
 Each case attaches console/server diagnostics and runtime API attempts,
 including across reloads. Uncaught application errors and detected external
 attempts fail the case; off-origin HTTP requests are blocked. Reports are
 `playwright-report/index.html` and `test-results/browser-results.json`, with
 failure screenshots/traces under `test-results/browser`. Retain required
-evidence before another run replaces these generated outputs. This harness
-does not yet supply the full assertion coverage manifest, emitted-asset audit,
-offline cold-launch trials, complete input/viewport/motion matrix or release
-packaging; preserve those gates below.
+evidence before another run replaces these generated outputs. The
+[stage 2 coverage manifest](../../tests/e2e/coverage.json) maps implemented
+T-01-T-10 checks and their partial variants. It is not the full assertion
+coverage manifest; emitted-asset audit, offline cold-launch trials, complete
+input/viewport/motion matrix and release packaging remain open.
 
 Production-artifact dry run:
 
@@ -554,8 +556,40 @@ QA/product/human review, media attribution/distribution and packaging remain
 separate gates. The historical evidence above is retained, not retroactively
 converted into automated acceptance.
 
+### Browser acceptance stage 2: content validation and core spelling (2026-11-04)
+
+Source task: [browser acceptance suite](../tasks/draft/browser-acceptance-suite.md),
+stage 2. The user explicitly approved this implementation after validation
+and authorized this separate specification reconciliation. Approval is
+limited to stage 2; this specification remains Draft, and full acceptance,
+physical-device, independent-QA, pronunciation/distribution and release gates
+remain open.
+
+The final complete Playwright run passed 60 production-browser executions:
+30 over HTTP and 30 over `file://`, with zero skips or retries. All 64 unit
+tests, authored content validation for four English levels, production
+typecheck/build and `git diff --check` passed. The results are recorded in the
+[stage 2 coverage manifest](../../tests/e2e/coverage.json), which links each
+case to its fixture, transport, input, motion and P/D/U/T traceability.
+`tests/e2e/core.spec.ts` verifies browser rejection of invalid packs, authored
+F-11 content/image loading, spelling placement by mouse/touch/keyboard,
+swapped BOOK O identities and indexed audio, successful completion cue order
+and one-time advance, F-04/F-11 cycles, one-level replay, and foil/hint
+behavior. `tests/domain.test.ts` checks seeded permutations for 1,000 seeds
+across CAT, BOOK and ELEPHANT; browser geometry checks the 12-tile layout at
+320x568, 568x320, 768x1024, 1024x768, 566x600 and 800x400.
+
+Coverage remains deliberately partial for T-01 (staged wrong-case asset),
+T-03 (reacquisition across input methods), T-04 (one/no alternative-cell
+boundary), T-05 (pointercancel, lost capture, blur and resize), T-07
+(failed/blocked/pending/stale completion media) and T-09 (neutral foil drops).
+The manifest does not mark T-01-T-10 as complete groups and does not claim
+T-11-T-33, physical devices, pronunciation, distribution, independent QA or
+release acceptance.
+
 ## Spec change log
 
+2026-11-04 — Copilot — Recorded the user-approved stage 2 T-01-T-10 browser coverage, 60 HTTP/file executions and remaining partial variants without passing full acceptance or release gates.
 2026-11-03 — Copilot — Recorded the approved stage 1 fixture foundation, sequential HTTP/file smoke suite and 63-unit/30-browser passing evidence without passing full acceptance or device/release gates.
 2026-11-03 — Copilot — Added the preview-copy absence check and recorded approved source/output removal evidence without changing movement or broader acceptance gates.
 

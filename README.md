@@ -35,12 +35,13 @@ engine uses a development `sub_app_id`; the approved
 Curious Reader identifier and production content are still required before
 release.
 
-## Browser testing: stage 1 harness and fixtures
+## Browser testing: stages 1-2 harness, content and core spelling
 
-Only stage 1 of [the browser acceptance task](docs/tasks/draft/browser-acceptance-suite.md)
-is implemented. This is a harness smoke suite, **not full T-01-T-33 acceptance**.
-It supplies the M1 tooling/fixtures used by later M2-M7 tests; it does not resolve
-open application/specification decisions or authorize release.
+Stages 1-2 of [the browser acceptance task](docs/tasks/draft/browser-acceptance-suite.md)
+are implemented. Stage 1 supplies the production HTTP/file harness and fixtures;
+stage 2 adds content rejection, seeded layout, core placement, duplicate-letter,
+cycle, foil and hint assertions. This is **not full T-01-T-33 acceptance** and
+does not resolve open application/specification decisions or authorize release.
 
 On Windows use `npm.cmd` if PowerShell blocks `npm.ps1`:
 
@@ -141,3 +142,26 @@ Reports are replaced by the next run; retain a copy externally when needed.
 
 Physical Android/iOS WebViews, Curious Reader integration, baseline-device
 performance, human/media review and release ZIP checks remain separate gates.
+
+### Stage 2 content and spelling coverage
+
+Run the stage 2 browser cases on both production transports:
+
+```powershell
+npm.cmd run test:e2e -- --project=http --grep "stage 2"
+npm.cmd run test:e2e -- --project=file --grep "stage 2"
+```
+
+The [stage 2 coverage manifest](tests/e2e/coverage.json) maps T-01-T-10 cases
+to fixture, transport, input method and motion mode. T-01 checks every
+catalogued invalid schema/path fixture in the browser; the fixture unit tests
+assert field/path diagnostics, and `npm.cmd run validate:content` separately
+checks the authored media/license inventory. T-02 runs 1,000 deterministic
+domain layouts and checks the 12-tile presentation at the six configured
+viewports. The 2026-11-04 complete run passed 60 browser executions (30 per
+transport), with 64 unit tests, authored content validation, typecheck and
+production build passing. The manifest marks partial T-01/T-03/T-04/T-05/
+T-07/T-09 variants explicitly; failed/blocked/pending/stale completion media
+and all requirements outside T-01-T-10 remain open. The user approved the
+stage 2 implementation on 2026-11-04. This approves that task only, not the
+Draft specifications, the full acceptance suite or any release gate.
