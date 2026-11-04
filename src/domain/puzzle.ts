@@ -23,6 +23,7 @@ export interface PuzzleState {
   phase: PuzzlePhase;
   completionRecorded: boolean;
   elapsedMs: number;
+  puzzleOccurrence: number;
 }
 
 export type PuzzleAction =
@@ -36,6 +37,7 @@ export function createPuzzle(
   level: Level,
   tier: Tier,
   random: () => number = Math.random,
+  puzzleOccurrence = 1,
 ): PuzzleState {
   const targets = level.letters.map((letter, index): Tile => ({
     id: `t:${index}`,
@@ -61,6 +63,7 @@ export function createPuzzle(
     phase: "playing",
     completionRecorded: false,
     elapsedMs: 0,
+    puzzleOccurrence,
   };
 }
 

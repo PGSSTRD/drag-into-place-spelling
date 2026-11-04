@@ -1,0 +1,92 @@
+{
+  "stage": 3,
+  "title": "Pointer, touch and keyboard interaction",
+  "requirements": {
+    "product": ["P-02", "P-04", "P-06"],
+    "development": ["D-02", "D-03", "D-04"],
+    "ui": ["U-01", "U-02", "U-03", "U-04", "U-05"],
+    "tests": ["F-01", "F-02", "T-03", "T-05", "T-11", "T-17", "T-18", "T-19"]
+  },
+  "cases": [
+    {
+      "id": "T-03",
+      "references": {
+        "P": ["P-02", "P-04"],
+        "D": ["D-02", "D-03"],
+        "U": ["U-03", "U-04", "U-05"],
+        "T": ["T-03"]
+      },
+      "test": "interactions.spec.ts: correct mouse/touch drag and full CAT/BOOK keyboard and tap-select completion",
+      "fixtures": ["F-01", "F-02"],
+      "transport": ["http", "file"],
+      "input": ["mouse", "touch", "keyboard", "tap"],
+      "motion": ["reduced", "moving"],
+      "result": "partial: accepted placements lock once and leave the available set; locked slots are disabled, but direct reacquisition attempts across input methods are not covered"
+    },
+    {
+      "id": "T-05",
+      "references": {
+        "P": ["P-02", "P-04"],
+        "D": ["D-02", "D-03"],
+        "U": ["U-04", "U-05"],
+        "T": ["T-05"]
+      },
+      "test": "core.spec.ts and interactions.spec.ts: Escape, outside/occupied drop, pointercancel, lost capture, blur and resize",
+      "fixtures": ["F-01"],
+      "transport": ["http", "file"],
+      "input": ["mouse", "touch", "keyboard"],
+      "motion": ["reduced"],
+      "result": "passed: each tested cancellation is neutral, preserves availability and permits subsequent interaction"
+    },
+    {
+      "id": "T-17/T-11",
+      "references": {
+        "P": ["P-04", "P-06"],
+        "D": ["D-03", "D-04"],
+        "U": ["U-01", "U-04"],
+        "T": ["T-11", "T-17"]
+      },
+      "test": "interactions.spec.ts: moving-tile tap-stop/later-drag, stable playfield capture, >8 px threshold, noncentral offset, center hit, outline bounds and whole-tile clamp",
+      "fixtures": ["F-01"],
+      "transport": ["http", "file"],
+      "input": ["mouse", "touch"],
+      "motion": "moving",
+      "result": "partial: listed variants pass; second-pointer exclusion, shared-edge tie, exhaustive edge/corner offsets and moving-lane touch drag remain open"
+    },
+    {
+      "id": "T-18",
+      "references": {
+        "P": ["P-04"],
+        "D": ["D-03"],
+        "U": ["U-03", "U-04", "U-05"],
+        "T": ["T-18"]
+      },
+      "test": "interactions.spec.ts: complete CAT/BOOK by keyboard and tap; change/cancel selection; focus after correct/wrong/foil; hidden-hint and polite-status assertions",
+      "fixtures": ["F-01", "F-02"],
+      "transport": ["http", "file"],
+      "input": ["keyboard", "touch"],
+      "motion": "reduced",
+      "result": "passed: desktop browser keyboard and tap-select paths; human screen-reader review remains separate"
+    },
+    {
+      "id": "T-19",
+      "references": {
+        "P": ["P-04", "P-06"],
+        "D": ["D-03", "D-04"],
+        "U": ["U-01", "U-02"],
+        "T": ["T-19"]
+      },
+      "test": "interactions.spec.ts: orientation resize during an active drag preserves locked slots and accepts fresh geometry",
+      "fixtures": ["F-01"],
+      "transport": ["http", "file"],
+      "input": ["mouse"],
+      "motion": "reduced",
+      "result": "partial: active-drag resize passes; moving-motion, feedback-state and actual hidden-page variants remain open"
+    }
+  ],
+  "gates": {
+    "physical_devices": "not run; desktop touch emulation is not device acceptance",
+    "screen_reader_review": "not run",
+    "full_t_01_t_33": "not complete"
+  }
+}

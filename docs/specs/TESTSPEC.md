@@ -1,7 +1,7 @@
 # TESTSPEC - Drag Into Place Spelling
 
-**Version:** 2.1.14<br>
-**Status:** Draft - Stage 2 browser acceptance implementation human-approved; 60 HTTP/file executions pass; partial T-01-T-10 variants, full acceptance, audio distribution and independent QA gates outstanding<br>
+**Version:** 2.1.17<br>
+**Status:** Draft - Stage 5 persistence/progression implementation human-approved; 120 executions (60 per transport) pass; partial T-01-T-15 and T-17/T-19/T-20 variants, full acceptance, audio distribution and independent QA gates outstanding<br>
 **Last update:** 2026-11-04<br>
 **Author:** Copilot<br>
 **Independent QA owner:** To be assigned
@@ -200,15 +200,17 @@ phase approval run all applicable groups, including Great moving and
 reduced-motion presentation.
 Release requires the full sequence plus physical/manual gates.
 
-For the implemented stage 1 harness and stage 2 acceptance cases, follow D-09
-and the [README runbook](../../README.md#browser-testing-stages-1-2-harness-content-and-core-spelling).
+For the implemented stage 1 harness and stage 2-4 acceptance cases, follow D-09
+and the [README runbook](../../README.md#browser-testing-stages-1-4-harness-content-spelling-interaction-movement-and-pause).
 `npm run test:e2e` first builds production output, then runs the HTTP and file
 projects with one worker, zero retries and a one-failure stop. Correct and
 rerun a failing test before continuing; do not skip it or weaken expected
 behavior. Install the pinned Chromium runtime with `npm run test:e2e:install`
 before the first run. Desktop `file://` uses the documented Chromium local-file
 flag; it is not evidence of physical WebView/container compatibility. Use
-`--grep "stage 2"` with either project selector for the T-01-T-10 increment.
+`--grep "stage 2"` for T-01-T-10, `--grep "stage 3"` for pointer/touch/
+keyboard, or `--grep "stage 4"` for movement/pause with either project
+selector.
 
 Each case attaches console/server diagnostics and runtime API attempts,
 including across reloads. Uncaught application errors and detected external
@@ -217,9 +219,11 @@ attempts fail the case; off-origin HTTP requests are blocked. Reports are
 failure screenshots/traces under `test-results/browser`. Retain required
 evidence before another run replaces these generated outputs. The
 [stage 2 coverage manifest](../../tests/e2e/coverage.json) maps implemented
-T-01-T-10 checks and their partial variants. It is not the full assertion
-coverage manifest; emitted-asset audit, offline cold-launch trials, complete
-input/viewport/motion matrix and release packaging remain open.
+T-01-T-10 checks and their partial variants. The stage 3 interaction manifest
+and stage 4 movement manifest similarly map implemented checks and partial
+variants. None is the full assertion coverage manifest; emitted-asset audit,
+offline cold-launch trials, complete input/viewport/motion matrix and release
+packaging remain open.
 
 Production-artifact dry run:
 
@@ -587,8 +591,90 @@ The manifest does not mark T-01-T-10 as complete groups and does not claim
 T-11-T-33, physical devices, pronunciation, distribution, independent QA or
 release acceptance.
 
+### Browser acceptance stage 3: pointer, touch and keyboard interaction (2026-11-04)
+
+Source task: [browser acceptance suite](../tasks/draft/browser-acceptance-suite.md),
+stage 3. The user explicitly approved the tested implementation and authorized
+this separate specification reconciliation. Approval covers this stage only;
+this specification remains Draft and the complete acceptance, device,
+independent-QA, audio distribution and release gates remain open.
+
+The [stage 3 interaction manifest](../../tests/e2e/interaction-coverage.json)
+maps 15 named browser cases to P-02/P-04/P-06, D-02/D-03/D-04, U-01-U-05 and
+F-01/F-02/T-03/T-05/T-11/T-17/T-18/T-19. The complete Playwright run passed
+90 executions (45 HTTP and 45 `file://`), including all 15 stage 3 cases on
+each transport. The cases cover locking after mouse/touch placement; neutral
+Escape, outside/occupied, touchcancel, lost-capture, blur and resize
+cancellation; moving-tile stop, later drag, stable playfield capture,
+threshold, noncentral offset and whole-tile clamping; keyboard/tap CAT and
+BOOK completion; selection/cancellation, focus progression, hidden hints,
+single polite announcements and fresh geometry after resize. Unit tests (64),
+authored content validation for four English levels, production typecheck/build
+and `git diff --check` also passed.
+
+T-03 remains partial because these cases verify tile removal and disabled
+locked slots but do not attempt reacquisition through every input method.
+T-17 remains partial for second-pointer/shared-edge/exhaustive edge-offset and
+moving-lane touch-drag variants; T-19 remains partial for moving-motion,
+feedback-state and actual hidden-page variants. Desktop touch emulation is not
+physical-device evidence, and human screen-reader review remains outstanding.
+T-03, T-17 and T-19 remain partial; passing T-05/T-18 cases do not establish
+full T-01-T-33 acceptance or release.
+
+### Browser acceptance stage 4: movement and pause behavior (2026-11-04)
+
+Source task: [browser acceptance suite](../tasks/draft/browser-acceptance-suite.md),
+stage 4. The user explicitly approved the tested implementation and authorized
+this separate specification reconciliation. Approval covers this stage only;
+this specification remains Draft, and full acceptance, device,
+independent-QA, audio distribution and release gates remain open.
+
+The [Stage 4 movement manifest](../../tests/e2e/movement-coverage.json) maps
+the cases to P-06; D-02/D-03/D-04/D-08; U-02/U-03/U-04; and T-11/T-12/T-19,
+with untested T-20 presentation measurements left open. Five Stage 4 browser
+cases passed on each transport as part of the full 100-execution Playwright
+run (50 HTTP and 50 `file://`). The F-03 recycling case restores a valid
+snapshot at the eight-letter ELEPHANT level, exercising all 12 target/foil
+tiles; browser checks verify movement, lane assignment, spacing, unique IDs
+and reappearance within 30 seconds at 320x568. `tests/movement.test.ts`
+verifies 100 passes per tile and the <=30-second queue bound at widths 320,
+568, 768 and 1024 CSS px, and confirms consumed tiles are not requeued.
+
+Pause cases verify manual position freeze, blocked slot input, active-time
+exclusion, keyboard-focus pause/pointer resume, hidden-page feedback/audio
+suspension and manual/hidden pause composition. The full run passed all 66
+unit tests, authored content validation, production typecheck/build and
+whitespace checks. T-11 remains partial for stop/drag, correct/foil/cancel
+requeue outcomes and the complete queued-wait viewport matrix. T-12 remains
+partial for reduced-motion changes and other variants. T-19's visibility
+behavior is simulated in desktop Chromium, not physical-device acceptance;
+Stage 4 did not perform T-20's full visual capture/measurement cases. This
+evidence does not establish full T-01-T-33 acceptance or release.
+
+### Browser acceptance stage 5: persistence and progression (2026-11-04)
+
+The user approved the tested Stage 5 implementation and authorized this
+separate specification reconciliation. The [Stage 5 persistence
+manifest](../../tests/e2e/persistence-coverage.json) maps T-08/T-13/T-14/T-15
+to P-03/P-09, D-02/D-05 and U-02/U-03. Ten browser cases passed on each
+transport as part of the full 120-execution Playwright run (60 HTTP and 60
+`file://`). They cover wrong/correct/duplicate-letter/foil restoration,
+user/mute isolation, malformed and stale snapshots, denied storage, completion
+marker recovery, two synthetic multi-level cycles and one-level replay.
+
+All 68 unit tests, authored content validation, typecheck, production build and
+whitespace checks passed. T-08 remains partial pending authored F-04/F-11 cycle
+coverage. T-13 remains partial for moving mid-pass recovery and exact elapsed
+time boundaries. T-14 remains partial for guest isolation and the full browser
+corruption matrix. T-15 covers the marker-save boundary only; other crash
+windows and permitted telemetry loss remain open. No test establishes full
+T-01-T-33 acceptance or release.
+
 ## Spec change log
 
+2026-11-04 — Copilot — Recorded user-approved stage 5 persistence/progression coverage, 120 HTTP/file executions and partial T-08/T-13/T-14/T-15 gates.
+2026-11-04 — Copilot — Recorded the user-approved stage 4 movement/pause coverage and 100 HTTP/file executions, preserving partial T-11/T-12/T-19/T-20 and device/release gates.
+2026-11-04 — Copilot — Recorded user-approved stage 3 T-03/T-05/T-17/T-18/T-19 evidence and 90 HTTP/file executions while retaining partial variants and device/release gates.
 2026-11-04 — Copilot — Recorded the user-approved stage 2 T-01-T-10 browser coverage, 60 HTTP/file executions and remaining partial variants without passing full acceptance or release gates.
 2026-11-03 — Copilot — Recorded the approved stage 1 fixture foundation, sequential HTTP/file smoke suite and 63-unit/30-browser passing evidence without passing full acceptance or device/release gates.
 2026-11-03 — Copilot — Added the preview-copy absence check and recorded approved source/output removal evidence without changing movement or broader acceptance gates.

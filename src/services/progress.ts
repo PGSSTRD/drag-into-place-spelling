@@ -16,6 +16,14 @@ function reportStorageFailure(code: "SAVE_INVALID" | "SAVE_UNAVAILABLE") {
   console.warn(code);
 }
 
+export function reportInvalidProgress() {
+  reportStorageFailure("SAVE_INVALID");
+}
+
+export function reportUnavailableProgress() {
+  reportStorageFailure("SAVE_UNAVAILABLE");
+}
+
 export function progressKey(userId: string | null): string {
   const user = userId || "guest";
   return `${KEY_PREFIX}${encodeURIComponent(user)}:english`;
@@ -43,9 +51,10 @@ export function saveProgress(
       removedFoilIds: state.removedFoilIds,
       revealedHints: state.revealedHints,
       attempts: state.attempts,
-      phase: state.phase,
+      phase: state.phase === "completing" ? "completed_pending_advance" : "playing",
       completion_recorded: state.completionRecorded,
       elapsed_ms: state.elapsedMs,
+      occurrence_counter: state.puzzleOccurrence,
       cycleIds,
       currentCycleIndex,
     }));
@@ -76,7 +85,9 @@ export function restoreProgress(
     !Array.isArray(snapshot.revealedHints) ||
     !Number.isSafeInteger(snapshot.attempts) ||
     (snapshot.attempts as number) < 0 ||
-    (snapshot.phase !== "playing" && snapshot.phase !== "completing") ||
+    (snapshot.phase !== "playing" && snapshot.phase !== "completed_pending_advance") ||
+    !Number.isSafeInteger(snapshot.occurrence_counter) ||
+    (snapshot.occurrence_counter as number) < 1 ||
     typeof snapshot.completion_recorded !== "boolean" ||
     typeof snapshot.elapsed_ms !== "number" ||
     !Number.isFinite(snapshot.elapsed_ms) ||
@@ -85,7 +96,7 @@ export function restoreProgress(
     return null;
   }
 
-  const state = createPuzzle(level, tier, random);
+  const state = createPuzzle(level, tier, random, snapshot.occurrence_counter as number);
   const used = new Set<string>();
   const validTile = new Map(state.tiles.map((tile) => [tile.id, tile]));
   for (let index = 0; index < wordLength; index += 1) {
@@ -113,7 +124,8 @@ export function restoreProgress(
   state.elapsedMs = snapshot.elapsed_ms;
   state.phase = state.slots.every((slot) => slot !== null) ? "completing" : "playing";
   state.completionRecorded = snapshot.completion_recorded;
-  if (snapshot.phase !== state.phase || state.completionRecorded !== (state.phase === "completing")) return null;
+  const expectedSnapshotPhase = state.phase === "completing" ? "completed_pending_advance" : "playing";
+  if (snapshot.phase !== expectedSnapshotPhase || state.completionRecorded !== (state.phase === "completing")) return null;
   return state;
 }
 
@@ -154,11 +166,11 @@ export function readProgress(
     try {
       return { kind: "value", snapshot: JSON.parse(raw) as unknown };
     } catch {
-      reportStorageFailure("SAVE_INVALID");
+      reportInvalidProgress();
       return { kind: "invalid" };
     }
   } catch {
-    reportStorageFailure("SAVE_UNAVAILABLE");
+    reportUnavailableProgress();
     return { kind: "unavailable" };
   }
 }

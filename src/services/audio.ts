@@ -5,6 +5,18 @@ let queue: Promise<AudioCueResult> = Promise.resolve("played");
 let queueBusy = false;
 let audioContext: AudioContext | null = null;
 let unlockFailureReported = false;
+let audioSuspended = false;
+const activeCues = new Set<{ pause: () => void; resume: () => void }>();
+
+export function suspendAudioCues(): void {
+  audioSuspended = true;
+  for (const cue of activeCues) cue.pause();
+}
+
+export function resumeAudioCues(): void {
+  audioSuspended = false;
+  for (const cue of activeCues) cue.resume();
+}
 
 export function playAudioCue(path: string, muted: boolean): Promise<AudioCueResult> {
   if (muted) return Promise.resolve("muted");
@@ -90,35 +102,69 @@ function playOne(path: string): Promise<AudioCueResult> {
       return;
     }
     let settled = false;
-    const timeout = window.setTimeout(() => finish("unavailable"), 4000);
+    let suspended = audioSuspended;
+    let remainingTimeoutMs = 4000;
+    let timeoutStartedAt: number | null = null;
+    let timeout: number | null = null;
 
     function finish(result: AudioCueResult) {
       if (settled) return;
       settled = true;
-      window.clearTimeout(timeout);
+      if (timeout !== null) window.clearTimeout(timeout);
       audio.removeEventListener("ended", onEnded);
       audio.removeEventListener("error", onError);
+      activeCues.delete(cue);
       audio.pause();
       if (result === "unavailable") reportFailure(path);
       resolve(result);
     }
 
-    function onEnded() { finish("played"); }
+    function onEnded() {
+      if (!suspended) finish("played");
+    }
+
     function onError() { finish("unavailable"); }
+
+    function startPlayback() {
+      if (settled || suspended) return;
+      timeoutStartedAt = performance.now();
+      timeout = window.setTimeout(() => finish("unavailable"), remainingTimeoutMs);
+      try {
+        audio.play().catch((reason: unknown) => {
+          if (isPlaybackBlocked(reason)) {
+            finish("blocked");
+          } else {
+            finish("unavailable");
+          }
+        });
+      } catch {
+        finish("unavailable");
+      }
+    }
+
+    const cue = {
+      pause() {
+        if (settled || suspended) return;
+        suspended = true;
+        if (timeout !== null && timeoutStartedAt !== null) {
+          remainingTimeoutMs = Math.max(0, remainingTimeoutMs - (performance.now() - timeoutStartedAt));
+          window.clearTimeout(timeout);
+          timeout = null;
+          timeoutStartedAt = null;
+        }
+        audio.pause();
+      },
+      resume() {
+        if (settled || !suspended) return;
+        suspended = false;
+        startPlayback();
+      },
+    };
 
     audio.addEventListener("ended", onEnded, { once: true });
     audio.addEventListener("error", onError, { once: true });
-    try {
-      audio.play().catch((reason: unknown) => {
-        if (isPlaybackBlocked(reason)) {
-          finish("blocked");
-        } else {
-          finish("unavailable");
-        }
-      });
-    } catch {
-      finish("unavailable");
-    }
+    activeCues.add(cue);
+    if (!suspended) startPlayback();
   });
 }
 

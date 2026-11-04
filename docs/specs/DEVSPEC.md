@@ -1,7 +1,7 @@
 # DEVSPEC - Drag Into Place Spelling
 
-**Version:** 2.0.16<br>
-**Status:** Draft - Stage 2 browser acceptance implementation human-approved; partial T-01-T-10 variants, full browser acceptance, audio distribution review, independent QA and release gates outstanding<br>
+**Version:** 2.0.19<br>
+**Status:** Draft - Stage 5 persistence/progression implementation human-approved; partial T-01-T-15 and T-17/T-19/T-20 variants, full browser acceptance, audio distribution review, independent QA and release gates outstanding<br>
 **Last update:** 2026-11-04<br>
 **Author:** Copilot
 
@@ -254,12 +254,13 @@ implementation. Save under
 create or persist a separate user/device identifier.
 
 Snapshot fields: `schema_version=1`, `content_version`, shuffled cycle IDs,
-current cycle index, current occurrence counter, level ID, slot-to-tile IDs
-(or null), removed foil IDs, revealed hints, attempts, elapsed active
-milliseconds, phase (`playing`/`completed_pending_advance`) and
-`completion_recorded`. Settings (mute) use a user-scoped settings key. Moving
-positions, pointer state, audio buffers and animation progress are ephemeral;
-restore an incomplete Great puzzle with all remaining tiles requeued.
+current cycle index, current occurrence counter (`occurrence_counter`), level
+ID, slot-to-tile IDs (or null), removed foil IDs, revealed hints, attempts,
+elapsed active milliseconds, phase (`playing`/`completed_pending_advance`) and
+`completion_recorded`. The domain exposes the counter as `puzzleOccurrence`.
+Settings (mute) use a user-scoped settings key. Moving positions, pointer
+state, audio buffers and animation progress are ephemeral; restore an
+incomplete Great puzzle with all remaining tiles requeued.
 
 Active elapsed time starts at Start/Resume (or automatic puzzle activation),
 not while Ready/loading, and excludes placement/completion feedback, hidden
@@ -405,10 +406,10 @@ Great-only specification and does not constitute approval of Great or release.
 |---|---|---|
 | M1 | React 19.1.1, TypeScript 5.9.2, Vite 7.1.7, Ajv 8.17.1; Node 24.20.0/npm 11.19.0; content schema and reference/license validator; CAT, DOG, RABBIT and BIRD source pack at content version 1.4.1 with local SVG illustrations; all 20 referenced MP3s and restricted-license records; local Lexend regular WOFF2 and OFL notice | Partial. On 2026-11-03, content validation, typecheck/build, all 23 existing unit tests and source/output hash checks passed; the production `file://` page decoded and applied Lexend to page and tile text. Stage 1 subsequently added schema/path fixture checks and the browser foundation in section 9.3; case-exact/true-format and full M1 exit coverage remain outstanding. ElevenLabs free-plan distribution/title-attribution review and contextual pronunciation review remain outstanding. |
 | M2 | Pure reducer, value-based duplicate matching, attempts, random wrong-tile relocation, historical foil removal/hints, per-user snapshot validation, cycle order and completion marker; six domain and four progress tests | Historical static-core behavior is present; full injected-clock/invariant matrix and all F-01-F-10 fixture coverage remain outstanding. |
-| M3 | Bounded XHR content loader, current-level audio cue availability checks, serialized HTML audio cues with watchdog, local progress/settings, and fire-and-forget bridge envelope | Partial. Current-level word, letter and shared correction cues are checked independently; unavailable state is level-scoped and browser playback blocks are distinguished. Three focused audio-service tests, typecheck, unit suite and build pass. HTTP development still uses XHR rather than the specified fetch path; broader preload settlement, hidden-page audio suspension (the active clock pauses), component/browser failure-generation tests and device checks remain outstanding. `sub_app_id` is a development placeholder pending Q-02. |
+| M3 | Bounded XHR content loader, current-level audio cue availability checks, serialized HTML audio cues with watchdog, local progress/settings, and fire-and-forget bridge envelope | Partial. Current-level word, letter and shared correction cues are checked independently; unavailable state is level-scoped and browser playback blocks are distinguished. Stage 4 browser tests verify active-cue suspension/resumption with mocked audio and simulated visibility. HTTP development still uses XHR rather than the specified fetch path; broader preload settlement, component/browser failure-generation tests and device checks remain outstanding. `sub_app_id` is a development placeholder pending Q-02. |
 | M4 | At the time of prototype evidence, responsive static UI, pointer capture, 8 px threshold, clamping, center hit-testing, tap/keyboard placement, live status and a historical MVP/Better tier control | Focused browser checks pass. This historical evidence is not normative. Full viewport, focus/screen-reader, contrast, cancellation and automated component/E2E acceptance remains outstanding. |
 | M5 | Historical static prototype displayed per-position hints and removed foils; these mechanics are retained in the Great specification | Focused behavior is present. Full T-09/T-10 and regression suite remains outstanding. |
-| M6 | Great moving lanes, tap-to-stop selection, pause, reduced-motion static presentation and FIFO recycle scheduler are implemented; focused scheduler tests cover 12 tiles at lane widths 320, 568, 768 and 1024 CSS px. | Partial. Full Great drag/recycle/persistence, viewport/device, performance and acceptance coverage remain outstanding. |
+| M6 | Great moving lanes, tap-to-stop selection, pause, reduced-motion static presentation and FIFO recycle scheduler are implemented; focused scheduler tests cover 12 tiles for 100 passes at lane widths 320, 568, 768 and 1024 CSS px, and Stage 4 browser checks exercise movement and pause on HTTP/`file://`. | Partial. Full Great drag/recycle/persistence, viewport/device, performance and acceptance coverage remain outstanding. |
 | M7 | Bridge envelope generation and call boundary are implemented | Partial. Release audit, ZIPs, icon, release configuration and device/container evidence are not implemented. |
 
 Commands currently present in `package.json` are:
@@ -426,8 +427,8 @@ commands are not present. At the 2026-10-22 prototype checkpoint, the clean
 install used `--ignore-scripts --no-audit --offline`, plain `npm ci` was not
 run, missing media blocked content validation, and npm reported five
 advisories whose details could not be retrieved. Preserve that historical
-evidence; current stage 1-2 checks and their narrower approvals are in
-sections 9.3-9.4. No clean-machine install or security-review gate is inferred
+evidence; current stage 1-4 checks and their narrower approvals are in
+sections 9.3-9.6. No clean-machine install or security-review gate is inferred
 from them.
 
 ### 9.2 Great implementation evidence recorded 2026-10-27
@@ -593,6 +594,96 @@ open. Full moving-tile acceptance, persistence/fault/accessibility/offline/
 bridge/release cases, physical devices, independent QA and media
 pronunciation/distribution review also remain outstanding.
 
+### 9.5 Approved browser acceptance stage 3: pointer, touch and keyboard interaction (2026-11-04)
+
+Source task: [browser acceptance suite](../tasks/draft/browser-acceptance-suite.md),
+stage 3, covering P-02/P-04/P-06, D-02/D-03/D-04 and U-01-U-05. The user
+explicitly approved the tested implementation on 2026-11-04 and authorized
+this separate specification reconciliation. Approval is limited to stage 3;
+this specification remains Draft, and full acceptance, device, independent-QA,
+audio distribution and release gates remain open. No behavior or module
+dependencies changed: the work exercises M2 domain rules through M4 input
+adapters and M5/M6 foil and moving-tile behavior.
+
+The [stage 3 interaction manifest](../../tests/e2e/interaction-coverage.json)
+maps 15 production-browser cases to their requirements, fixtures, transports,
+input methods and motion modes. The full Playwright run passed 90 executions
+(45 HTTP and 45 `file://`), including all 15 stage 3 cases on each transport.
+The tests cover correct mouse/touch placement, keyboard and tap-select CAT/BOOK
+completion, neutral cancellation paths, moving-tile capture/stop/drag,
+threshold and clamping behavior, keyboard focus and announcements, and resize
+during an active drag. The related input/cancellation/focus fixes are recorded
+with the implementation evidence, not as changes to D-02/D-03/D-04.
+
+Coverage remains partial for T-03 (no direct cross-modality reacquisition
+attempts), T-17 (second-pointer, shared-edge, exhaustive edge-offset and
+moving-lane touch-drag variants), and T-19 (moving-motion, feedback-state and
+actual hidden-page variants). Physical-device touch and human screen-reader
+review are separate gates; this evidence does not establish full T-01-T-33
+acceptance or release.
+
+### 9.6 Approved browser acceptance stage 4: movement and pause behavior (2026-11-04)
+
+Source task: [browser acceptance suite](../tasks/draft/browser-acceptance-suite.md),
+stage 4, covering P-06; D-02/D-03/D-04/D-08; and U-02/U-03/U-04. The user
+explicitly approved the tested implementation on 2026-11-04 and authorized
+this separate specification reconciliation. Approval is limited to stage 4;
+this specification remains Draft, and full acceptance, device, independent-QA,
+audio distribution and release gates remain open. No normative behavior or
+module dependencies changed: the work exercises M2 movement rules through M4
+input/pause adapters and M5/M6 Great behavior, with M3 audio suspension.
+
+The [Stage 4 movement manifest](../../tests/e2e/movement-coverage.json) maps
+the production-browser cases and their partial variants. The full Playwright
+run passed 100 executions (50 HTTP and 50 `file://`), including all five Stage
+4 cases on each transport. F-03's valid saved snapshot selects its eight-letter
+ELEPHANT level so the browser recycling case exercises all 12 target/foil
+tiles; browser checks cover lane assignment, travel, spacing, unique IDs and
+reappearance within 30 seconds at 320x568. Unit tests cover 100 passes per
+tile at lane widths 320, 568, 768 and 1024 CSS px, plus no requeue after a tile
+is consumed.
+
+Pause checks cover manual position freeze, blocked slot input, paused-time
+exclusion, keyboard-focus pause, pointer resume, simulated hidden-page
+feedback/audio suspension and composition of manual/hidden pause reasons.
+All 66 unit tests, authored content validation, production typecheck/build and
+`git diff --check` passed. T-11 remains partial for stop/drag, correct/foil/
+cancel requeue outcomes and the complete queued-wait viewport matrix. T-12
+remains partial for pointer-generated focus, reduced-motion changes and other
+variants; T-19's hidden-page simulation is not physical-device evidence, and
+Stage 4 did not complete T-20's visual capture/measurement cases. This evidence
+does not establish full T-01-T-33 acceptance or release.
+
+### 9.7 Approved browser acceptance stage 5: persistence and progression (2026-11-04)
+
+Source task: [browser acceptance suite](../tasks/draft/browser-acceptance-suite.md),
+stage 5, covering P-03/P-09; D-02/D-05; U-02/U-03; and T-08/T-13/T-14/T-15.
+The user explicitly approved the tested implementation and authorized this
+separate specification reconciliation. Approval is limited to stage 5; this
+specification remains Draft, and full acceptance, device, independent-QA,
+audio distribution and release gates remain open. No product behavior or
+module dependencies changed: the work exercises M2 occurrence/cycle state,
+M3 snapshot persistence, and M4-M6 application and progression integration.
+
+The [Stage 5 persistence manifest](../../tests/e2e/persistence-coverage.json)
+maps browser and unit evidence. The full Playwright run passed 120 executions
+(60 HTTP and 60 `file://`), including all ten Stage 5 cases on both transports.
+The implementation serializes the D-05 occurrence counter as
+`occurrence_counter` and the in-memory completing phase as
+`completed_pending_advance`. Valid pending-completion snapshots advance once
+without replaying completion telemetry; structurally invalid snapshots report
+a diagnostic and start a fresh puzzle. Tests cover accepted-outcome restore,
+user/mute isolation, storage denial, cycle boundaries and one-level replay.
+All 68 unit tests, authored content validation, production typecheck/build and
+whitespace checks passed.
+
+T-08 remains partial because only synthetic F-04 fixtures, not the authored
+F-04/F-11 packs, were cycled. T-13 remains partial for moving mid-pass recovery
+and exact elapsed-time boundaries. T-14 remains partial for guest isolation
+and the complete browser corruption matrix. T-15 covers the completion-marker
+reload boundary; other crash windows and permitted telemetry loss remain open.
+This evidence does not establish full T-01-T-33 acceptance or release.
+
 ## Part II - Non-functional requirements
 
 ## 10. Quality, safety and diagnostics (D-08)
@@ -678,7 +769,7 @@ the selected pack for local testing. `audit:standalone` inspects emitted output
 for network paths, root-relative references, maps, missing media and forbidden
 runtime modules. Packaging refuses an audit/content failure.
 
-Implemented stage 1-2 browser commands (not a substitute for the complete
+Implemented stage 1-4 browser commands (not a substitute for the complete
 release sequence above):
 
 ```text
@@ -687,6 +778,10 @@ npm run test:e2e -- --project=http
 npm run test:e2e -- --project=file
 npm run test:e2e -- --project=http --grep "stage 2"
 npm run test:e2e -- --project=file --grep "stage 2"
+npm run test:e2e -- --project=http --grep "stage 3"
+npm run test:e2e -- --project=file --grep "stage 3"
+npm run test:e2e -- --project=http --grep "stage 4"
+npm run test:e2e -- --project=file --grep "stage 4"
 ```
 
 `test:e2e:install` invokes the locked `playwright install chromium` command;
@@ -694,9 +789,10 @@ the browser download needs internet once. `test:e2e` builds with
 `tsc --noEmit && vite build` before running both projects, unless a project
 selector is supplied. No Vite development server or physical phone is needed.
 On Windows, use `npm.cmd`/`npx.cmd` when execution policy blocks the PowerShell
-wrappers. The [README runbook](../../README.md#browser-testing-stages-1-2-harness-content-and-core-spelling)
-documents focused reruns, fixture options and limits. The stage 2 coverage
-manifest records partial results; it is not the full acceptance manifest.
+wrappers. The [README runbook](../../README.md#browser-testing-stages-1-4-harness-content-spelling-interaction-movement-and-pause)
+documents focused reruns, fixture options and limits. The stage 2, stage 3 and
+stage 4 coverage manifests record partial results; they are not the full
+acceptance manifest.
 HTML and JSON reports
 are generated at `playwright-report/index.html` and
 `test-results/browser-results.json`; failed cases retain screenshots/traces
@@ -813,6 +909,9 @@ dates or invent a change-log entry for untouched specs.
 
 ## Spec change log
 
+2026-11-04 — Copilot — Clarified D-05's `occurrence_counter` mapping and recorded the user-approved stage 5 persistence/progression evidence and partial gates without changing behavior.
+2026-11-04 — Copilot — Recorded the user-approved stage 4 movement/pause implementation and 100 HTTP/file executions, including partial T-11/T-12/T-19/T-20 gates, without changing normative behavior or module dependencies.
+2026-11-04 — Copilot — Recorded the user-approved stage 3 pointer/touch/keyboard evidence, 90 HTTP/file executions and remaining partial T-03/T-17/T-19 variants without changing behavior or module dependencies.
 2026-11-04 — Copilot — Recorded the user-approved stage 2 content/core-spelling browser evidence and partial T-01-T-10 limits without changing behavior or module dependencies.
 2026-11-03 — Copilot — Recorded the human-approved stage 1 production HTTP/file harness, implemented browser commands, isolated fixtures and passing smoke evidence while retaining full acceptance and release gates.
 2026-11-03 — Copilot — Clarified the Ready-state input guards and recorded approved implementation with focused new/saved preview checks while preserving broader input, audio and release gates.

@@ -266,7 +266,7 @@ test.describe("stage 2: content validation and core spelling", () => {
     }
     expect(await snapshot(page)).toMatchObject({
       attempts: 4,
-      phase: "completing",
+      phase: "completed_pending_advance",
       slots: ["t:0", "t:2", "t:1", "t:3"],
     });
     await page.clock.runFor(1000);

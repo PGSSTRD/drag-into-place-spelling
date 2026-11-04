@@ -1,8 +1,8 @@
 # UISPEC - Drag Into Place Spelling
 
-**Version:** 2.0.15<br>
-**Status:** Draft - Extra movement-copy removal implemented and user-approved; product, accessibility and design review outstanding<br>
-**Last update:** 2026-11-03<br>
+**Version:** 2.0.18<br>
+**Status:** Draft - Stage 5 saved-state presentation integration human-approved; product, accessibility and design review outstanding<br>
+**Last update:** 2026-11-04<br>
 **Author:** Copilot
 
 ## 1. Authority and visual intent
@@ -316,8 +316,49 @@ the top of a moving lane. Its full outline was visible; measured upper
 clearance from the clipping container was 4.4 CSS px. This focused check does
 not replace the complete U-01 viewport or accessibility review.
 
+### Browser acceptance stage 3 evidence recorded 2026-11-04
+
+The user-approved stage 3 browser suite exercised keyboard and tap-select
+completion, selection/cancellation, focus progression after correct, wrong and
+foil outcomes, hidden-hint and polite-status assertions, pointer/touch
+placement, and active-drag resize. All 15 stage 3 cases passed on both HTTP and
+`file://` as part of the 90-execution complete browser run. This records
+implementation evidence only; it does not change U-01-U-05 or grant product,
+design, full accessibility, screen-reader, physical-device or release
+approval. T-17 edge/second-pointer variants and T-19 moving-motion,
+feedback-state and actual hidden-page variants remain open.
+
+### Browser acceptance stage 4 evidence recorded 2026-11-04
+
+The user-approved Stage 4 browser suite exercised the U-02 pause/hidden states,
+U-03 Pause/Resume control and U-04 keyboard-focus pause/pointer-resume behavior.
+All five Stage 4 cases passed on HTTP and `file://` as part of the 100-execution
+complete Playwright run. Coverage also includes manual pause freezing lane
+positions and blocking slot activation, and simulated hidden-page feedback and
+audio suspension/resumption. This records implementation evidence only; it
+does not change U-01-U-05 or grant product, design, full accessibility,
+screen-reader, physical-device or release approval. T-11/T-12 variants remain
+partial, T-19 hidden-page behavior uses desktop simulation, and Stage 4 did
+not perform T-20's full visual capture/measurement review.
+
+### Browser acceptance stage 5 evidence recorded 2026-11-04
+
+The user-approved Stage 5 browser suite exercised the U-02 new/saved preview,
+fresh-puzzle and automatic-next-puzzle states, plus U-03 per-user sound
+settings and nonfatal storage notices. All ten Stage 5 cases passed on HTTP
+and `file://` as part of the 120-execution full Playwright run. The completion
+recovery fix presents the new-puzzle Start action after advancing a saved
+completion marker; valid incomplete progress continues to present "Keep
+going!". This records implementation evidence only; it does not change
+U-01-U-05 or grant product, design, full accessibility, screen-reader,
+physical-device or release approval. Guest isolation and other T-14 browser
+variants remain open.
+
 ## Spec change log
 
+2026-11-04 — Copilot — Recorded user-approved stage 5 saved-state, recovery and storage-notice presentation evidence without changing U-01-U-05 or product/design/accessibility gates.
+2026-11-04 — Copilot — Recorded user-approved stage 4 movement/pause presentation evidence while preserving U-01-U-05 and product, design, accessibility and release gates.
+2026-11-04 — Copilot — Recorded user-approved stage 3 interaction evidence while preserving U-01-U-05 and product, design, accessibility and release gates.
 2026-11-03 — Copilot — Recorded the approved removal of unspecified movement-preview copy while preserving P-06 movement and the specified learner messages.
 2026-11-03 — Copilot — Recorded user approval of always-visible gray inactive replay and passing focused portrait/landscape, saved-mute and enablement checks.
 2026-11-03 — Copilot — Replaced hidden muted replay with the user-requested always-visible gray disabled button, preserving geometry and existing availability gates.

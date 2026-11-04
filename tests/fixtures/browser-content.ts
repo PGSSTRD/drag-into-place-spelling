@@ -105,11 +105,12 @@ export function snapshotFixture(kind: "partial" | "completed" | "stale" | "stale
     phase: "playing",
     completion_recorded: false,
     elapsed_ms: 1000,
+    occurrence_counter: 1,
     cycleIds: [1],
     currentCycleIndex: 0,
   };
   if (kind === "completed") Object.assign(snapshot, {
-    slots: ["t:0", "t:1", "t:2"], attempts: 3, phase: "completing", completion_recorded: true,
+    slots: ["t:0", "t:1", "t:2"], attempts: 3, phase: "completed_pending_advance", completion_recorded: true,
   });
   if (kind === "stale") snapshot.content_version = "0.0.0";
   if (kind === "stale-schema") snapshot.schema_version = 2;

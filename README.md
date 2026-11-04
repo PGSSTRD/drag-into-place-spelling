@@ -35,13 +35,18 @@ engine uses a development `sub_app_id`; the approved
 Curious Reader identifier and production content are still required before
 release.
 
-## Browser testing: stages 1-2 harness, content and core spelling
+## Browser testing: stages 1-5 harness, content, spelling, interaction, movement, pause, persistence and progression
 
-Stages 1-2 of [the browser acceptance task](docs/tasks/draft/browser-acceptance-suite.md)
-are implemented. Stage 1 supplies the production HTTP/file harness and fixtures;
-stage 2 adds content rejection, seeded layout, core placement, duplicate-letter,
-cycle, foil and hint assertions. This is **not full T-01-T-33 acceptance** and
-does not resolve open application/specification decisions or authorize release.
+Stages 1-4 of [the browser acceptance task](docs/tasks/draft/browser-acceptance-suite.md)
+are implemented and human-approved. Stage 5 persistence/progression
+implementation was human-approved on 2026-11-04. Stage 1 supplies
+the production HTTP/file harness and fixtures; stage 2 adds content rejection,
+seeded layout, core placement, duplicate-letter, cycle, foil and hint assertions;
+stage 3 covers pointer, touch and keyboard interaction; stage 4 adds movement
+and pause coverage; stage 5 validates saved state, user isolation, completion
+recovery and progression. This is **not full T-01-T-33
+acceptance** and does not resolve open application/specification decisions or
+authorize release.
 
 On Windows use `npm.cmd` if PowerShell blocks `npm.ps1`:
 
@@ -165,3 +170,85 @@ T-07/T-09 variants explicitly; failed/blocked/pending/stale completion media
 and all requirements outside T-01-T-10 remain open. The user approved the
 stage 2 implementation on 2026-11-04. This approves that task only, not the
 Draft specifications, the full acceptance suite or any release gate.
+
+### Stage 3 pointer, touch and keyboard interaction
+
+Run the stage 3 production-browser checks on both transports:
+
+```powershell
+npm.cmd run test:e2e -- --project=http --grep "stage 3"
+npm.cmd run test:e2e -- --project=file --grep "stage 3"
+```
+
+The [stage 3 interaction coverage manifest](tests/e2e/interaction-coverage.json)
+maps T-03, T-05, T-17, T-18 and T-19 assertions. It exercises mouse and
+emulated-touch dragging, moving-tile stop and later drag, stable pointer
+capture, the >8 CSS px threshold, an offset drag with whole-tile clamping,
+keyboard-only and tap-select completion of CAT and BOOK, focus progression,
+selection/cancellation, and resize during an active drag. The complete
+Playwright run passed 90 executions (45 per transport), including all 15
+stage 3 cases on HTTP and `file://`; 64 unit tests, authored content
+validation, typecheck, production build and whitespace checks passed.
+T-03 remains partial because direct reacquisition attempts across input
+methods are not covered; T-17 remains partial for second-pointer/shared-edge/
+exhaustive-offset variants, and T-19 for moving-motion/feedback/hidden-page
+variants. Physical-device touch and human screen-reader review remain open.
+The user approved the stage 3 implementation on 2026-11-04. This is not full
+T-01-T-33 acceptance, specification approval or release authorization.
+
+### Stage 4 movement and pause behavior
+
+Run the Stage 4 production-browser checks on both transports:
+
+```powershell
+npm.cmd run test:e2e -- --project=http --grep "stage 4"
+npm.cmd run test:e2e -- --project=file --grep "stage 4"
+```
+
+The [Stage 4 movement coverage manifest](tests/e2e/movement-coverage.json)
+maps T-11/T-12 and their partial variants. The tests cover 12-tile travel,
+lane spacing, unique IDs and browser recycling within 30 seconds; manual pause
+and active-time exclusion; keyboard-focus pause and pointer resume; hidden-page
+feedback/audio suspension; and composition of manual and hidden-page reasons.
+The F-03 recycling case restores a valid saved snapshot at its eight-letter
+level to exercise all 12 target/foil tiles. The complete Playwright run passed
+100 executions across HTTP and `file://`; the Stage 4 cases also passed
+individually on both transports. All 66 unit tests, authored content
+validation, typecheck, production build and whitespace checks passed.
+
+T-11 remains partial for stop/drag and feedback-outcome recycling, maximum
+queued-wait measurements at every required viewport and other untested
+variants. T-12 remains partial for pointer-generated focus, reduced-motion
+changes and other untested variants. Hidden-page behavior is simulated in
+desktop Chromium, not physical-device acceptance. The user approved the Stage 4
+implementation on 2026-11-04. This approval covers Stage 4 only, not full
+acceptance, the Draft specifications or release.
+
+### Stage 5 persistence and progression
+
+Run the Stage 5 production-browser checks on both transports:
+
+```powershell
+npm.cmd run test:e2e -- --grep "stage 5"
+```
+
+The [Stage 5 persistence coverage manifest](tests/e2e/persistence-coverage.json)
+maps T-08/T-13/T-14/T-15 and records partial gates. The tests cover wrong and
+correct placements, duplicate-letter identity, foil/hint restoration, active
+elapsed time, requeued unique tiles without saved movement coordinates,
+per-user progress and mute isolation, stale-content reset, readable storage
+failure behavior, completion-marker recovery without duplicate completion
+telemetry, two synthetic multi-level cycles and one-level replay. The full
+Playwright run passed 120 executions across HTTP and `file://`; the 20 Stage 5
+executions (ten scenarios per transport) also passed. All unit tests,
+authored content validation, typecheck, production build and whitespace checks
+passed.
+
+T-08 remains partial because these are synthetic fixtures, not the authored
+F-04/F-11 packs. T-13 remains partial for exact elapsed-time boundaries,
+moving mid-pass recovery and reload after every individual outcome. T-14
+remains partial for guest isolation and the complete corrupt-snapshot browser
+matrix. T-15 covers the completion-marker reload boundary only; other crash
+windows and permitted telemetry loss remain open. The user approved Stage 5 on
+2026-11-04; that approval does not approve full T-01-T-33 acceptance, the Draft
+specifications or release.

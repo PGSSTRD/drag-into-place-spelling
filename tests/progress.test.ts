@@ -37,7 +37,11 @@ describe("progress snapshots", () => {
     state = reducePuzzle(state, { type: "drop", slotIndex: 0 }).state;
     expect(saveProgress(storage, "learner", state, "1.0.0", [7, 8], 0)).toBe(true);
     const raw = JSON.parse(storage.getItem(progressKey("learner")) ?? "null") as unknown;
-    expect(restoreProgress(raw, level, "great", "1.0.0", () => 0)?.slots).toEqual(["t:0", null, null, null]);
+    expect(raw).toMatchObject({ phase: "playing", occurrence_counter: 1 });
+    expect(restoreProgress(raw, level, "great", "1.0.0", () => 0)).toMatchObject({
+      slots: ["t:0", null, null, null],
+      puzzleOccurrence: 1,
+    });
     expect(restoreCycle(raw, [7, 8], 7)).toEqual({ cycleIds: [7, 8], currentCycleIndex: 0 });
   });
 
@@ -51,9 +55,30 @@ describe("progress snapshots", () => {
     expect(state.completionRecorded).toBe(true);
     expect(saveProgress(storage, "learner", state, "1.0.0", [7], 0)).toBe(true);
     const raw = JSON.parse(storage.getItem(progressKey("learner")) ?? "null") as unknown;
+    expect(raw).toMatchObject({ phase: "completed_pending_advance", occurrence_counter: 1 });
     const restored = restoreProgress(raw, level, "great", "1.0.0", () => 0);
     expect(restored?.phase).toBe("completing");
     expect(restored?.completionRecorded).toBe(true);
+  });
+
+  it("restores and advances the occurrence counter", () => {
+    const snapshot = {
+      schema_version: 1,
+      content_version: "1.0.0",
+      tier: "great",
+      level_id: 7,
+      slots: [null, null, null, null],
+      removedFoilIds: [],
+      revealedHints: [],
+      attempts: 0,
+      phase: "playing",
+      completion_recorded: false,
+      elapsed_ms: 0,
+      occurrence_counter: 12,
+      cycleIds: [7],
+      currentCycleIndex: 0,
+    };
+    expect(restoreProgress(snapshot, level, "great", "1.0.0")?.puzzleOccurrence).toBe(12);
   });
 
   it("rejects duplicate tile bindings and invalid cycle state", () => {
@@ -67,10 +92,34 @@ describe("progress snapshots", () => {
       revealedHints: [],
       attempts: 2,
       phase: "playing",
+      completion_recorded: false,
+      elapsed_ms: 0,
+      occurrence_counter: 1,
       cycleIds: [7, 8],
       currentCycleIndex: 1,
     };
     expect(restoreProgress(invalid, level, "great", "1.0.0")).toBeNull();
     expect(restoreCycle(invalid, [7, 8], 7)).toBeNull();
+  });
+
+  it("rejects legacy phases and missing or invalid occurrence counters", () => {
+    const base = {
+      schema_version: 1,
+      content_version: "1.0.0",
+      tier: "great",
+      level_id: 7,
+      slots: [null, null, null, null],
+      removedFoilIds: [],
+      revealedHints: [],
+      attempts: 0,
+      phase: "playing",
+      completion_recorded: false,
+      elapsed_ms: 0,
+      occurrence_counter: 1,
+    };
+    expect(restoreProgress({ ...base, phase: "completing" }, level, "great", "1.0.0")).toBeNull();
+    expect(restoreProgress({ ...base, occurrence_counter: 0 }, level, "great", "1.0.0")).toBeNull();
+    const { occurrence_counter: _omitted, ...missingOccurrence } = base;
+    expect(restoreProgress(missingOccurrence, level, "great", "1.0.0")).toBeNull();
   });
 });

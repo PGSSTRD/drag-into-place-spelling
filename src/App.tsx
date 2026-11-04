@@ -10,8 +10,21 @@ import {
 } from "./domain/movement";
 import type { ContentPack, Level } from "./domain/content";
 import { loadContentPack } from "./services/loadContent";
-import { readProgress, restoreCycle, restoreProgress, saveProgress } from "./services/progress";
-import { areAudioCuesAvailable, playAudioCue, unlockAudio } from "./services/audio";
+import {
+  readProgress,
+  reportInvalidProgress,
+  reportUnavailableProgress,
+  restoreCycle,
+  restoreProgress,
+  saveProgress,
+} from "./services/progress";
+import {
+  areAudioCuesAvailable,
+  playAudioCue,
+  resumeAudioCues,
+  suspendAudioCues,
+  unlockAudio,
+} from "./services/audio";
 import { postGameEvent } from "./services/bridge";
 import "./styles.css";
 
@@ -32,8 +45,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function wait(milliseconds: number): Promise<void> {
-  return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+interface PausableDelay {
+  pause(): void;
+  resume(): void;
 }
 
 function clamp(value: number, minimum: number, maximum: number): number {
@@ -62,6 +76,7 @@ function persistSnapshot(state: PuzzleState, game: LoadedGame, userId: string | 
       game.currentCycleIndex,
     );
   } catch {
+    reportUnavailableProgress();
     return false;
   }
 }
@@ -88,12 +103,15 @@ export default function App() {
   const [pageVisible, setPageVisible] = useState(document.visibilityState === "visible");
   const [message, setMessage] = useState("Drag a letter, or choose a letter then a space.");
   const pointer = useRef<{ id: string; pointerId: number; x: number; y: number; offsetX: number; offsetY: number; moved: boolean; selectedOnDown: boolean } | null>(null);
+  const cancelledPointerId = useRef<number | null>(null);
   const ignoreClick = useRef(false);
   const pointerDrop = useRef(false);
+  const pendingFocusSelector = useRef<string | null>(null);
   const keyboardNavigation = useRef(false);
   const puzzleRef = useRef<PuzzleState | null>(null);
   const activeSince = useRef<number | null>(null);
   const accumulatedMs = useRef(0);
+  const pausableDelays = useRef(new Set<PausableDelay>());
   const sessionStarted = useRef(false);
   const startedRef = useRef(false);
   const movementRef = useRef<MovementState | null>(null);
@@ -124,6 +142,7 @@ export default function App() {
       try {
         storage = window.localStorage;
       } catch {
+        reportUnavailableProgress();
         setNotice("You can play, but your progress can't be saved.");
       }
       const savedTier: Tier = "great";
@@ -137,7 +156,8 @@ export default function App() {
       const progressRead = storage
         ? readProgress(storage, requestedUser)
         : { kind: "unavailable" as const };
-      const snapshot = progressRead.kind === "value" ? progressRead.snapshot : null;
+      const hasSnapshot = progressRead.kind === "value";
+      const snapshot = hasSnapshot ? progressRead.snapshot : null;
       if (progressRead.kind === "invalid") setNotice("Let's start a new puzzle.");
       if (progressRead.kind === "unavailable") setNotice("You can play, but your progress can't be saved.");
       const savedLevelId = isRecord(snapshot) ? snapshot.level_id : null;
@@ -147,10 +167,13 @@ export default function App() {
       const cycleIds = savedCycle?.cycleIds ?? generatedCycle;
       const currentCycleIndex = savedCycle?.currentCycleIndex ?? 0;
       let level = pack.levels.find((entry) => entry.level_id === cycleIds[currentCycleIndex]) ?? pack.levels[0];
-      const restored = storage && snapshot !== null && savedCycle
+      const restored = storage && hasSnapshot && snapshot !== null && savedCycle
         ? restoreProgress(snapshot, level, savedTier, pack.content_version)
         : null;
-      if (snapshot !== null && !restored) setNotice("Let's start a new puzzle.");
+      if (hasSnapshot && !restored) {
+        reportInvalidProgress();
+        setNotice("Let's start a new puzzle.");
+      }
       let puzzle = restored ?? createPuzzle(level, "great");
       let activeCycleIndex = currentCycleIndex;
       let activeCycleIds = cycleIds;
@@ -164,12 +187,16 @@ export default function App() {
           activeCycleIndex = 0;
         }
         level = pack.levels.find((entry) => entry.level_id === activeCycleIds[activeCycleIndex]) ?? pack.levels[0];
-        puzzle = createPuzzle(level, "great");
+        puzzle = createPuzzle(level, "great", Math.random, restored.puzzleOccurrence + 1);
       }
       accumulatedMs.current = puzzle.elapsedMs;
       movementRef.current = createMovementState(puzzle.availableTileIds);
       setMovement(movementRef.current);
-      setHasSavedProgress(Boolean(restored && (restored.attempts > 0 || restored.slots.some((slot) => slot !== null) || restored.removedFoilIds.length > 0)));
+      setHasSavedProgress(
+        puzzle.attempts > 0 ||
+          puzzle.slots.some((slot) => slot !== null) ||
+          puzzle.removedFoilIds.length > 0,
+      );
       setGame({
         pack,
         level,
@@ -267,9 +294,27 @@ export default function App() {
   }, [movingNow]);
 
   useEffect(() => {
-    if (started && (manualPause || keyboardPause || document.visibilityState === "hidden")) pauseClock();
-    else resumeClock();
-  }, [started, manualPause, keyboardPause, pageVisible]);
+    if (feedbackBusy || !pendingFocusSelector.current) return;
+    const target = document.querySelector<HTMLButtonElement>(pendingFocusSelector.current);
+    if (target && !target.disabled) {
+      pendingFocusSelector.current = null;
+      target.focus();
+    }
+  }, [feedbackBusy, movement, puzzle]);
+
+  useEffect(() => {
+    const paused = manualPause || keyboardPause || !pageVisible;
+    if (started && (paused || feedbackBusy || puzzle?.phase !== "playing")) {
+      pauseClock();
+    } else if (started) {
+      resumeClock();
+    }
+    if (paused) {
+      for (const delay of pausableDelays.current) delay.pause();
+    } else {
+      for (const delay of pausableDelays.current) delay.resume();
+    }
+  }, [started, manualPause, keyboardPause, pageVisible, feedbackBusy, puzzle?.phase]);
 
   useEffect(() => {
     if (game) {
@@ -314,21 +359,68 @@ export default function App() {
   }
 
   function resumeClock(): void {
-    if (startedRef.current && !feedbackBusy && puzzleRef.current?.phase === "playing" && activeSince.current === null) {
+    if (
+      startedRef.current &&
+      !manualPause &&
+      !keyboardPause &&
+      pageVisible &&
+      document.visibilityState !== "hidden" &&
+      !feedbackBusy &&
+      puzzleRef.current?.phase === "playing" &&
+      activeSince.current === null
+    ) {
       activeSince.current = performance.now();
     }
   }
 
+  function wait(milliseconds: number): Promise<void> {
+    return new Promise((resolve) => {
+      let remaining = milliseconds;
+      let startedAt: number | null = null;
+      let timeout: number | null = null;
+      let settled = false;
+      let delay: PausableDelay;
+
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        if (timeout !== null) window.clearTimeout(timeout);
+        pausableDelays.current.delete(delay);
+        resolve();
+      };
+
+      delay = {
+        pause() {
+          if (settled || startedAt === null) return;
+          remaining = Math.max(0, remaining - (performance.now() - startedAt));
+          startedAt = null;
+          if (timeout !== null) window.clearTimeout(timeout);
+          timeout = null;
+        },
+        resume() {
+          if (settled || startedAt !== null) return;
+          startedAt = performance.now();
+          timeout = window.setTimeout(finish, remaining);
+        },
+      };
+
+      pausableDelays.current.add(delay);
+      if (!manualPause && !keyboardPause && pageVisible && document.visibilityState !== "hidden") {
+        delay.resume();
+      }
+    });
+  }
+
   function acquire(tileId: string) {
     const current = puzzleRef.current;
-    if (!startedRef.current || !current || feedbackBusy) return;
+    if (!startedRef.current || !current || feedbackBusy || manualPause) return;
     const result = reducePuzzle(current, { type: "acquire", tileId });
     setPuzzle(result.state, result.result);
   }
 
   function drop(slotIndex: number) {
     const current = puzzleRef.current;
-    if (!startedRef.current || !current || !game || feedbackBusy) return;
+    if (!startedRef.current || !current || !game || feedbackBusy || manualPause) return;
     const currentGame = game;
     const result = reducePuzzle(current, { type: "drop", slotIndex });
     if (result.result === "neutral") {
@@ -338,9 +430,12 @@ export default function App() {
     if (result.result === "wrong") setCorrectionId(current.selectedTileId);
     const nextPuzzle = { ...result.state, elapsedMs: pauseClock() };
     setPuzzle(nextPuzzle, result.result);
-    if ((result.result === "correct" || result.result === "foil") && !pointerDrop.current) {
-      window.setTimeout(() => document.querySelector<HTMLButtonElement>(".tile-pool button:not(:disabled)")?.focus(), 0);
-    }
+    const restoreKeyboardFocus = !pointerDrop.current;
+    pendingFocusSelector.current = restoreKeyboardFocus
+      ? result.result === "wrong"
+        ? `.tile[data-tile-id="${current.selectedTileId}"]`
+        : ".tile:not(:disabled)"
+      : null;
     pointerDrop.current = false;
     const nextGame = { ...currentGame, puzzle: nextPuzzle };
     setFeedbackBusy(true);
@@ -389,11 +484,34 @@ export default function App() {
     }
   }
 
+  function cancelActiveInput(pointerId?: number, suppressClickUntilPointerUp = false) {
+    const activePointer = pointer.current;
+    if (pointerId !== undefined && activePointer?.pointerId !== pointerId) return;
+    pointer.current = null;
+    pointerDrop.current = false;
+    cancelledPointerId.current = suppressClickUntilPointerUp ? activePointer?.pointerId ?? null : null;
+    ignoreClick.current = suppressClickUntilPointerUp && activePointer !== null;
+    setDrag(null);
+    if (activePointer && playfieldRef.current?.hasPointerCapture(activePointer.pointerId)) {
+      playfieldRef.current.releasePointerCapture(activePointer.pointerId);
+    }
+    const current = puzzleRef.current;
+    if (current?.selectedTileId) {
+      const result = reducePuzzle(current, { type: "cancel" });
+      setPuzzle(result.state, result.result);
+    }
+  }
+
+  function cancelPointerGesture() {
+    const activePointer = pointer.current;
+    if (activePointer) cancelActiveInput(activePointer.pointerId, true);
+  }
+
   function onPointerDown(event: ReactPointerEvent<HTMLButtonElement>, id: string) {
-    if (!startedRef.current || !puzzle || puzzle.phase !== "playing" || feedbackBusy || pointer.current) return;
+    if (!startedRef.current || !puzzle || puzzle.phase !== "playing" || feedbackBusy || manualPause || pointer.current) return;
+    cancelledPointerId.current = null;
     keyboardNavigation.current = false;
     setKeyboardPause(false);
-    resumeClock();
     const selectedOnDown = puzzleRef.current?.selectedTileId === id;
     const rect = event.currentTarget.getBoundingClientRect();
     pointer.current = {
@@ -434,8 +552,15 @@ export default function App() {
   function onPointerUp(event: ReactPointerEvent<HTMLElement>) {
     if (!startedRef.current) return;
     const current = pointer.current;
+    if (!current || current.pointerId !== event.pointerId) {
+      if (cancelledPointerId.current === event.pointerId) {
+        cancelledPointerId.current = null;
+        window.setTimeout(() => { ignoreClick.current = false; }, 0);
+      }
+      return;
+    }
     pointer.current = null;
-    if (!current || current.pointerId !== event.pointerId) return;
+    cancelledPointerId.current = null;
     if (!current.moved) {
       if (current.selectedOnDown && puzzleRef.current?.selectedTileId === current.id) {
         const result = reducePuzzle(puzzleRef.current, { type: "cancel" });
@@ -446,7 +571,10 @@ export default function App() {
     }
     setDrag(null);
     const bounds = playfieldRef.current?.getBoundingClientRect();
-    if (!bounds) return;
+    if (!bounds) {
+      cancelActiveInput();
+      return;
+    }
     const x = clamp(event.clientX - current.offsetX, bounds.left, bounds.right - 52) + 26;
     const y = clamp(event.clientY - current.offsetY, bounds.top, bounds.bottom - 52) + 26;
     const index = findSlotAt(x, y);
@@ -472,7 +600,7 @@ export default function App() {
       currentCycleIndex = 0;
     }
     const nextLevel = currentGame.pack.levels.find((level) => level.level_id === cycleIds[currentCycleIndex]) ?? currentGame.pack.levels[0];
-    const nextPuzzle = createPuzzle(nextLevel, "great");
+    const nextPuzzle = createPuzzle(nextLevel, "great", Math.random, currentGame.puzzle.puzzleOccurrence + 1);
     setMotion(createMovementState(nextPuzzle.availableTileIds));
     accumulatedMs.current = 0;
     puzzleRef.current = nextPuzzle;
@@ -508,6 +636,7 @@ export default function App() {
     try {
       window.localStorage.setItem(key, JSON.stringify({ muted: nextMuted }));
     } catch {
+      reportUnavailableProgress();
       setNotice("You can play, but your settings can't be saved.");
     }
   }
@@ -553,13 +682,6 @@ export default function App() {
       className={`moving-lanes${manualPause ? " paused" : ""}`}
       ref={lanesRef}
       aria-label="Moving letters"
-      onBlurCapture={(event) => {
-        const next = event.relatedTarget;
-        if (!(next instanceof HTMLElement && next.classList.contains("tile"))) {
-          setKeyboardPause(false);
-          resumeClock();
-        }
-      }}
     >
       {[0, 1].map((lane) => (
         <div className={`moving-lane${started ? "" : " preview"}`} key={lane} aria-label={`Letter lane ${lane + 1}`}>
@@ -578,17 +700,14 @@ export default function App() {
 
   useEffect(() => {
     const cancelInput = () => {
-      pointer.current = null;
-      setDrag(null);
-      const current = puzzleRef.current;
-      if (current?.selectedTileId) {
-        const result = reducePuzzle(current, { type: "cancel" });
-        setPuzzle(result.state, result.result);
-      }
+      cancelActiveInput(pointer.current?.pointerId, pointer.current !== null);
     };
+    const lostPointerCapture = () => cancelPointerGesture();
     const visibilityChanged = () => {
       setPageVisible(document.visibilityState === "visible");
       if (document.visibilityState === "hidden") {
+        suspendAudioCues();
+        for (const delay of pausableDelays.current) delay.pause();
         const elapsedMs = pauseClock();
         cancelInput();
         if (game && puzzleRef.current) {
@@ -605,15 +724,17 @@ export default function App() {
           }
         }
       } else {
-        resumeClock();
+        resumeAudioCues();
       }
     };
     window.addEventListener("blur", cancelInput);
     window.addEventListener("resize", cancelInput);
+    document.addEventListener("lostpointercapture", lostPointerCapture, true);
     document.addEventListener("visibilitychange", visibilityChanged);
     return () => {
       window.removeEventListener("blur", cancelInput);
       window.removeEventListener("resize", cancelInput);
+      document.removeEventListener("lostpointercapture", lostPointerCapture, true);
       document.removeEventListener("visibilitychange", visibilityChanged);
     };
   }, [game]);
@@ -627,6 +748,10 @@ export default function App() {
 
   return (
     <main className="shell" onKeyDown={(event) => {
+      if (!pointer.current) {
+        cancelledPointerId.current = null;
+        ignoreClick.current = false;
+      }
       if (event.key === "Tab" || event.key.startsWith("Arrow") || event.key === "Home" || event.key === "End") {
         keyboardNavigation.current = true;
       }
@@ -642,9 +767,9 @@ export default function App() {
         {!reducedMotion && started && <button className="pause" aria-label={manualPause ? "Resume motion" : "Pause motion"} onClick={() => {
           if (manualPause) {
             setManualPause(false);
-            resumeClock();
           } else {
             pauseClock();
+            for (const delay of pausableDelays.current) delay.pause();
             setManualPause(true);
           }
         }}>{manualPause ? "Resume" : "Pause"}</button>}
@@ -655,12 +780,14 @@ export default function App() {
         aria-label="Spelling activity"
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
-        onPointerCancel={() => {
-          pointer.current = null;
-          setDrag(null);
-          if (puzzleRef.current?.selectedTileId) {
-            setPuzzle(reducePuzzle(puzzleRef.current, { type: "cancel" }).state, "neutral");
+        onBlurCapture={(event) => {
+          const next = event.relatedTarget;
+          if (!(next instanceof HTMLElement && next.classList.contains("tile"))) {
+            setKeyboardPause(false);
           }
+        }}
+        onPointerCancel={() => {
+          cancelPointerGesture();
         }}
       >
         {!started && <button className="start" onClick={startOrResume}>{hasSavedProgress ? "Keep going!" : "Let's spell!"}</button>}
@@ -680,7 +807,6 @@ export default function App() {
         {reducedMotion && <p className="motion-label">Motion reduced</p>}
         {manualPause && <div className="pause-overlay"><p>Paused</p><button className="start" onClick={() => {
           setManualPause(false);
-          resumeClock();
         }}>Resume</button></div>}
         {tilePool}
         <div className="answers" aria-label={`Answer spaces for ${game.level.target_word.length} letters`}>
@@ -693,7 +819,7 @@ export default function App() {
                   className={`slot${tile ? " locked" : ""}`}
                   data-slot-index={index}
                   aria-label={`Space ${index + 1} of ${puzzle.slots.length}, ${tile ? `${tile.letter}, locked` : "empty"}`}
-                  disabled={!started || tile !== null || puzzle.phase !== "playing" || feedbackBusy}
+                  disabled={!started || manualPause || tile !== null || puzzle.phase !== "playing" || feedbackBusy}
                   onClick={() => {
                     if (!startedRef.current || ignoreClick.current) return;
                     if (selectedId) drop(index);

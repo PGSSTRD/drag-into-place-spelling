@@ -1,7 +1,7 @@
 # Full browser acceptance suite
 
 **Task ID:** `browser-acceptance-suite`  
-**Status:** Draft full-suite scope; stages 1-2 implementation human-approved; stages 3-8 not implemented
+**Status:** Draft full-suite scope; stages 1-4 implementation human-approved; stages 5-8 not implemented
 **Created:** 2026-11-03  
 **Author:** Copilot
 
@@ -36,11 +36,14 @@ Playwright dependency/configuration or repeatable production browser suite.
 Earlier interactive browser checks are evidence for their narrow scopes only.
 
 Stage 1 provides production HTTP/file harness smoke checks and fixture
-builders; see the [implemented runbook and smoke inventory](../../../README.md#browser-testing-stages-1-2-harness-content-and-core-spelling).
+builders; see the [implemented runbook and smoke inventory](../../../README.md#browser-testing-stages-1-5-harness-content-spelling-interaction-movement-pause-persistence-and-progression).
 Stage 2 adds content-validation and core-spelling assertions for T-01-T-10.
-These stages do not complete T-01-T-33; stages 3-8 and remaining partial
-T-01-T-10 variants remain future work. The original instruction to implement
-stage 1 only is retained as historical scope.
+Stage 3 adds pointer, touch and keyboard interaction checks. These stages do
+not complete T-01-T-33. Stage 4 adds movement and pause behavior and is
+human-approved. Stage 5 persistence and progression is implemented and was
+human-approved on 2026-11-04; stages 6-8 and remaining acceptance variants
+remain future work. The original instruction to implement stage 1 only is
+retained as historical scope.
 
 Stage 1 verification (2026-11-03): 63 unit tests passed (including 40 fixture
 integrity checks); production typecheck/build and four-level content validation
@@ -81,6 +84,91 @@ updating DEVSPEC and TESTSPEC with stage 2 evidence while preserving their
 Draft status and partial gates. PRD and UISPEC remain unchanged. This
 documentation update does not approve the specifications wholesale or later
 stages.
+
+Stage 3 implementation evidence (2026-11-04): `tests/e2e/interactions.spec.ts`
+adds production-browser coverage for T-03/T-05/T-17/T-18/T-19 across HTTP and
+`file://`. Fifteen cases exercise correct mouse/touch drag and keyboard/tap
+completion, neutral Escape/outside/occupied/pointercancel/lost-capture/blur/
+resize cancellation, moving-tile tap-stop and later drag, stable playfield
+pointer capture, the >8 CSS px threshold, a noncentral grab offset, center
+hit-testing, whole-tile clamping, keyboard selection/cancellation, focus after
+correct/wrong/foil outcomes, hidden-hint and polite-status behavior, and
+orientation resize during a drag. App fixes cover release/click suppression
+after cancellation and focus restoration after feedback controls re-enable.
+The [stage 3 interaction manifest](../../../tests/e2e/interaction-coverage.json)
+keeps T-17 partial for second-pointer/shared-edge/exhaustive edge-offset
+variants and T-19 partial for moving-motion, feedback and actual hidden-page
+variants. T-03 remains partial because direct reacquisition attempts across
+input methods are not covered. The complete Playwright run passed 90
+executions (45 per transport), including all 15 stage 3 cases on HTTP and
+`file://`; 64 unit tests, content validation, typecheck and production build
+also passed. Physical-device touch and human screen-reader review remain
+separate gates. The user approved the implementation on 2026-11-04; this
+evidence does not approve full T-01-T-33 acceptance or release.
+
+Stage 3 human approval (2026-11-04): the user explicitly selected "Approve
+Stage 3 implementation". This approves the stage 3 implementation only, not
+full-suite acceptance, normative specification approval or release.
+
+Separate specification reconciliation (2026-11-04): the user authorized
+updating DEVSPEC, UISPEC and TESTSPEC with stage 3 evidence while preserving
+Draft status and partial gates. PRD is unchanged because no product intent
+changed. This documentation update does not approve the specifications
+wholesale or later stages.
+
+Stage 4 implementation evidence (2026-11-04): `tests/e2e/movement.spec.ts`
+and `tests/movement.test.ts` cover T-11/T-12 movement and pause behavior.
+Browser assertions cover 12-tile travel/recycling using a valid saved snapshot
+at F-03's eight-letter level, 60 px spacing, unique IDs, manual pause and
+active-time exclusion, keyboard-focus pause, pointer resume, hidden-page
+feedback/audio suspension and composition of manual/hidden pause reasons.
+`src/App.tsx` pauses/resumes feedback delays and active time across pause
+reasons, guards input while manually paused, and clears keyboard pause when
+focus moves from tiles to non-tile controls. `src/services/audio.ts` suspends
+and resumes active cues while hidden. The complete Playwright run passed 100
+executions (50 per transport); the five Stage 4 cases also passed on both
+HTTP and `file://`. All 66 unit tests, authored content validation, typecheck,
+production build and whitespace checks passed.
+
+The [Stage 4 movement manifest](../../../tests/e2e/movement-coverage.json)
+keeps T-11 partial for stop/drag behavior, feedback-outcome recycling,
+maximum queued-wait measurement at all required viewports and other untested
+variants. T-12 remains partial for pointer-generated focus, reduced-motion
+changes and other untested variants. Hidden-page behavior is simulated in
+desktop Chromium; it is not physical-device acceptance. No normative
+specifications were changed during implementation. The user explicitly
+approved Stage 4 on 2026-11-04; that approval does not cover full T-01-T-33
+acceptance or release.
+
+Separate specification reconciliation (2026-11-04): the user authorized
+updating DEVSPEC, UISPEC and TESTSPEC with Stage 4 evidence while preserving
+Draft status and partial gates. PRD is unchanged because no product intent
+changed. This documentation update does not approve the specifications
+wholesale or later stages.
+
+Stage 5 implementation evidence (2026-11-04): `tests/e2e/persistence.spec.ts`
+and `tests/progress.test.ts` cover T-08/T-13/T-14/T-15 across HTTP and
+`file://`. Browser cases restore wrong/correct/duplicate-letter/foil outcomes,
+preserve active elapsed time and unique remaining tile IDs without coordinates,
+isolate progress and mute by user, reject stale content while retaining valid
+settings, remain playable under denied storage, and recover a completion
+marker without posting a duplicate completion. Two synthetic F-04 cycles check
+once-per-cycle membership and boundary nonrepetition; a one-level cycle checks
+indefinite replay. The canonical snapshot now stores the D-05
+`completed_pending_advance` phase and occurrence counter; the domain retains
+its `completing` phase. Completion recovery derives the Start/Resume label from
+the actual next puzzle, avoiding a stale "Keep going!" label.
+
+The [Stage 5 persistence manifest](../../../tests/e2e/persistence-coverage.json)
+records partial T-08/T-13/T-14/T-15 gates. The Stage 5 browser checks passed 20
+executions (ten per transport); the complete Playwright run passed 120
+executions (60 per transport). Unit tests, authored content validation,
+typecheck, production build and whitespace checks passed. Authored F-04/F-11,
+guest isolation, full browser corruption matrix, moving mid-pass recovery,
+exact elapsed-time boundaries and other T-15 crash windows remain open.
+No normative specifications were changed during implementation. Stage 5 was
+approved on 2026-11-04; this evidence does not complete T-01-T-33 acceptance
+or authorize release.
 
 Deliver:
 

@@ -1,0 +1,93 @@
+{
+  "stage": 4,
+  "title": "Movement and pause behavior",
+  "requirements": {
+    "product": ["P-06"],
+    "development": ["D-02", "D-03", "D-04", "D-08"],
+    "ui": ["U-02", "U-03", "U-04"],
+    "tests": ["F-01", "F-03", "T-11", "T-12", "T-19", "T-20"]
+  },
+  "cases": [
+    {
+      "id": "T-11",
+      "references": {
+        "P": ["P-06"],
+        "D": ["D-03", "D-04"],
+        "U": ["U-02", "U-04"],
+        "T": ["T-11"]
+      },
+      "test": "movement.spec.ts and movement.test.ts: F-03 level-2 snapshot seeds 12-tile lane travel, 60 px spacing, unique IDs, FIFO recycling, 100 passes at four widths and browser reappearance within 30 seconds",
+      "fixtures": ["F-03"],
+      "transport": ["http", "file"],
+      "input": ["mouse"],
+      "motion": "moving",
+      "result": "partial: scheduler invariants and browser travel/recycling pass; full 12-tile browser assertions for all feedback/requeue outcomes and viewport-specific maximum queued waits remain open"
+    },
+    {
+      "id": "T-12-manual",
+      "references": {
+        "P": ["P-06"],
+        "D": ["D-02", "D-03", "D-04"],
+        "U": ["U-02", "U-03"],
+        "T": ["T-12"]
+      },
+      "test": "movement.spec.ts: manual pause preserves positions, disables slot activation, and excludes paused time",
+      "fixtures": ["F-01"],
+      "transport": ["http", "file"],
+      "input": ["mouse"],
+      "motion": "moving",
+      "result": "passed: manual pause freezes lanes and input; resume continues from the paused position and saved active time excludes the pause"
+    },
+    {
+      "id": "T-12-keyboard",
+      "references": {
+        "P": ["P-06", "P-04"],
+        "D": ["D-03", "D-04"],
+        "U": ["U-04"],
+        "T": ["T-12"]
+      },
+      "test": "movement.spec.ts: keyboard focus pauses the lanes; pointer acquisition clears keyboard-only pause",
+      "fixtures": ["F-01"],
+      "transport": ["http", "file"],
+      "input": ["keyboard", "mouse"],
+      "motion": "moving",
+      "result": "passed: keyboard focus freezes movement and pointer input clears only the keyboard-focus pause"
+    },
+    {
+      "id": "T-12-hidden",
+      "references": {
+        "P": ["P-06"],
+        "D": ["D-02", "D-04", "D-08"],
+        "U": ["U-02"],
+        "T": ["T-12", "T-19"]
+      },
+      "test": "movement.spec.ts: hidden-page transition suspends audio and feedback time, then resumes remaining feedback",
+      "fixtures": ["F-01"],
+      "transport": ["http", "file"],
+      "input": ["mouse"],
+      "motion": "moving",
+      "result": "passed: the active cue and feedback delay stop while hidden and resume without completing in the background"
+    },
+    {
+      "id": "T-12-reasons",
+      "references": {
+        "P": ["P-06"],
+        "D": ["D-04"],
+        "U": ["U-02"],
+        "T": ["T-12", "T-19"]
+      },
+      "test": "movement.spec.ts: resume from manual pause while hidden remains suspended until page visibility returns",
+      "fixtures": ["F-01"],
+      "transport": ["http", "file"],
+      "input": ["mouse"],
+      "motion": "moving",
+      "result": "passed: manual and hidden-page pause reasons compose without background movement or teleporting"
+    }
+  ],
+  "gates": {
+    "physical_devices": "not run; desktop browser automation is not physical-device acceptance",
+    "full_t_11_t_12": "partial; listed variants passed and untested variants are described per case",
+    "t_20": "not tested by Stage 4; full visual-state capture and measurements remain open",
+    "full_t_01_t_33": "not complete"
+  }
+}
