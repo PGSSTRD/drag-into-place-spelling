@@ -1,7 +1,7 @@
 # TESTSPEC - Drag Into Place Spelling
 
-**Version:** 2.1.19<br>
-**Status:** Draft - Stage 7 implementation human-approved; 229 executions (113 HTTP, 116 file) pass; remaining acceptance variants, audio-adapter compliance, device, audio distribution, independent QA and release gates outstanding<br>
+**Version:** 2.1.20<br>
+**Status:** Draft - Stage 8 regression/reporting human-approved; 229 executions (113 HTTP, 116 file) pass; full acceptance remains incomplete for not-run variants, ARIA/contrast review, audio-adapter compliance and human/device/container/content/release gates<br>
 **Last update:** 2026-11-05<br>
 **Author:** Copilot<br>
 **Independent QA owner:** To be assigned
@@ -200,9 +200,10 @@ phase approval run all applicable groups, including Great moving and
 reduced-motion presentation.
 Release requires the full sequence plus physical/manual gates.
 
-For the implemented stage 1 harness and stage 2-7 acceptance cases, follow D-09
+For the implemented stage 1 harness, stage 2-7 acceptance cases and stage 8
+regression/reporting, follow D-09
 and the [README runbook](../../README.md#browser-testing-stages-1-5-harness-content-spelling-interaction-movement-pause-persistence-and-progression),
-including its [Stage 7 section](../../README.md#stage-7-layout-accessibility-bridge-and-offline-checks).
+including its [Stage 8 section](../../README.md#stage-8-complete-suite-regression-run-and-reporting).
 `npm run test:e2e` first builds production output, then runs the HTTP and file
 projects with one worker, zero retries and a one-failure stop. Correct and
 rerun a failing test before continuing; do not skip it or weaken expected
@@ -213,8 +214,15 @@ flag; it is not evidence of physical WebView/container compatibility. Use
 keyboard, `--grep "stage 4"` for movement/pause, `--grep "stage 5"` for
 persistence/progression, `--grep "stage 6"` for audio/loading/recovery, or
 `--grep "stage 7"` for layout/accessibility/bridge/offline checks.
-The three offline cases run only in the file project, not as skipped HTTP
-cases; the other Stage 7 cases run with either project selector. Axe scans
+Stage 8 runs the full unit/content/E2E commands, not a stage-8 grep selector;
+it adds no new browser cases. Its
+[consolidated coverage report](../reports/browser-acceptance-stage-8.md)
+maps every T-01-T-33 group and eleven U-05 scenarios to current assertions
+or explicit NOT RUN/BLOCKED gates. PASS describes an executed assertion,
+not every required variant; zero skipped selected cases does not mean zero
+missing requirements. Axe incomplete results remain review findings,
+not automatic passes. The three offline cases run only in the file project,
+not as skipped HTTP cases; the other Stage 7 cases run with either project selector. Axe scans
 use a running clock; paused fake time prevents their asynchronous settling.
 
 Each case attaches console/server diagnostics and runtime API attempts,
@@ -223,7 +231,10 @@ attempts fail the case; off-origin HTTP requests are blocked. Service-worker/
 Cache Storage attempts and file-path fetch also fail the harness. Reports are
 `playwright-report/index.html` and `test-results/browser-results.json`, with
 failure screenshots/traces under `test-results/browser`. Retain required
-evidence before another run replaces these generated outputs. The
+evidence before another run replaces these generated outputs. Stage 8 retains
+a separate local JSON/HTML/attachment/diagnostic/hash snapshot linked from
+its report. It is Git-ignored and not externally backed up; the release
+owner must preserve required evidence independently. The
 [stage 2 coverage manifest](../../tests/e2e/coverage.json) maps implemented
 T-01-T-10 checks and their partial variants. The stage 3 interaction manifest
 and stage 4 movement manifest similarly map implemented checks and partial
@@ -234,7 +245,9 @@ extend this traceability. The
 adds emitted-output audits, ten cold-launch trials, layout screenshots and
 axe attachments. None is the full assertion coverage manifest: exhaustive
 input/viewport/state coverage, extracted archives, actual browser zoom,
-human/device/container checks and release packaging remain open.
+human/device/container checks and release packaging remain open. The Stage 8
+ledger reconciles later evidence with historical manifests without rewriting
+their original narrower approvals.
 
 Production-artifact dry run:
 
@@ -777,8 +790,84 @@ integration, restricted-audio distribution, packaging and release remain
 unpassed gates. The implementation and this separate task authorization
 do not approve the Draft specifications wholesale.
 
+### Browser acceptance stage 8: complete-suite regression and reporting (2026-11-05)
+
+Source approval: the user selected "Approve stage 8" after the run/report,
+then "Start specification update" as a separate task. The
+[consolidated report](../reports/browser-acceptance-stage-8.md) maps all
+P-01-P-12, D-01-D-10, U-01-U-05 and T-01-T-33 groups and all eleven named
+U-05 scenarios. It separates passed implemented assertions from required
+NOT RUN variants, blocked external gates and open review findings. It is
+not evidence that the full acceptance matrix is complete.
+
+At clean baseline `2b23b734c8de2fb9399dde5093c5b4d4602a851d`, the full
+production run passed 229 browser executions (113 HTTP, 116 file):
+stages 1/2/3 each 15 per transport; stage 4 five each; stage 5 ten each;
+stage 6 thirty-four each; stage 7 nineteen HTTP/twenty-two file. There
+were zero failed, skipped, flaky or retried cases and zero selected cases
+left unexecuted. All 90 unit tests in eight files, four-level content
+validation and production typecheck/build passed. No test/source/config
+changes, install, repair or focused rerun were needed. Browser duration
+was 639,067.728 ms. Ten offline Ready trials ranged 326.971-473.355 ms,
+each below 10,000 ms; these are desktop file copies, not extracted
+archives or physical baseline-device results.
+
+All 229 harness diagnostics were inspected: no outbound requests,
+uncaught errors, fixture-server errors or forbidden runtime attempts.
+Twelve native missing-resource errors were explained by explicit
+missing-asset injections. Fourteen axe scans had zero violations, but
+14 incomplete-rule occurrences across 12 scans remain open:
+`aria-prohibited-attr` on generic pool/answer/hint elements and
+`color-contrast` uncertainty on modal backgrounds and text-scaled
+single-letter tiles. Passing computed contrast/DOM label assertions do
+not resolve every incomplete rule or replace human assistive-technology
+review.
+
+The current-coverage reconciliation includes these material distinctions:
+
+- T-01: Stage 7's staged wrong-case/format audit closes the earlier
+  wrong-case gap; negative license-record matrix remains not-run.
+- T-08: the existing core tests already execute two authored F-11 cycles.
+  The narrower Stage 5 remaining-gap text is historical, not a current
+  absence of that core test.
+- T-03/T-04/T-09/T-11/T-17: direct reacquisition, relocation/neutral-foil,
+  maximum-wait/requeue and exhaustive edge/shared-edge/second-pointer
+  assertions remain incomplete despite successful main paths.
+- T-13-T-15/T-19/T-22/T-24: moving offline reload narrows recovery
+  uncertainty but does not close every elapsed/crash/preview/background
+  or first-saved-Resume/once-only event variant.
+- T-21: actual browser zoom, screen reader and full visual/flashing
+  review remain unpassed; zero axe violations excludes neither incomplete
+  ARIA/contrast findings nor those external gates.
+- T-26-T-31: production copies, static patterns, desktop timings and
+  mock reporting do not pass standalone audit/archives, physical-device
+  performance, real container receipt/deduplication, media distribution
+  or actual publication.
+- T-32: plan/report and recorded approvals support maintenance evidence,
+  not a new automated lifecycle dry-run matrix.
+- T-33: cycling the IDs read from a pack proves membership/reachability,
+  not the prescribed fixed roster/ID/foil/alt/artwork assertion matrix;
+  independent production content review remains open.
+
+The tracked report retains per-group assertions/boundaries, input/motion/
+viewport/fixture mapping, all scenario mappings, command results, environment
+and build identity. Its linked local snapshot preserves raw results,
+case/attachment mappings, 24 screenshots, diagnostics, axe details,
+per-trial timings and 33 emitted-file hashes. Reporting validation checked
+33 groups, eleven scenarios, 126 local links/anchors, case results, hashes,
+raw evidence preservation and whitespace before task approval.
+
+This reconciliation changes evidence/status/runbook traceability only.
+All mandatory T-01-T-33 criteria, constants and module order remain intact.
+D-06's literal one-frame silent-buffer implementation gap, unverified
+diagnostic-deduplication compliance, missing browser assertions,
+human/device/container/content/packaging gates,
+independent QA and release remain unpassed. Stage 8 task approval is not
+full browser/product acceptance or wholesale approval of these Draft specs.
+
 ## Spec change log
 
+2026-11-05 — Copilot — Recorded approved stage 8 regression/reporting, current T-01-T-33 and U-05 coverage reconciliation, retained 229-browser/90-unit evidence and axe incomplete findings while preserving mandatory criteria and remaining gates.
 2026-11-05 — Copilot — Recorded user-approved stage 7 T-20-T-27 evidence, 229 browser and 90 unit passes, partial accessibility/offline/container boundaries and current runbook/audit traceability without weakening acceptance criteria.
 2026-11-05 — Copilot — Recorded user-approved stage 6 T-07/T-16/T-22/T-23 coverage, 188 HTTP/file and 82 unit passes, updated runbook traceability and retained partial variants and audio-adapter/device/release gates.
 2026-11-04 — Copilot — Recorded user-approved stage 5 persistence/progression coverage, 120 HTTP/file executions and partial T-08/T-13/T-14/T-15 gates.

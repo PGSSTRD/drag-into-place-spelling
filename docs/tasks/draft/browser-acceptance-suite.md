@@ -1,7 +1,7 @@
 # Full browser acceptance suite
 
 **Task ID:** `browser-acceptance-suite`  
-**Status:** Draft full-suite scope; stages 1-7 implementation human-approved; stage 8 not implemented
+**Status:** Draft full-suite scope; stages 1-8 tasks human-approved; full browser/product/release acceptance incomplete
 **Created:** 2026-11-03  
 **Author:** Copilot
 
@@ -44,8 +44,10 @@ human-approved. Stage 5 persistence and progression is implemented and was
 human-approved on 2026-11-04. Stage 6 audio/loading/failure recovery is now
 implemented, validated and explicitly human-approved on 2026-11-05. Stage 7
 layout/accessibility/bridge/offline checks are implemented, validated and
-human-approved on 2026-11-05; stage 8 and remaining acceptance variants remain
-future work. The original instruction to implement stage 1 only is
+human-approved on 2026-11-05. Stage 8 regression/reporting is validated
+and explicitly human-approved on 2026-11-05;
+remaining acceptance variants are not implicitly completed by that run.
+The original instruction to implement stage 1 only is
 retained as historical scope.
 
 Stage 1 verification (2026-11-03): 63 unit tests passed (including 40 fixture
@@ -255,6 +257,50 @@ and retained 229-browser/90-unit implementation evidence were checked.
 Whitespace checks passed. The user explicitly selected "Approve
 reconciliation" on 2026-11-05. Approval covers this documentation update,
 not the Draft specifications wholesale or release.
+
+Stage 8 regression/reporting (2026-11-05): the
+[consolidated report](../../reports/browser-acceptance-stage-8.md) maps all
+T-01-T-33 groups and eleven U-05 scenarios to current executable assertions,
+not-run variants and blocked gates. The baseline worktree was clean at
+`2b23b734c8de2fb9399dde5093c5b4d4602a851d`. No game/test/configuration changes
+were made. The complete production suite passed 229 browser executions
+(113 HTTP, 116 file), with zero failures, skips, retries or flaky results;
+all 90 unit tests, four-level content validation and typecheck/build passed.
+Ten offline cold starts reached Ready in 0.327-0.473 seconds. The
+[retained local evidence](../../../artifacts/browser-acceptance/stage-8-2026-11-05/)
+contains reports, attachments, diagnostics, timings and build hashes outside
+the next run's disposable output. It is Git-ignored, not externally backed up.
+
+All 229 harness diagnostic attachments were inspected: no uncaught errors,
+outbound requests, fixture-server errors or forbidden runtime attempts.
+Twelve native missing-resource errors were explained by explicit fault
+injections. Fourteen axe scans reported zero automatic violations, but 12
+scans contain incomplete ARIA-label support/contrast checks; the report
+retains those as open review findings, not accessibility approval.
+Current core tests already cover two authored F-11 cycles, superseding the
+older Stage 5 manifest's narrower remaining-gate text. Other required
+browser variants and human/device/container/content/packaging gates remain
+unpassed. The D-06 literal silent-buffer gap is unchanged. Stage 8 task
+was explicitly approved on 2026-11-05: the user selected "Approve stage 8".
+This approves regression/reporting only; full browser/product/release
+acceptance is incomplete.
+Normative specifications remain unchanged.
+Reporting validation passed for all 33 groups, eleven scenarios, 126 local
+links/anchors, 229 case results, 33 emitted-file hashes, cold timings,
+diagnostics/axe findings and raw evidence preservation; whitespace checks pass.
+
+Separate Stage 8 specification reconciliation (2026-11-05): after approving
+the regression/reporting task, the user selected "Start specification update".
+DEVSPEC 2.0.22, UISPEC 2.0.21 and TESTSPEC 2.1.20 record the current evidence,
+coverage reconciliation and open ARIA/contrast findings, preserving Draft
+status, normative requirements and module dependencies. PRD 2.0.1 is
+unchanged because intent is unaffected. Reconciliation validation passed
+for 202 local links/anchors, 807 requirement references, metadata/logs,
+normative/module/history/source preservation and retained results, timings,
+findings and build hashes. This documentation-only task does not rerun
+application tests. On 2026-11-05 the user explicitly selected
+"Approve reconciliation", approving this documentation update only,
+not full acceptance, wholesale specification approval or release.
 
 Deliver:
 

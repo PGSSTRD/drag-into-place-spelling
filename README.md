@@ -371,3 +371,48 @@ evidence in DEVSPEC 2.0.21, UISPEC 2.0.20 and TESTSPEC 2.1.19, preserving
 Draft status and normative criteria; PRD is unchanged. The user explicitly
 approved the reconciliation on 2026-11-05; this does not approve the
 specifications wholesale or release.
+
+### Stage 8 complete-suite regression run and reporting
+
+```powershell
+npm.cmd run test:unit
+npm.cmd run validate:content
+npm.cmd run test:e2e
+```
+
+The [Stage 8 consolidated report](docs/reports/browser-acceptance-stage-8.md)
+maps T-01-T-33 and all eleven U-05 scenarios to current executable evidence,
+not-run assertions and blocked external gates. This reruns all implemented
+stages together against production output; it does not require stage-number
+execution order or add missing browser variants.
+
+The report distinguishes a passing implemented regression from full browser,
+product, device and release acceptance. Historical manifests retain their
+original scope; later evidence is reconciled in the consolidated ledger.
+For example, the existing core tests already cover two authored F-11 cycles,
+despite the narrower Stage 5 manifest's remaining-gate text.
+
+Stage 8 regression on 2026-11-05 passed all 229 browser executions (113 HTTP,
+116 file), all 90 unit tests, four-level content validation and production
+typecheck/build, with zero browser failures/skips/retries/flaky results.
+Ten offline cold starts reached Ready in 0.327-0.473 seconds. The
+[retained local evidence](artifacts/browser-acceptance/stage-8-2026-11-05/)
+contains JSON/HTML reports, attachments, diagnostics, timings and build hashes;
+it survives later test runs but is Git-ignored and must be backed up separately.
+
+Fourteen axe scans reported zero automatic violations, but 12 scans contain
+incomplete ARIA-label/contrast checks requiring follow-up. Those findings,
+missing browser variants, the known D-06 silent-buffer gap and external
+human/device/container/media/packaging gates keep full acceptance incomplete.
+The user explicitly approved Stage 8 regression/reporting on 2026-11-05.
+This does not approve full acceptance or release; normative specifications
+were unchanged by the regression task. The separately authorized
+reconciliation records its evidence in DEVSPEC 2.0.22, UISPEC 2.0.21 and
+TESTSPEC 2.1.20, preserving Draft status and mandatory criteria; PRD 2.0.1
+is unchanged. On 2026-11-05 the user explicitly selected
+"Approve reconciliation" for this evidence-only documentation update,
+not full acceptance, wholesale specification approval or release.
+Reconciliation checks pass for 202 local links/anchors, 807 requirement
+references, metadata/logs, unchanged normative/module/history/source
+sections and retained result/timing/finding/build-hash evidence. No
+application rerun was needed for this documentation-only reconciliation.

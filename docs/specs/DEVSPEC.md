@@ -1,7 +1,7 @@
 # DEVSPEC - Drag Into Place Spelling
 
-**Version:** 2.0.21<br>
-**Status:** Draft - Stage 7 layout/accessibility/bridge/offline implementation human-approved; remaining browser variants, audio-adapter compliance, device, independent QA, audio distribution and release gates outstanding<br>
+**Version:** 2.0.22<br>
+**Status:** Draft - Stage 8 regression/reporting human-approved; implemented suite passes but full acceptance, accessibility review, audio-adapter compliance, device, independent QA, audio distribution and release gates remain incomplete<br>
 **Last update:** 2026-11-05<br>
 **Author:** Copilot
 
@@ -427,8 +427,8 @@ commands are not present. At the 2026-10-22 prototype checkpoint, the clean
 install used `--ignore-scripts --no-audit --offline`, plain `npm ci` was not
 run, missing media blocked content validation, and npm reported five
 advisories whose details could not be retrieved. Preserve that historical
-evidence; current stage 1-7 checks and their narrower approvals are in
-sections 9.3-9.9. No clean-machine install or security-review gate is inferred
+evidence; current stage 1-8 checks and their narrower approvals are in
+sections 9.3-9.10. No clean-machine install or security-review gate is inferred
 from them.
 
 ### 9.2 Great implementation evidence recorded 2026-10-27
@@ -793,6 +793,60 @@ receipt/deduplication, restricted-audio distribution, pronunciation, packaging
 and release gates are not passed. D-06's literal one-frame silent-buffer
 allocation and full diagnostic-deduplication compliance remain open.
 
+### 9.10 Approved browser acceptance stage 8: complete-suite regression and reporting (2026-11-05)
+
+The user explicitly selected "Approve stage 8" after reviewing the run and
+coverage gaps, then "Start specification update" for this separate
+reconciliation. The [consolidated report](../reports/browser-acceptance-stage-8.md)
+maps P-01-P-12, D-01-D-10, U-01-U-05 and T-01-T-33 to executed evidence,
+not-run assertions and blocked gates. This approval covers regression and
+reporting, not full browser/product acceptance, these Draft specifications
+wholesale or release. No behavior, constant or module dependency changed:
+M1/M2 support M3, then M4-M6, then M7 integration/release.
+
+The clean baseline was `2b23b734c8de2fb9399dde5093c5b4d4602a851d`.
+All 229 implemented production-browser executions passed (113 HTTP,
+116 file), with zero failures, skips, retries or flaky results. All 90
+unit tests, four-level authored content validation and production
+typecheck/build passed. No source/test/configuration changes, dependency
+install, test repair or clean-machine install were needed or claimed.
+Ten fresh offline file contexts reached Ready in 326.971-473.355 ms,
+each below 10,000 ms; real-media restore/completion passes in both
+presentations. This is desktop production staging, not extracted release
+archives or physical baseline-device certification.
+
+The report retains the baseline/environment/build identity, per-stage and
+transport counts, timings, all 33 groups and eleven scenario mappings.
+Its linked local evidence snapshot contains raw JSON/HTML, case outcomes,
+attachments, diagnostics and 33 emitted-file hashes outside the next
+test run's disposable output. That directory is Git-ignored local storage,
+not an externally backed-up release evidence store. Original raw attachment
+paths are retained; the case inventory maps copied file attachments.
+
+Review of all 229 harness diagnostic attachments found no outbound attempts,
+uncaught application errors, fixture-server errors or forbidden runtime
+attempts. Twelve native 404/ERR_FILE_NOT_FOUND errors were explained by
+missing-asset injections. Fourteen axe scans reported zero automatic
+violations but left 14 incomplete-rule occurrences across 12 scans:
+generic-container/hint ARIA-label support and modal/single-letter contrast
+uncertainty remain explicit review findings, not accessibility passes.
+
+Current executable evidence supersedes narrower historical gap text:
+the existing core suite already covers two authored F-11 cycles and the
+Stage 7 output audit covers wrong-case media. No historical approval is
+rewritten and no missing test is inferred from a broad test title. Direct
+reacquisition, relocation/foil/geometry boundaries, recovery/crash/preview
+variants, saved-Resume event assertions and fixed-roster assertions remain
+among the report's not-run work. D-06's literal one-frame silent-buffer
+allocation and full diagnostic-deduplication compliance remain open.
+
+D-09/D-10 `lint`, `build:standalone`, `audit:standalone` and `package`
+are still required future commands. Archive merge/icon/release asset
+checks, human accessibility/QA/usability/architecture/security review,
+physical-device performance, actual Curious Reader receipt/deduplication,
+production identifiers and media distribution/publication remain unpassed.
+Completing stages 1-8 as tasks does not satisfy all module exit criteria.
+
 ## Part II - Non-functional requirements
 
 ## 10. Quality, safety and diagnostics (D-08)
@@ -878,7 +932,7 @@ the selected pack for local testing. `audit:standalone` inspects emitted output
 for network paths, root-relative references, maps, missing media and forbidden
 runtime modules. Packaging refuses an audit/content failure.
 
-Implemented stage 1-7 browser commands (not a substitute for the complete
+Implemented stage 1-8 browser commands (not a substitute for the complete
 release sequence above):
 
 ```text
@@ -895,6 +949,12 @@ npm run test:e2e -- --grep "stage 5"
 npm run test:e2e -- --grep "stage 6"
 npm run test:e2e -- --grep "stage 7"
 ```
+
+Stage 8 uses the full `npm run test:unit`, `npm run validate:content` and
+`npm run test:e2e` commands, not a `--grep "stage 8"` selector: it adds
+reporting/coverage reconciliation rather than a new browser test group.
+See the [Stage 8 runbook](../../README.md#stage-8-complete-suite-regression-run-and-reporting)
+and [consolidated report](../reports/browser-acceptance-stage-8.md).
 
 `test:e2e:install` invokes the locked `playwright install chromium` command;
 the browser download needs internet once. `test:e2e` builds with
@@ -1026,6 +1086,7 @@ dates or invent a change-log entry for untouched specs.
 
 ## Spec change log
 
+2026-11-05 — Copilot — Recorded the approved stage 8 regression/reporting task, retained 229-browser/90-unit evidence, reconciled current coverage and axe review findings, and preserved normative behavior, Draft status and incomplete release gates.
 2026-11-05 — Copilot — Recorded the user-approved stage 7 layout/accessibility/bridge/offline implementation, 229 browser and 90 unit passes, current audit tooling and remaining desktop, adapter, human and release boundaries.
 2026-11-05 — Copilot — Recorded the user-approved stage 6 audio/loading/recovery implementation and 188 HTTP/file executions, updated implemented tooling evidence and preserved partial acceptance and audio-adapter gaps.
 2026-11-04 — Copilot — Clarified D-05's `occurrence_counter` mapping and recorded the user-approved stage 5 persistence/progression evidence and partial gates without changing behavior.

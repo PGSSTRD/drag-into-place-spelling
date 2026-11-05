@@ -1,7 +1,7 @@
 # UISPEC - Drag Into Place Spelling
 
-**Version:** 2.0.20<br>
-**Status:** Draft - Stage 7 layout/accessibility/Settings implementation human-approved; full accessibility, product and design review outstanding<br>
+**Version:** 2.0.21<br>
+**Status:** Draft - Stage 8 regression/reporting human-approved; ARIA/contrast review findings and full accessibility, product and design review remain outstanding<br>
 **Last update:** 2026-11-05<br>
 **Author:** Copilot
 
@@ -426,8 +426,46 @@ product/design, full accessibility, independent QA, physical-device,
 production-pronunciation/distribution or release approval. Earlier partial
 preview/input variants and D-06's audio-adapter gap remain open.
 
+### Browser acceptance stage 8 regression and review evidence recorded 2026-11-05
+
+The user selected "Approve stage 8" for the completed regression/reporting
+task, then separately authorized this reconciliation. The
+[consolidated report](../reports/browser-acceptance-stage-8.md) maps all
+eleven U-05 scenarios and U-01-U-04 presentation/input checks through
+P-04/P-08/P-09, D-03/D-06/D-08 and T-17-T-23/T-27. It records current
+executable evidence and untested Then clauses separately; a similar test
+title does not establish a missing assertion.
+
+The clean full run passed 229 browser executions (113 HTTP, 116 file),
+all 90 unit tests, content validation and production typecheck/build.
+Twenty-four maximum-layout screenshots were retained. Developer inspection
+of file moving-preview 320x568 and 568x320 screenshots supplements geometry
+assertions but is not independent design review. No UI code, learner copy,
+tokens or U-01-U-05 requirements changed in the reporting task.
+
+Fourteen axe scans found zero automatic violations, but 12 scans contain
+14 incomplete-rule occurrences. These remain unpassed review items:
+
+- `aria-prohibited-attr`: ARIA-label support on generic div containers
+  for tile pool/answer groups and a generic span for revealed hints.
+  DOM label strings alone do not prove accessible names are exposed to
+  assistive technology; review and verify the actual grouping/hint semantics.
+- `color-contrast`: axe could not determine the Settings title/control
+  background because of overlap, and could not classify single-letter
+  text in the root-text-scaled state. Existing computed tests cover their
+  selected elements, not every modal/text-scaled rendering.
+
+Retain the >=4.5:1 text and >=3:1 non-text/focus requirements. No incomplete
+axe result is promoted to PASS or silently excluded. Actual browser-UI
+zoom, human screen-reader/visual/flashing review and the full preview/input/
+orientation/background matrix remain open. The report's resize scenario
+mapping does not pass its actual hidden-page drag branch. Native offline
+completion and visible muted cues do not certify audible pronunciation,
+physical-device compatibility, product/design or release approval.
+
 ## Spec change log
 
+2026-11-05 — Copilot — Recorded approved stage 8 regression and U-05 mapping evidence, explicitly retained incomplete ARIA/contrast review findings and preserved normative UI, human accessibility, product, design and release gates.
 2026-11-05 — Copilot — Recorded user-approved stage 7 responsive geometry, Settings/focus, contrast/axe and muted-keyboard evidence while preserving U-01-U-05 and human accessibility, product, design and release gates.
 2026-11-05 — Copilot — Recorded user-approved stage 6 audio/error/replay presentation evidence and the named failure scenario while preserving U-01-U-05 and remaining accessibility, design and release gates.
 2026-11-04 — Copilot — Recorded user-approved stage 5 saved-state, recovery and storage-notice presentation evidence without changing U-01-U-05 or product/design/accessibility gates.
