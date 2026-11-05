@@ -1,7 +1,7 @@
 # Full browser acceptance suite
 
 **Task ID:** `browser-acceptance-suite`  
-**Status:** Draft full-suite scope; stages 1-6 implementation human-approved; stages 7-8 not implemented
+**Status:** Draft full-suite scope; stages 1-7 implementation human-approved; stage 8 not implemented
 **Created:** 2026-11-03  
 **Author:** Copilot
 
@@ -42,8 +42,10 @@ Stage 3 adds pointer, touch and keyboard interaction checks. These stages do
 not complete T-01-T-33. Stage 4 adds movement and pause behavior and is
 human-approved. Stage 5 persistence and progression is implemented and was
 human-approved on 2026-11-04. Stage 6 audio/loading/failure recovery is now
-implemented, validated and explicitly human-approved on 2026-11-05; stages 7-8 and
-remaining acceptance variants remain future work. The original instruction to implement stage 1 only is
+implemented, validated and explicitly human-approved on 2026-11-05. Stage 7
+layout/accessibility/bridge/offline checks are implemented, validated and
+human-approved on 2026-11-05; stage 8 and remaining acceptance variants remain
+future work. The original instruction to implement stage 1 only is
 retained as historical scope.
 
 Stage 1 verification (2026-11-03): 63 unit tests passed (including 40 fixture
@@ -206,6 +208,53 @@ links/anchors, requirement references, historical logs, normative/source
 preservation and the retained implementation report were checked. The user
 explicitly selected "Approve reconciliation" on 2026-11-05. This approves
 the documentation update, not the specifications wholesale or release.
+
+Stage 7 implementation (2026-11-05): the
+[coverage manifest](../../../tests/e2e/layout-bridge-offline-coverage.json)
+maps T-20-T-27 to layout/axe/contrast/keyboard/Settings, bridge/envelope and
+emitted-output/offline checks. Maximum eight-letter/12-tile previews cover all
+six viewports and both presentations. The specified Settings modal now
+cancels selection, traps/restores focus and composes with manual/hidden pause
+reasons; 44px answer cells preserve the prescribed largest column count and
+selected keyboard focus is distinct. Linked bridge unit tests enforce exact
+UTF-8 boundaries and malformed-field rejection. Native authored media/font
+decoding and negative emitted-output mutations complement runtime API checks.
+Ten cold offline file contexts and real-media completion/reload in both
+presentations use isolated production staging, not extracted release archives.
+See the [stage 7 runbook](../../../README.md#stage-7-layout-accessibility-bridge-and-offline-checks).
+
+Stage 7 validation (2026-11-05): all 41 Stage 7 executions passed (19 HTTP,
+22 file); the complete suite passed 229 executions (113 HTTP, 116 file),
+with zero failures, skips, retries or flaky results. All 90 unit tests,
+production typecheck/build, four-level content validation, 55 manifest
+requirement references, 31 local documentation links and whitespace checks
+passed. Ten cold starts reached Ready in 0.36-1.29 seconds. Initial clock,
+moving-input, oversized-query and existing Sound-selector issues were
+corrected with targeted passing reruns before the final clean suite.
+The manifest retains build hashes, environment and per-trial timings.
+Stage 7 human approval (2026-11-05): the user explicitly selected
+"Approve stage 7". Approval covers this implementation only, not full
+acceptance, the Draft specifications or release.
+Human screen-reader/visual review, actual browser-UI zoom, physical devices,
+real container receipt/deduplication, restricted-audio distribution, packaging
+and release gates remain unpassed. The static audit is pattern-based rather
+than exhaustive indirect-URL analysis. Earlier partial acceptance variants
+and D-06's literal one-frame silent-buffer gap are retained. The implementation
+task left normative specifications unchanged; reconciliation was authorized
+separately below.
+
+Separate Stage 7 specification reconciliation (2026-11-05): after approving
+the implementation, the user selected "Start specification update".
+DEVSPEC 2.0.21, UISPEC 2.0.20 and TESTSPEC 2.1.19 record approved evidence,
+current tooling and remaining boundaries while retaining Draft status,
+normative requirements and module dependencies. PRD 2.0.1 is unchanged.
+Reconciliation validation passed: 70 spec links/anchors, 746 requirement
+references, metadata/date/status consistency, newest-first logs, unchanged
+normative criteria/module order, retained historical evidence/source briefs,
+and retained 229-browser/90-unit implementation evidence were checked.
+Whitespace checks passed. The user explicitly selected "Approve
+reconciliation" on 2026-11-05. Approval covers this documentation update,
+not the Draft specifications wholesale or release.
 
 Deliver:
 

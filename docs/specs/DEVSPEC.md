@@ -1,7 +1,7 @@
 # DEVSPEC - Drag Into Place Spelling
 
-**Version:** 2.0.20<br>
-**Status:** Draft - Stage 6 audio/loading/failure-recovery implementation human-approved; remaining browser variants, audio-adapter compliance, device, independent QA, audio distribution and release gates outstanding<br>
+**Version:** 2.0.21<br>
+**Status:** Draft - Stage 7 layout/accessibility/bridge/offline implementation human-approved; remaining browser variants, audio-adapter compliance, device, independent QA, audio distribution and release gates outstanding<br>
 **Last update:** 2026-11-05<br>
 **Author:** Copilot
 
@@ -410,7 +410,7 @@ Great-only specification and does not constitute approval of Great or release.
 | M4 | At the time of prototype evidence, responsive static UI, pointer capture, 8 px threshold, clamping, center hit-testing, tap/keyboard placement, live status and a historical MVP/Better tier control | Focused browser checks pass. This historical evidence is not normative. Full viewport, focus/screen-reader, contrast, cancellation and automated component/E2E acceptance remains outstanding. |
 | M5 | Historical static prototype displayed per-position hints and removed foils; these mechanics are retained in the Great specification | Focused behavior is present. Full T-09/T-10 and regression suite remains outstanding. |
 | M6 | Great moving lanes, tap-to-stop selection, pause, reduced-motion static presentation and FIFO recycle scheduler are implemented; focused scheduler tests cover 12 tiles for 100 passes at lane widths 320, 568, 768 and 1024 CSS px, and Stage 4 browser checks exercise movement and pause on HTTP/`file://`. | Partial. Full Great drag/recycle/persistence, viewport/device, performance and acceptance coverage remain outstanding. |
-| M7 | Bridge envelope generation and call boundary are implemented | Partial. Release audit, ZIPs, icon, release configuration and device/container evidence are not implemented. |
+| M7 | Bridge envelope validation/call boundary and a browser-supporting emitted-output audit are implemented; Stage 7 evidence is in section 9.9 | Partial. The pattern-based audit is not the required release audit command; ZIPs, icon, release configuration and device/container evidence remain outstanding. |
 
 Commands currently present in `package.json` are:
 
@@ -427,8 +427,8 @@ commands are not present. At the 2026-10-22 prototype checkpoint, the clean
 install used `--ignore-scripts --no-audit --offline`, plain `npm ci` was not
 run, missing media blocked content validation, and npm reported five
 advisories whose details could not be retrieved. Preserve that historical
-evidence; current stage 1-6 checks and their narrower approvals are in
-sections 9.3-9.8. No clean-machine install or security-review gate is inferred
+evidence; current stage 1-7 checks and their narrower approvals are in
+sections 9.3-9.9. No clean-machine install or security-review gate is inferred
 from them.
 
 ### 9.2 Great implementation evidence recorded 2026-10-27
@@ -733,6 +733,66 @@ than a waived requirement. Full diagnostic-deduplication/adapter compliance,
 remaining T-22 Settings/preview/focus variants, the complete acceptance matrix,
 independent QA, media distribution and release gates remain open.
 
+### 9.9 Approved browser acceptance stage 7: layout, accessibility, bridge and offline checks (2026-11-05)
+
+Source task: [browser acceptance suite](../tasks/draft/browser-acceptance-suite.md),
+stage 7. The user explicitly selected "Approve stage 7" after validation and
+then "Start specification update" for this separate reconciliation. Approval
+covers the implementation, not these Draft specifications or release.
+PRD P-01/P-04/P-05/P-06/P-08/P-09/P-10/P-11 intent and D-01/D-03-D-09 behavior
+remain unchanged. M1 content and M2 state invariants support M3 services;
+M4-M6 present and exercise them; M7 bridge/offline checks consume that
+foundation without changing module dependencies.
+
+The [Stage 7 manifest](../../tests/e2e/layout-bridge-offline-coverage.json)
+maps T-20-T-22 and T-24-T-27 to
+[layout/accessibility](../../tests/e2e/layout-accessibility.spec.ts),
+[bridge/output](../../tests/e2e/bridge-offline.spec.ts) and
+[offline](../../tests/e2e/offline.spec.ts) cases; Stage 6 retains T-23 failure
+coverage. The specified Settings modal cancels selection, traps focus,
+closes with Escape/Close and restores focus. Settings composes with manual
+pause/hidden-page reasons for motion, audio and active time. Answer cells
+are 44 px with 8 px gaps, and selected keyboard focus is distinct.
+Maximum eight-letter/12-tile previews cover six viewports in both
+presentations, supplemented by axe, computed contrast and muted keyboard
+completion checks.
+
+D-07 runtime validation now rejects malformed event shapes, invalid
+completion values and invalid date/UUID inputs before posting. Browser
+tests record exact milestone/envelope fields, URL user routing, fresh
+v4/variant UUIDs with native/fallback sources, and absent/throwing/oversized
+bridge behavior without gameplay interruption or network telemetry.
+[Bridge unit tests](../../tests/bridge.test.ts) exercise exact
+65,535/65,536/65,537 UTF-8 bytes with ASCII and multibyte values.
+
+The [emitted-output auditor](../../scripts/audit-output.ts), using shared
+[asset checks](../../scripts/content-assets.ts), verifies listed relative/
+exact-case references, media signatures, complete license inventory, local
+font/OFL and forbidden API/SDK/map patterns. Negative staged mutations must
+fail. It is not exhaustive indirect-URL analysis or an implemented
+`audit:standalone` command. Runtime checks also reject external attempts,
+service-worker/Cache Storage registration and `fetch(file:)`, including
+blocked attempts. All 21 authored audio files and four images decode
+natively, and local Lexend loads.
+
+The clean production run passed 229 browser executions (113 HTTP, 116 file),
+including 41 Stage 7 executions (19 HTTP, 22 file), with zero failures,
+skips, retries or flaky results. The three offline cases are file-project
+only, not skipped HTTP cases. Ten fresh offline contexts reached Ready in
+0.36-1.29 seconds, each below 10,000 ms; real-media play/reload/restore
+completed in both presentations. All 90 unit tests, four-level content
+validation, production typecheck/build and implementation documentation/
+manifest checks passed. The manifest retains per-trial timings, build
+hashes, base revision, environment and report locations.
+
+This is desktop isolated production staging, not extracted merged archives,
+physical WebViews or baseline-device performance. Root text scaling is not
+actual browser-UI zoom; human screen-reader/visual/flashing review and
+exhaustive input/state variants remain open. Real container registration,
+receipt/deduplication, restricted-audio distribution, pronunciation, packaging
+and release gates are not passed. D-06's literal one-frame silent-buffer
+allocation and full diagnostic-deduplication compliance remain open.
+
 ## Part II - Non-functional requirements
 
 ## 10. Quality, safety and diagnostics (D-08)
@@ -818,7 +878,7 @@ the selected pack for local testing. `audit:standalone` inspects emitted output
 for network paths, root-relative references, maps, missing media and forbidden
 runtime modules. Packaging refuses an audit/content failure.
 
-Implemented stage 1-6 browser commands (not a substitute for the complete
+Implemented stage 1-7 browser commands (not a substitute for the complete
 release sequence above):
 
 ```text
@@ -833,6 +893,7 @@ npm run test:e2e -- --project=http --grep "stage 4"
 npm run test:e2e -- --project=file --grep "stage 4"
 npm run test:e2e -- --grep "stage 5"
 npm run test:e2e -- --grep "stage 6"
+npm run test:e2e -- --grep "stage 7"
 ```
 
 `test:e2e:install` invokes the locked `playwright install chromium` command;
@@ -841,8 +902,8 @@ the browser download needs internet once. `test:e2e` builds with
 selector is supplied. No Vite development server or physical phone is needed.
 On Windows, use `npm.cmd`/`npx.cmd` when execution policy blocks the PowerShell
 wrappers. The [README runbook](../../README.md#browser-testing-stages-1-5-harness-content-spelling-interaction-movement-pause-persistence-and-progression)
-and [Stage 6 runbook](../../README.md#stage-6-audio-loading-and-failure-recovery)
-document focused reruns, fixture options and limits. The stage 2-6 coverage
+and [Stage 7 runbook](../../README.md#stage-7-layout-accessibility-bridge-and-offline-checks)
+document focused reruns, fixture options and limits. The stage 2-7 coverage
 manifests record listed results and remaining variants; they are not the full
 acceptance manifest.
 HTML and JSON reports
@@ -850,8 +911,12 @@ are generated at `playwright-report/index.html` and
 `test-results/browser-results.json`; failed cases retain screenshots/traces
 under `test-results/browser`. Console/server errors and runtime network API
 attempts are attached per case. Later runs replace reports, so archive evidence
-needed for approval separately. Static emitted-output/offline audits, complete
-acceptance assertions and release packaging remain future work.
+needed for approval separately. Stage 7 adds retained maximum-layout
+screenshots, axe JSON and cold-launch timings. Its pattern-based emitted
+audit and desktop offline checks do not replace the required standalone
+release audit, extracted-archive tests, complete acceptance or packaging.
+The offline cases run only in the file project; HTTP selection does not
+count them as skipped or passed.
 
 Local development may use `npm run dev`; this is never proof of offline support.
 No runtime credentials/environment secrets are needed. Approved engine slug and
@@ -961,6 +1026,7 @@ dates or invent a change-log entry for untouched specs.
 
 ## Spec change log
 
+2026-11-05 — Copilot — Recorded the user-approved stage 7 layout/accessibility/bridge/offline implementation, 229 browser and 90 unit passes, current audit tooling and remaining desktop, adapter, human and release boundaries.
 2026-11-05 — Copilot — Recorded the user-approved stage 6 audio/loading/recovery implementation and 188 HTTP/file executions, updated implemented tooling evidence and preserved partial acceptance and audio-adapter gaps.
 2026-11-04 — Copilot — Clarified D-05's `occurrence_counter` mapping and recorded the user-approved stage 5 persistence/progression evidence and partial gates without changing behavior.
 2026-11-04 — Copilot — Recorded the user-approved stage 4 movement/pause implementation and 100 HTTP/file executions, including partial T-11/T-12/T-19/T-20 gates, without changing normative behavior or module dependencies.

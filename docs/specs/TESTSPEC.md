@@ -1,7 +1,7 @@
 # TESTSPEC - Drag Into Place Spelling
 
-**Version:** 2.1.18<br>
-**Status:** Draft - Stage 6 implementation human-approved; 188 executions (94 per transport) pass; remaining acceptance variants, audio-adapter compliance, device, audio distribution, independent QA and release gates outstanding<br>
+**Version:** 2.1.19<br>
+**Status:** Draft - Stage 7 implementation human-approved; 229 executions (113 HTTP, 116 file) pass; remaining acceptance variants, audio-adapter compliance, device, audio distribution, independent QA and release gates outstanding<br>
 **Last update:** 2026-11-05<br>
 **Author:** Copilot<br>
 **Independent QA owner:** To be assigned
@@ -200,9 +200,9 @@ phase approval run all applicable groups, including Great moving and
 reduced-motion presentation.
 Release requires the full sequence plus physical/manual gates.
 
-For the implemented stage 1 harness and stage 2-6 acceptance cases, follow D-09
+For the implemented stage 1 harness and stage 2-7 acceptance cases, follow D-09
 and the [README runbook](../../README.md#browser-testing-stages-1-5-harness-content-spelling-interaction-movement-pause-persistence-and-progression),
-including its [Stage 6 section](../../README.md#stage-6-audio-loading-and-failure-recovery).
+including its [Stage 7 section](../../README.md#stage-7-layout-accessibility-bridge-and-offline-checks).
 `npm run test:e2e` first builds production output, then runs the HTTP and file
 projects with one worker, zero retries and a one-failure stop. Correct and
 rerun a failing test before continuing; do not skip it or weaken expected
@@ -211,12 +211,16 @@ before the first run. Desktop `file://` uses the documented Chromium local-file
 flag; it is not evidence of physical WebView/container compatibility. Use
 `--grep "stage 2"` for T-01-T-10, `--grep "stage 3"` for pointer/touch/
 keyboard, `--grep "stage 4"` for movement/pause, `--grep "stage 5"` for
-persistence/progression, or `--grep "stage 6"` for audio/loading/recovery
-with either project selector.
+persistence/progression, `--grep "stage 6"` for audio/loading/recovery, or
+`--grep "stage 7"` for layout/accessibility/bridge/offline checks.
+The three offline cases run only in the file project, not as skipped HTTP
+cases; the other Stage 7 cases run with either project selector. Axe scans
+use a running clock; paused fake time prevents their asynchronous settling.
 
 Each case attaches console/server diagnostics and runtime API attempts,
 including across reloads. Uncaught application errors and detected external
-attempts fail the case; off-origin HTTP requests are blocked. Reports are
+attempts fail the case; off-origin HTTP requests are blocked. Service-worker/
+Cache Storage attempts and file-path fetch also fail the harness. Reports are
 `playwright-report/index.html` and `test-results/browser-results.json`, with
 failure screenshots/traces under `test-results/browser`. Retain required
 evidence before another run replaces these generated outputs. The
@@ -225,9 +229,12 @@ T-01-T-10 checks and their partial variants. The stage 3 interaction manifest
 and stage 4 movement manifest similarly map implemented checks and partial
 variants; the stage 5 persistence and
 [stage 6 audio/loading manifest](../../tests/e2e/audio-loading-coverage.json)
-extend this traceability. None is the full assertion coverage manifest; emitted-asset audit,
-offline cold-launch trials, complete input/viewport/motion matrix and release
-packaging remain open.
+extend this traceability. The
+[stage 7 layout/bridge/offline manifest](../../tests/e2e/layout-bridge-offline-coverage.json)
+adds emitted-output audits, ten cold-launch trials, layout screenshots and
+axe attachments. None is the full assertion coverage manifest: exhaustive
+input/viewport/state coverage, extracted archives, actual browser zoom,
+human/device/container checks and release packaging remain open.
 
 Production-artifact dry run:
 
@@ -720,8 +727,59 @@ Remaining earlier-stage variants, D-06's literal silent-buffer gap, static
 offline/archive audits, media distribution, accessibility and human gates
 remain open.
 
+### Browser acceptance stage 7: layout, accessibility, bridge and offline checks (2026-11-05)
+
+Source approval: the user selected "Approve stage 7" after validation, then
+"Start specification update" for this separate task. The
+[Stage 7 manifest](../../tests/e2e/layout-bridge-offline-coverage.json)
+maps P-01/P-04/P-05/P-06/P-08/P-09/P-10/P-11; D-01/D-03-D-09; U-01-U-05;
+and T-20-T-22/T-24-T-27 to
+[layout/accessibility](../../tests/e2e/layout-accessibility.spec.ts),
+[bridge/output](../../tests/e2e/bridge-offline.spec.ts),
+[offline](../../tests/e2e/offline.spec.ts) and
+[bridge unit](../../tests/bridge.test.ts) checks. Stage 6 T-23 failure
+coverage is retained by the full regression.
+
+| Group | Verified Stage 7 variants | Remaining boundary |
+|---|---|---|
+| T-20 | Maximum eight-letter/12-tile previews in both presentations at six viewports; 44 px target and 16/28 px text minima; exact largest answer-column count with 8 px gaps; paired/ordered hints; no overflow, duplicate presentation or written target/grade/foil clues; portrait baseline 36-48 px and motion status above answers; retained screenshots | Listed preview/hint states, not exhaustive visual-state review |
+| T-21 | Pinned axe scans of Ready/Playing/hint/correct/Settings/fatal/text-scaled states; computed text >=4.5:1 and tested border/focus >=3:1; 3 px focus/2 px offset; focus distinct from selection; muted keyboard spelling, visible lock/status and reachable slots at 200% root text | Actual browser-UI zoom, human screen reader, exhaustive colors/states/flashing and facilitated usability remain open |
+| T-21/T-22 | Named Settings/pause/focus case: selection cancelled, forward/reverse Tab trapped, Escape/Close and focus return; hidden return preserves Settings/manual pause; Settings time excluded from bridge duration | Exhaustive pre-Start/Resume mouse/touch/keyboard matrix and actual OS backgrounding remain open |
+| T-24/T-25 | Exact milestone/envelope/data fields, user routing/empty identity, fresh seeded/native/fallback v4/variant UUIDs, UTC timestamps, finite completion values and no per-tap/network events; absent/throwing/oversized bridge does not block play or retry; linked unit malformed/date/UUID/nonfinite and 65,535/65,536/65,537 UTF-8 ASCII/multibyte boundaries | Actual container registration/receipt/sync/deduplication and production identifier approval remain open |
+| T-26 | Pattern-based emitted relative/exact-case reference, import, format, font/OFL/license and forbidden API/SDK/map audit with negative staged mutations; 26 media/font inventory items; native decode of 21 audio files and four images; local Lexend loaded; runtime external/SW/Cache Storage/file-fetch checks | Indirect-URL analysis is not exhaustive; standalone release audit command and archive inspection remain open; decoding is not pronunciation/legal approval |
+| T-27 | Ten fresh offline file contexts, alternating motion modes, each Ready <=10,000 ms; real five-cue CAT/shared decode and applied font; real-media placement/reload/Resume/completion in both presentations; zero warnings/errors/external attempts and local XHR only | Isolated production copies, not extracted merged archives or physical baseline-device performance |
+
+The named U-05 "Play without drag or sound" and "Settings, pause and focus"
+scenarios execute. An existing title/status text-selection, tile-drag and
+keyboard regression also passes without declaring an unreconciled CSS rule
+a new acceptance requirement. Native media checks supplement mocked
+availability; they do not prove audible pronunciation or publication rights.
+
+Final evidence on 2026-11-05: 229 expected browser passes (113 HTTP, 116
+file), including 41 Stage 7 executions (19 HTTP, 22 file), with zero
+unexpected, skipped, flaky or retried results. Ten cold Ready measurements
+range from 359.471 to 1287.552 ms, each below the 10,000 ms threshold.
+All 90 unit tests, four-level content validation, production typecheck/build,
+55 implementation-manifest requirement references, 31 implementation
+documentation links and whitespace checks passed. The manifest retains
+per-trial values, Windows/Node/npm/Chromium/axe versions, seed/content
+versions, base revision and HTML/JS hashes. Generated reports attach axe
+JSON, layout screenshots, cold timings and per-case diagnostics; preserve
+them before another run replaces them. Initial clock, moving-input,
+oversized-query and prior Sound-selector harness issues were corrected,
+targeted reruns passed, and the final full suite was clean.
+
+This updates evidence/status/runbook traceability, not T-01-T-33 criteria or
+module order. Earlier partial variants, D-06's literal one-frame
+silent-buffer and full diagnostic-deduplication compliance, human
+accessibility/visual/QA review, physical devices, actual Curious Reader
+integration, restricted-audio distribution, packaging and release remain
+unpassed gates. The implementation and this separate task authorization
+do not approve the Draft specifications wholesale.
+
 ## Spec change log
 
+2026-11-05 — Copilot — Recorded user-approved stage 7 T-20-T-27 evidence, 229 browser and 90 unit passes, partial accessibility/offline/container boundaries and current runbook/audit traceability without weakening acceptance criteria.
 2026-11-05 — Copilot — Recorded user-approved stage 6 T-07/T-16/T-22/T-23 coverage, 188 HTTP/file and 82 unit passes, updated runbook traceability and retained partial variants and audio-adapter/device/release gates.
 2026-11-04 — Copilot — Recorded user-approved stage 5 persistence/progression coverage, 120 HTTP/file executions and partial T-08/T-13/T-14/T-15 gates.
 2026-11-04 — Copilot — Recorded the user-approved stage 4 movement/pause coverage and 100 HTTP/file executions, preserving partial T-11/T-12/T-19/T-20 and device/release gates.

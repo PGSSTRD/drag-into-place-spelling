@@ -148,7 +148,7 @@ uncaught errors, HTTP-server errors, outbound requests and runtime API attempts
 (fetch/XHR/beacon/WebSocket/EventSource, including across reloads).
 Uncaught application errors or detected external attempts fail a test. HTTP
 requests outside the owned origin are blocked. A static emitted-asset/API audit
-and full offline checks remain later-stage work, not claims of this smoke suite.
+and desktop offline checks are now covered by stage 7, not by these smoke cases.
 Failure screenshots/traces are retained under `test-results/browser`; inspect
 with `npx.cmd playwright show-report` or `npx.cmd playwright show-trace <trace>`.
 Reports are replaced by the next run; retain a copy externally when needed.
@@ -304,3 +304,70 @@ device, container, pronunciation, media-distribution and release gates.
 The implementation task left normative specifications unchanged; a separately
 authorized reconciliation records the approved evidence while preserving Draft
 status and outstanding gates.
+
+### Stage 7 layout, accessibility, bridge and offline checks
+
+```powershell
+npm.cmd run test:e2e -- --grep "stage 7"
+```
+
+The [Stage 7 coverage manifest](tests/e2e/layout-bridge-offline-coverage.json)
+maps T-20-T-27 to the
+[layout/accessibility](tests/e2e/layout-accessibility.spec.ts),
+[bridge/output-audit](tests/e2e/bridge-offline.spec.ts) and
+[file-only offline](tests/e2e/offline.spec.ts) cases. The offline cases are
+selected only by the file project, not skipped by HTTP.
+
+Maximum eight-letter/12-tile previews run in both motion presentations at all
+six acceptance viewports, retaining screenshots and measuring target sizes,
+text, wrapping, paired hints and learner-visible clues. Rendered contrast,
+focus versus selection, keyboard-only muted completion and 200% root text
+scaling supplement pinned axe-core scans. Axe uses a running clock; a paused
+Playwright clock prevents its asynchronous analysis from settling. Root text
+scaling is not evidence of actual browser-UI zoom or human screen-reader use.
+
+The specified Settings dialog now traps focus, cancels selection, pauses
+motion/audio/active time, closes with Escape and returns focus to Settings.
+Settings, manual pause and hidden-page reasons compose independently.
+Answer cells are 44px with 8px gaps, preserving the largest permitted column
+count; selected keyboard focus remains distinguishable from selection alone.
+An existing text-selection/drag regression is covered without declaring the
+unreconciled CSS rule a new normative gate.
+
+Bridge checks cover exact milestones and fields, URL user routing, UUID
+sources/fallbacks, absent/throwing bridges and oversized-event rejection
+without blocking play. [Linked unit tests](tests/bridge.test.ts) test malformed
+events and exact 65,535/65,536/65,537-byte ASCII/multibyte boundaries.
+
+The [emitted-output auditor](scripts/audit-output.ts) checks relative/exact-case
+references, media signatures and license inventory, fonts, maps and forbidden
+API/SDK patterns; negative staged mutations verify rejection. It is a
+pattern-based browser-support audit, not exhaustive indirect-URL analysis or
+an implemented `audit:standalone` release command. Runtime instrumentation also
+rejects external attempts, service-worker/Cache Storage registration and
+`fetch(file:)`, including blocked attempts.
+
+Native decoding covers all 21 authored audio files and four images, with
+loaded local Lexend. Ten fresh offline file contexts measure Ready <=10
+seconds; real-media offline play completes and restores progress in both
+motion presentations. These use isolated production-output copies, not
+extracted release archives, physical baseline devices or Curious Reader.
+Pronunciation, restricted-audio distribution, human accessibility/visual
+review, actual container registration/receipt/deduplication and release
+packaging remain unpassed gates. The D-06 literal one-frame silent-buffer
+implementation gap also remains open.
+
+Validation on 2026-11-05: all 41 Stage 7 executions passed (19 HTTP, 22 file);
+the complete suite passed 229 executions (113 HTTP, 116 file), with zero
+failures, skips, retries or flaky results. All 90 unit tests, production
+typecheck/build, four-level content validation, manifest/reference/link checks
+and whitespace checks passed. The ten measured cold starts reached Ready in
+0.36-1.29 seconds. Initial harness/selector issues were corrected and targeted
+reruns passed before the final clean suite.
+
+The user explicitly approved Stage 7 on 2026-11-05; this does not approve full
+acceptance or release. A separately authorized reconciliation records that
+evidence in DEVSPEC 2.0.21, UISPEC 2.0.20 and TESTSPEC 2.1.19, preserving
+Draft status and normative criteria; PRD is unchanged. The user explicitly
+approved the reconciliation on 2026-11-05; this does not approve the
+specifications wholesale or release.

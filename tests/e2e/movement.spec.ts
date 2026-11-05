@@ -162,7 +162,7 @@ test.describe("stage 4: movement and pause behavior", () => {
     if (!firstId || !otherId) throw new Error("The moving lanes did not start");
     const first = page.locator(`.moving-lane .tile[data-tile-id="${firstId}"]`);
     const other = page.locator(`.moving-lane .tile[data-tile-id="${otherId}"]`);
-    await page.locator(".sound-toggle").focus();
+    await page.locator(".playfield .sound-toggle").focus();
     await page.keyboard.press("Tab");
     await expect(first).toBeFocused();
     await expect(page.getByText("Motion paused for keyboard access.", { exact: true })).toBeVisible();

@@ -1,7 +1,7 @@
 # UISPEC - Drag Into Place Spelling
 
-**Version:** 2.0.19<br>
-**Status:** Draft - Stage 6 audio/error/replay presentation implementation human-approved; full accessibility, product and design review outstanding<br>
+**Version:** 2.0.20<br>
+**Status:** Draft - Stage 7 layout/accessibility/Settings implementation human-approved; full accessibility, product and design review outstanding<br>
 **Last update:** 2026-11-05<br>
 **Author:** Copilot
 
@@ -385,8 +385,50 @@ and accessibility variants, physical playback policy, production media,
 product/design review and release remain open. D-06's silent-buffer adapter
 gap is retained in DEVSPEC; visible fallback tests do not waive it.
 
+### Browser acceptance stage 7 evidence recorded 2026-11-05
+
+The user explicitly selected "Approve stage 7" after the tested
+implementation, then authorized this separate reconciliation. The
+[Stage 7 manifest](../../tests/e2e/layout-bridge-offline-coverage.json)
+links U-01-U-05 presentation evidence to P-01/P-04/P-05/P-06/P-08/P-09,
+D-03/D-04/D-06/D-08 and T-20/T-21/T-22/T-27. No normative UI requirements
+or learner messages change.
+
+Maximum eight-letter/12-tile previews run in moving and reduced-motion
+presentations at 320x568, 568x320, 768x1024, 1024x768, 566x600 and 800x400.
+Retained screenshots and DOM measurements verify target/text minima, largest
+44 px answer-cell columns with 8 px gaps, slot/hint pairing/order, no
+horizontal overflow, one pool-or-lane presentation and no written target,
+grade or foil clues. Portrait hint/status baselines measure 36-48 px, with
+motion status above answers. Selected keyboard focus is distinguishable
+from selection alone, retaining the 3 px/2 px focus geometry.
+
+The specified Settings dialog now cancels selection, pauses activity,
+traps forward/reverse Tab, closes via Escape/Close and restores focus to
+Settings. Hidden return does not dismiss the dialog or manual pause.
+The named U-05 "Settings, pause and focus" and "Play without drag or sound"
+cases exercise these states and muted keyboard spelling. Existing
+title/status text-selection and tile-drag/keyboard behavior is regression
+tested; this is not approval of a new normative CSS selection rule.
+
+Pinned axe scans cover Ready, Playing, hint, correct, Settings, fatal and
+text-scaled states. Computed rendered checks supplement them with >=4.5:1
+text and >=3:1 tested border/focus contrast, visible locked cues and
+focus/selection distinction. The 200% root-text scenario completes with
+reachable focused slots and no audio calls. It does not certify actual
+browser-UI zoom, human screen-reader access, every visual state or flashing
+review.
+
+All 41 Stage 7 executions passed (19 HTTP, 22 file) in the clean
+229-execution production-browser run; real-media offline completion/reload
+passes in both presentations. Implementation approval does not grant
+product/design, full accessibility, independent QA, physical-device,
+production-pronunciation/distribution or release approval. Earlier partial
+preview/input variants and D-06's audio-adapter gap remain open.
+
 ## Spec change log
 
+2026-11-05 — Copilot — Recorded user-approved stage 7 responsive geometry, Settings/focus, contrast/axe and muted-keyboard evidence while preserving U-01-U-05 and human accessibility, product, design and release gates.
 2026-11-05 — Copilot — Recorded user-approved stage 6 audio/error/replay presentation evidence and the named failure scenario while preserving U-01-U-05 and remaining accessibility, design and release gates.
 2026-11-04 — Copilot — Recorded user-approved stage 5 saved-state, recovery and storage-notice presentation evidence without changing U-01-U-05 or product/design/accessibility gates.
 2026-11-04 — Copilot — Recorded user-approved stage 4 movement/pause presentation evidence while preserving U-01-U-05 and product, design, accessibility and release gates.

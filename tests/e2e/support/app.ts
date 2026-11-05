@@ -197,6 +197,10 @@ export const test = base.extend<{ app: AppHarness }>({
       });
       expect(outbound, "No outbound requests from isolated production test").toEqual([]);
       expect(externalAPIs, "No external runtime API attempts, even if blocked").toEqual([]);
+      expect(runtimeNetwork.filter(({ api }) => api === "cache-storage" || api === "service-worker"),
+        "No forbidden offline runtime registrations").toEqual([]);
+      expect(runtimeNetwork.filter(({ api, url: attempted }) => api === "fetch" && attempted.startsWith("file:")),
+        "Local file loading must not use fetch").toEqual([]);
       expect(endpoint?.errors ?? [], "Fixture HTTP server errors").toEqual([]);
       expect(diagnostics.filter(({ type }) => type === "pageerror"), "No uncaught application errors").toEqual([]);
     } finally {

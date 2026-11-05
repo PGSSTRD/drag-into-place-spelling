@@ -42,7 +42,8 @@ export function createEventEnvelope(
   timestamp = new Date(),
   uuid = createUuid(),
 ): EventEnvelope | null {
-  if (!hasFiniteNumbers(data)) return null;
+  if (!isGameEvent(data) || !Number.isFinite(timestamp.getTime()) ||
+    !/^[\da-f]{8}-[\da-f]{4}-4[\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/i.test(uuid)) return null;
   const envelope: EventEnvelope = {
     type: "cr_event",
     payload: {
@@ -75,13 +76,16 @@ export function postGameEvent(data: GameEvent): void {
   }
 }
 
-function hasFiniteNumbers(value: unknown): boolean {
-  if (typeof value === "number") return Number.isFinite(value);
-  if (Array.isArray(value)) return value.every(hasFiniteNumbers);
-  if (typeof value === "object" && value !== null) {
-    return Object.values(value).every(hasFiniteNumbers);
+function isGameEvent(value: GameEvent): boolean {
+  if (!value || value.lang !== "english" || value.tier !== "great") return false;
+  if (value.type === "session_started") {
+    return Object.keys(value).sort().join(",") === "lang,tier,type";
   }
-  return true;
+  if (value.type !== "level_completed" ||
+    Object.keys(value).sort().join(",") !== "attempts,duration_ms,lang,level_id,max_score,score,tier,type") return false;
+  return Number.isSafeInteger(value.level_id) && value.level_id > 0 &&
+    [value.attempts, value.duration_ms, value.score, value.max_score].every((number) => Number.isSafeInteger(number) && number >= 0) &&
+    value.max_score >= 1 && value.max_score <= 8 && value.score === value.max_score && value.attempts >= value.score;
 }
 
 function createUuid(): string {

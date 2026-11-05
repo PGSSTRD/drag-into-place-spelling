@@ -1,0 +1,102 @@
+{
+  "stage": 7,
+  "title": "Layout, accessibility, bridge and offline checks",
+  "requirements": {
+    "product": ["P-01", "P-04", "P-05", "P-06", "P-08", "P-09", "P-10", "P-11"],
+    "development": ["D-01", "D-03", "D-04", "D-05", "D-06", "D-07", "D-08", "D-09"],
+    "ui": ["U-01", "U-02", "U-03", "U-04", "U-05"],
+    "tests": ["T-20", "T-21", "T-22", "T-24", "T-25", "T-26", "T-27"]
+  },
+  "execution": {
+    "suites": ["layout-accessibility.spec.ts", "bridge-offline.spec.ts", "offline.spec.ts"],
+    "transport": ["http", "file"],
+    "offline_selection": "offline.spec.ts runs only in the file project; it is not skipped in HTTP",
+    "seed": 12345,
+    "input": ["mouse select/place", "mouse drag", "keyboard Enter/Space/Escape/Tab"],
+    "viewports": ["320x568", "568x320", "768x1024", "1024x768", "566x600", "800x400"],
+    "motion": "both presentations for maximum layout, cold boots and offline completion; reduced for deterministic bridge/contrast/keyboard; moving for Settings/pause",
+    "status": "listed automated variants and full regression passed; implementation explicitly human-approved on 2026-11-05",
+    "evidence": {
+      "date": "2026-11-05",
+      "base_revision": "1ff94370ca04eec8f8cf2b643a16de0fc7e9cd0f plus uncommitted stage 7 changes",
+      "production_js_sha256": "3725630380D3D3552049429858C67123932369F29EA9809F85072FDD34815986",
+      "production_html_sha256": "B0430FA7FC26A61BF47E2B445FE25578972520C826C5C26270906B9F0925F57C",
+      "environment": "Windows 10.0.26200.0; Node 24.20.0; npm 11.19.0; Chromium 156.0.8078.4; axe-core Playwright 4.14.0",
+      "content": "synthetic packs 1.0.0; authored pack 1.4.1",
+      "unit_tests": 90,
+      "stage_7": { "http": 19, "file": 22, "passed": 41 },
+      "full_suite": { "http": 113, "file": 116, "passed": 229, "failed": 0, "skipped": 0, "flaky": 0, "retries": 0, "duration_ms": 709808.034 },
+      "cold_launch_ready_ms": [359.471, 557.129, 518.810, 1287.552, 1188.094, 1169.613, 553.140, 530.083, 1151.974, 552.481],
+      "other_checks": ["production typecheck/build passed", "all four authored English levels validated", "55 manifest requirement references and 31 local documentation links validated", "git diff --check passed"],
+      "report": "../../test-results/browser-results.json",
+      "artifacts": ["maximum-layout screenshots across six viewports and two motion presentations", "axe JSON per scanned state", "cold-launch-timings JSON", "per-case console/server/network diagnostics"],
+      "initial_failures": "Axe requires a running clock; moving real-media tiles require native pointer-down rather than stability-waiting click; oversized bridge integration changes the query through same-origin history rather than exceeding the HTTP fixture request-line limit. The prior movement test Sound selector was scoped to the playfield after the hidden modal added a second matching control. Corrected targeted reruns passed.",
+      "visual_inspection": "Inspected retained moving maximum-layout screenshots at 320x568 and 568x320; this is desktop developer review, not independent human accessibility approval."
+    }
+  },
+  "cases": [
+    {
+      "id": "T-20",
+      "references": { "P": ["P-01", "P-05", "P-06"], "D": ["D-03", "D-04"], "U": ["U-01", "U-02", "U-03"], "T": ["T-20"] },
+      "fixtures": ["F-01", "F-03"],
+      "assertions": ["maximum ELEPHANT/12 tiles across six viewports in both previews", "44px targets, 16px body, 28px letters", "largest 44px columns with 8px gaps", "slot/hint pairing and order", "one pool or lanes only", "no written target/grade/foil clues", "portrait actual hint/status baseline 36-48px", "motion status above answers"],
+      "status": "automated listed previews and hint states; exhaustive visual-state review remains open"
+    },
+    {
+      "id": "T-21",
+      "references": { "P": ["P-04"], "D": ["D-08"], "U": ["U-01", "U-04", "U-05"], "T": ["T-21"] },
+      "fixtures": ["F-01", "F-07"],
+      "assertions": ["axe ready/playing/hint/correct/Settings/fatal/text-scaled states", "rendered text >=4.5:1 and tested borders/focus >=3:1", "3px focus with 2px offset", "focus distinct from selection", "keyboard-only muted completion and visible non-audio cues", "200 percent root-text scaling and reachable focused slots"],
+      "named_scenario": "Play without drag or sound",
+      "status": "automated listed variants; browser-UI zoom, human screen-reader, exhaustive color/state and flashing review remain open"
+    },
+    {
+      "id": "T-21/T-22",
+      "references": { "P": ["P-04", "P-06", "P-09"], "D": ["D-03", "D-04", "D-05", "D-06", "D-08"], "U": ["U-02", "U-03", "U-04", "U-05"], "T": ["T-21", "T-22"] },
+      "fixtures": ["F-01", "F-10"],
+      "assertions": ["Settings cancels selection, traps forward/reverse Tab, closes via Escape/Close and restores focus", "motion remains paused through hidden return while Settings open", "manual pause remains after Settings closes and hidden return", "Settings duration excluded from bridge active time"],
+      "named_scenario": "Settings, pause and focus",
+      "status": "automated listed variants; exhaustive pre-Start/Resume mouse/touch/keyboard and actual OS backgrounding remain open"
+    },
+    {
+      "id": "T-24/T-25",
+      "references": { "P": ["P-10"], "D": ["D-07", "D-08"], "U": [], "T": ["T-24", "T-25"] },
+      "fixtures": ["F-01", "F-09"],
+      "assertions": ["one session and two completion milestones, no per-tap events", "exact envelope/data keys, Great constants, UTC, finite integer completion values and URL user/empty identity", "fresh v4/variant UUIDs with seeded/native/getRandomValues/Math.random sources", "no outbound telemetry, retry or queue", "absent bridge silent; throwing bridge diagnoses once", "oversized events diagnose once without posting or blocking play"],
+      "supporting": "tests/bridge.test.ts rejects malformed event fields, invalid date/UUID and nonfinite values; exact 65,535/65,536/65,537 UTF-8 bytes with ASCII and multibyte user values",
+      "status": "automated browser and linked unit variants; real container registration, receipt, identifier approval and deduplication remain open"
+    },
+    {
+      "id": "T-26",
+      "references": { "P": ["P-08", "P-11"], "D": ["D-01", "D-06", "D-08", "D-09"], "U": ["U-01"], "T": ["T-26"] },
+      "fixtures": ["F-06", "F-07", "F-11"],
+      "assertions": ["emitted relative/exact-case imports/HTML/CSS/media/font references", "26 required media/font inventory items and one complete license record each", "format signatures, Lexend OFL and emitted CSS font", "native decode of 21 authored audio files and four images; loaded local font", "negative staged remote/root/API/SDK/map/missing-import/corrupt/wrong-case injections rejected", "runtime rejects external attempts, SW/Cache Storage and file fetch"],
+      "status": "automated listed static patterns and exercised runtime paths; not exhaustive indirect-URL analysis or release standalone audit"
+    },
+    {
+      "id": "T-27",
+      "references": { "P": ["P-08", "P-09"], "D": ["D-05", "D-06", "D-09"], "U": ["U-02", "U-03"], "T": ["T-27"] },
+      "fixtures": ["F-01"],
+      "assertions": ["ten fresh offline contexts each Ready <=10,000ms, alternating motion modes", "real five-cue CAT/shared decode and loaded/applied Lexend", "partial placement, reload, Resume and completion with real media in both motion modes", "zero warnings/errors/external attempts and only local XHR runtime calls"],
+      "status": "desktop isolated production staging passed in the full regression; extracted archives and physical baseline-device performance remain open"
+    },
+    {
+      "id": "existing-text-selection-regression",
+      "references": { "P": ["P-04"], "D": ["D-03"], "U": ["U-04"], "T": ["T-17", "T-18"] },
+      "fixtures": ["F-01"],
+      "assertions": ["native title/status mouse drags select no text", "tile mouse drag still locks a placement", "keyboard placement remains functional"],
+      "status": "regression of existing behavior, not approval of a new normative CSS selection rule"
+    }
+  ],
+  "gates": {
+    "human_approval": "2026-11-05: user explicitly selected Approve stage 7; implementation only, not full acceptance, normative specification approval or release",
+    "full_acceptance": "not complete; earlier partial matrices, stage 8 and manual/device/release gates remain",
+    "accessibility": "human screen-reader, actual browser zoom, exhaustive visual states/flashing and facilitated usability remain open",
+    "offline": "isolated dist copies, not merged extracted engine/language archives or physical WebViews; file access flag is a desktop prerequisite",
+    "audio": "native decode is not pronunciation, audible speaker output or restricted ElevenLabs distribution/publication approval",
+    "audio_adapter": "D-06 literal one-frame silent-buffer allocation remains an implementation gap",
+    "tooling": "lint, build:standalone, audit:standalone and package remain required future commands, not implemented scripts",
+    "container": "registered production sub_app_id, Curious Reader launch, receipt/sync/deduplication and CMS publication remain unpassed",
+    "specifications": "unchanged by implementation; separate reconciliation authorized and explicitly approved on 2026-11-05 records evidence in DEVSPEC 2.0.21, UISPEC 2.0.20 and TESTSPEC 2.1.19, preserving Draft status and PRD 2.0.1; not wholesale specification or release approval"
+  }
+}

@@ -99,6 +99,7 @@ export default function App() {
   const [hasSavedProgress, setHasSavedProgress] = useState(false);
   const [movement, setMovement] = useState<MovementState | null>(null);
   const [manualPause, setManualPause] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [keyboardPause, setKeyboardPause] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(
     () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -123,6 +124,8 @@ export default function App() {
   const failedAudioPaths = useRef(new Map<number, Set<string>>());
   const lanesRef = useRef<HTMLDivElement | null>(null);
   const playfieldRef = useRef<HTMLElement | null>(null);
+  const settingsRef = useRef<HTMLDialogElement | null>(null);
+  const settingsButtonRef = useRef<HTMLButtonElement | null>(null);
   activeAudioOccurrence.current = game?.puzzle.puzzleOccurrence ?? null;
   activeBootGeneration.current = bootGeneration;
   const setMotion = (next: MovementState) => {
@@ -291,7 +294,7 @@ export default function App() {
   puzzleRef.current = puzzle;
   const tileMap = useMemo(() => new Map(puzzle?.tiles.map((tile) => [tile.id, tile]) ?? []), [puzzle?.tiles]);
   const availableTiles = puzzle?.availableTileIds.map((id) => tileMap.get(id)).filter((tile) => tile !== undefined) ?? [];
-  const movingNow = started && !reducedMotion && !manualPause && !keyboardPause &&
+  const movingNow = started && !reducedMotion && !manualPause && !settingsOpen && !keyboardPause &&
     !feedbackBusy && pageVisible && puzzle?.phase === "playing";
 
   useEffect(() => {
@@ -335,7 +338,7 @@ export default function App() {
   }, [feedbackBusy, movement, puzzle]);
 
   useEffect(() => {
-    const paused = manualPause || keyboardPause || !pageVisible;
+    const paused = manualPause || settingsOpen || keyboardPause || !pageVisible;
     if (started && (paused || feedbackBusy || puzzle?.phase !== "playing")) {
       pauseClock();
     } else if (started) {
@@ -346,7 +349,22 @@ export default function App() {
     } else {
       for (const delay of pausableDelays.current) delay.resume();
     }
-  }, [started, manualPause, keyboardPause, pageVisible, feedbackBusy, puzzle?.phase]);
+  }, [started, manualPause, settingsOpen, keyboardPause, pageVisible, feedbackBusy, puzzle?.phase]);
+
+  useEffect(() => {
+    if (manualPause || settingsOpen || !pageVisible) suspendAudioCues();
+    else resumeAudioCues();
+  }, [manualPause, settingsOpen, pageVisible]);
+
+  useEffect(() => {
+    const dialog = settingsRef.current;
+    if (!dialog) return;
+    if (settingsOpen && !dialog.open) dialog.showModal();
+    if (!settingsOpen && dialog.open) {
+      dialog.close();
+      settingsButtonRef.current?.focus();
+    }
+  }, [settingsOpen]);
 
   useEffect(() => {
     if (game) {
@@ -394,6 +412,7 @@ export default function App() {
     if (
       startedRef.current &&
       !manualPause &&
+      !settingsOpen &&
       !keyboardPause &&
       pageVisible &&
       document.visibilityState !== "hidden" &&
@@ -437,7 +456,7 @@ export default function App() {
       };
 
       pausableDelays.current.add(delay);
-      if (!manualPause && !keyboardPause && pageVisible && document.visibilityState !== "hidden") {
+      if (!manualPause && !settingsOpen && !keyboardPause && pageVisible && document.visibilityState !== "hidden") {
         delay.resume();
       }
     });
@@ -445,14 +464,14 @@ export default function App() {
 
   function acquire(tileId: string) {
     const current = puzzleRef.current;
-    if (!startedRef.current || !current || feedbackBusy || manualPause) return;
+    if (!startedRef.current || !current || feedbackBusy || manualPause || settingsOpen) return;
     const result = reducePuzzle(current, { type: "acquire", tileId });
     setPuzzle(result.state, result.result);
   }
 
   function drop(slotIndex: number) {
     const current = puzzleRef.current;
-    if (!startedRef.current || !current || !game || feedbackBusy || manualPause) return;
+    if (!startedRef.current || !current || !game || feedbackBusy || manualPause || settingsOpen) return;
     const currentGame = game;
     const result = reducePuzzle(current, { type: "drop", slotIndex });
     if (result.result === "neutral") {
@@ -545,7 +564,7 @@ export default function App() {
   }
 
   function onPointerDown(event: ReactPointerEvent<HTMLButtonElement>, id: string) {
-    if (!startedRef.current || !puzzle || puzzle.phase !== "playing" || feedbackBusy || manualPause || pointer.current) return;
+    if (!startedRef.current || !puzzle || puzzle.phase !== "playing" || feedbackBusy || manualPause || settingsOpen || pointer.current) return;
     cancelledPointerId.current = null;
     keyboardNavigation.current = false;
     setKeyboardPause(false);
@@ -760,7 +779,7 @@ export default function App() {
             setNotice("You can play, but your progress can't be saved.");
           }
         }
-      } else {
+      } else if (!manualPause && !settingsOpen) {
         resumeAudioCues();
       }
     };
@@ -774,7 +793,7 @@ export default function App() {
       document.removeEventListener("lostpointercapture", lostPointerCapture, true);
       document.removeEventListener("visibilitychange", visibilityChanged);
     };
-  }, [game]);
+  }, [game, manualPause, settingsOpen]);
 
   if (error) {
     return <main className="shell"><section className="card"><h1>We couldn't load this activity.</h1><p>Try again. Error code: {error}</p><button onClick={() => {
@@ -782,6 +801,9 @@ export default function App() {
       setError("");
       setStarted(false);
       setFeedbackBusy(false);
+      setSettingsOpen(false);
+      setManualPause(false);
+      setKeyboardPause(false);
       setSelectedId(null);
       setDrag(null);
       setAudioBlocked(false);
@@ -813,6 +835,12 @@ export default function App() {
     }}>
       <header className="topbar">
         <h1>Drag Into Place</h1>
+        <button className="settings" ref={settingsButtonRef} disabled={feedbackBusy || puzzle.phase !== "playing"} onClick={() => {
+          cancelActiveInput();
+          setKeyboardPause(false);
+          pauseClock();
+          setSettingsOpen(true);
+        }}>Settings</button>
         {!reducedMotion && started && <button className="pause" aria-label={manualPause ? "Resume motion" : "Pause motion"} onClick={() => {
           if (manualPause) {
             setManualPause(false);
@@ -823,6 +851,26 @@ export default function App() {
           }
         }}>{manualPause ? "Resume" : "Pause"}</button>}
       </header>
+      <dialog ref={settingsRef} aria-labelledby="settings-title" onCancel={(event) => {
+        event.preventDefault();
+        setSettingsOpen(false);
+      }} onKeyDown={(event) => {
+        if (event.key !== "Tab") return;
+        const controls = [...event.currentTarget.querySelectorAll<HTMLButtonElement>("button:not(:disabled)")];
+        const first = controls[0];
+        const last = controls.at(-1);
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }}>
+        <h2 id="settings-title">Settings</h2>
+        <button className="sound-toggle" autoFocus aria-label={muted ? "Sound off" : "Sound on"} aria-pressed={!muted} onClick={toggleMute}>{muted ? "Sound off" : "Sound on"}</button>
+        <button className="settings" onClick={() => setSettingsOpen(false)}>Close</button>
+      </dialog>
       <section
         ref={playfieldRef}
         className={`card playfield${puzzle.phase === "completing" ? " completing" : ""}`}

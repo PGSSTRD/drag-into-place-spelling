@@ -24,7 +24,7 @@ export default defineConfig({
     serviceWorkers: "block",
   },
   projects: [
-    { name: "http", metadata: { transport: "http" } },
+    { name: "http", metadata: { transport: "http" }, testIgnore: "**/offline.spec.ts" },
     {
       name: "file",
       metadata: { transport: "file" },

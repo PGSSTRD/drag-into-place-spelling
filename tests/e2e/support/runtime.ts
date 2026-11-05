@@ -15,6 +15,7 @@ export interface RuntimeOptions {
   contentResponses?: ContentResponse[];
   stallImages?: boolean;
   bridge?: "absent" | "recording" | "throwing";
+  uuid?: "seeded" | "native" | "no-randomUUID" | "no-crypto";
   storage?: "normal" | "read-denied" | "write-denied";
   stallContentXHR?: boolean;
   savedProgress?: unknown;
@@ -53,10 +54,16 @@ export async function installRuntime(page: Page, options: RuntimeOptions): Promi
     const uuidKey = "browser-harness:uuid-count";
     const storeUuid = Storage.prototype.setItem.bind(sessionStorage);
     let uuidCount = Number(sessionStorage.getItem(uuidKey) ?? "0");
-    crypto.randomUUID = () => {
+    if (config.uuid === undefined || config.uuid === "seeded") crypto.randomUUID = () => {
       storeUuid(uuidKey, String(++uuidCount));
       return `00000000-0000-4000-8000-${uuidCount.toString(16).padStart(12, "0")}`;
     };
+    if (config.uuid === "no-randomUUID" || config.uuid === "no-crypto") {
+      Object.defineProperty(crypto, "randomUUID", { configurable: true, value: undefined });
+    }
+    if (config.uuid === "no-crypto") {
+      Object.defineProperty(crypto, "getRandomValues", { configurable: true, value: undefined });
+    }
     const elements = new Set<HTMLMediaElement>();
     const contentCallbacks: Array<() => void> = [];
     const elementIds = new WeakMap<HTMLMediaElement, number>();
@@ -126,6 +133,16 @@ export async function installRuntime(page: Page, options: RuntimeOptions): Promi
         recordNetwork("eventsource", url);
         super(url, init);
       }
+    };
+    const cacheOpen = window.caches?.open.bind(window.caches);
+    if (cacheOpen) window.caches.open = (name) => {
+      recordNetwork("cache-storage", document.baseURI);
+      return cacheOpen(name);
+    };
+    const register = navigator.serviceWorker?.register.bind(navigator.serviceWorker);
+    if (register) navigator.serviceWorker.register = (url, options) => {
+      recordNetwork("service-worker", url);
+      return register(url, options);
     };
     if (config.stallContentXHR || config.contentResponses) {
       const urls = new WeakMap<XMLHttpRequest, string>();
