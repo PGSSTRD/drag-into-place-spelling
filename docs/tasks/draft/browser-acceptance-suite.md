@@ -1,7 +1,7 @@
 # Full browser acceptance suite
 
 **Task ID:** `browser-acceptance-suite`  
-**Status:** Draft full-suite scope; stages 1-4 implementation human-approved; stages 5-8 not implemented
+**Status:** Draft full-suite scope; stages 1-6 implementation human-approved; stages 7-8 not implemented
 **Created:** 2026-11-03  
 **Author:** Copilot
 
@@ -41,8 +41,9 @@ Stage 2 adds content-validation and core-spelling assertions for T-01-T-10.
 Stage 3 adds pointer, touch and keyboard interaction checks. These stages do
 not complete T-01-T-33. Stage 4 adds movement and pause behavior and is
 human-approved. Stage 5 persistence and progression is implemented and was
-human-approved on 2026-11-04; stages 6-8 and remaining acceptance variants
-remain future work. The original instruction to implement stage 1 only is
+human-approved on 2026-11-04. Stage 6 audio/loading/failure recovery is now
+implemented, validated and explicitly human-approved on 2026-11-05; stages 7-8 and
+remaining acceptance variants remain future work. The original instruction to implement stage 1 only is
 retained as historical scope.
 
 Stage 1 verification (2026-11-03): 63 unit tests passed (including 40 fixture
@@ -169,6 +170,42 @@ exact elapsed-time boundaries and other T-15 crash windows remain open.
 No normative specifications were changed during implementation. Stage 5 was
 approved on 2026-11-04; this evidence does not complete T-01-T-33 acceptance
 or authorize release.
+
+Stage 6 implementation (2026-11-05): the
+[audio/loading suite](../../../tests/e2e/audio-loading.spec.ts) and
+[coverage manifest](../../../tests/e2e/audio-loading-coverage.json) exercise
+T-07/T-16/T-22/T-23 on production HTTP and `file://` output, including the
+named U-05 "Failed load versus failed audio" scenario. Bounded fetch/XHR,
+whole-boot and image watchdogs, independent media settlement and in-document
+Retry address D-06 gaps. Audio warnings and stale results are occurrence-scoped;
+muting stops active playback and prevents queued sound. Native staged
+missing/corrupt WAV and missing-font checks complement deterministic mocks.
+The [runbook](../../../README.md#stage-6-audio-loading-and-failure-recovery)
+describes the implemented command and adapters.
+
+Stage 6 validation (2026-11-05): all 68 Stage 6 executions passed (34 per
+transport); the complete browser suite passed 188 executions (94 per transport),
+with zero failures, skips, retries or flaky results. All 82 unit tests,
+production typecheck/build, four-level authored content validation,
+documentation link/requirement checks and whitespace checks passed. Initial
+preload synchronization and viewport-scroll measurement assertions were
+corrected and rerun before the final clean run. Environment/build hashes and
+remaining gates are recorded in the manifest. No normative specifications were changed.
+
+Stage 6 human approval (2026-11-05): the user explicitly selected
+"Approve stage 6" after reviewing the validation evidence and outstanding gates.
+This approves Stage 6 implementation only, not full acceptance, the Draft
+specifications or release.
+
+Separate specification reconciliation (2026-11-05): the user selected
+"Start specification update" after approving Stage 6. DEVSPEC 2.0.20,
+UISPEC 2.0.19 and TESTSPEC 2.1.18 record the approved evidence and remaining
+adapter/acceptance gaps, preserving Draft status and normative criteria.
+PRD is unchanged because product intent is unaffected. Metadata, 55 local
+links/anchors, requirement references, historical logs, normative/source
+preservation and the retained implementation report were checked. The user
+explicitly selected "Approve reconciliation" on 2026-11-05. This approves
+the documentation update, not the specifications wholesale or release.
 
 Deliver:
 
@@ -362,10 +399,11 @@ selection rule must be confirmed before treating it as a new normative gate.
 ## Commands, validation and completion criteria
 
 Existing commands: `npm run validate:content`, `npm run typecheck`,
-`npm run test:unit` and `npm run build`.
+`npm run test:unit`, `npm run build`, `npm run test:e2e` and
+`npm run test:e2e:install`. The browser commands were implemented in stage 1;
+the runbook records the one-time Chromium installation prerequisite.
 
-Planned, not currently implemented: `npm run test:e2e` and its Playwright
-browser installation/setup. DEVSPEC also requires `lint`, `build:standalone`,
+DEVSPEC also requires currently unimplemented `lint`, `build:standalone`,
 `audit:standalone` and `package`; supply the portions approved for this task
 or record explicit dependent-task blockers. Do not document missing scripts
 as commands already proven to work.

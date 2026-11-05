@@ -10,6 +10,7 @@ import {
 } from "./domain/movement";
 import type { ContentPack, Level } from "./domain/content";
 import { loadContentPack } from "./services/loadContent";
+import { preloadFont, preloadImage } from "./services/preload";
 import {
   readProgress,
   reportInvalidProgress,
@@ -22,6 +23,7 @@ import {
   areAudioCuesAvailable,
   playAudioCue,
   resumeAudioCues,
+  setAudioMuted,
   suspendAudioCues,
   unlockAudio,
 } from "./services/audio";
@@ -84,8 +86,9 @@ function persistSnapshot(state: PuzzleState, game: LoadedGame, userId: string | 
 export default function App() {
   const [game, setGame] = useReducer(reducer, null);
   const [error, setError] = useState("");
+  const [bootGeneration, setBootGeneration] = useState(0);
   const [notice, setNotice] = useState("");
-  const [audioStatus, setAudioStatus] = useState<{ levelId: number; unavailable: boolean } | null>(null);
+  const [audioStatus, setAudioStatus] = useState<{ occurrence: number; unavailable: boolean } | null>(null);
   const [audioBlocked, setAudioBlocked] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [drag, setDrag] = useState<{ id: string; x: number; y: number } | null>(null);
@@ -115,11 +118,13 @@ export default function App() {
   const sessionStarted = useRef(false);
   const startedRef = useRef(false);
   const movementRef = useRef<MovementState | null>(null);
-  const activeAudioLevelId = useRef<number | null>(null);
+  const activeAudioOccurrence = useRef<number | null>(null);
+  const activeBootGeneration = useRef(bootGeneration);
   const failedAudioPaths = useRef(new Map<number, Set<string>>());
   const lanesRef = useRef<HTMLDivElement | null>(null);
   const playfieldRef = useRef<HTMLElement | null>(null);
-  activeAudioLevelId.current = game?.level.level_id ?? null;
+  activeAudioOccurrence.current = game?.puzzle.puzzleOccurrence ?? null;
+  activeBootGeneration.current = bootGeneration;
   const setMotion = (next: MovementState) => {
     movementRef.current = next;
     setMovement(next);
@@ -127,7 +132,15 @@ export default function App() {
 
   useEffect(() => {
     let alive = true;
-    loadContentPack().then((pack) => {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      if (!alive) return;
+      alive = false;
+      controller.abort();
+      console.warn("BOOT_TIMEOUT");
+      setError("BOOT_TIMEOUT");
+    }, 10_000);
+    loadContentPack(10_000, controller.signal).then(async (pack) => {
       if (!alive) return;
       const query = new URLSearchParams(window.location.search);
       const requestedLanguage = query.get("cr_lang");
@@ -189,6 +202,14 @@ export default function App() {
         level = pack.levels.find((entry) => entry.level_id === activeCycleIds[activeCycleIndex]) ?? pack.levels[0];
         puzzle = createPuzzle(level, "great", Math.random, restored.puzzleOccurrence + 1);
       }
+      const [image, audio] = await Promise.allSettled([
+        preloadImage(level.image_path, controller.signal),
+        areAudioCuesAvailable([level.word_audio_path, ...level.letter_audio_paths, "assets/audios/incorrect.wav"]),
+        preloadFont(),
+      ]);
+      if (!alive) return;
+      if (image.status === "rejected") throw image.reason;
+      setAudioStatus({ occurrence: puzzle.puzzleOccurrence, unavailable: audio.status === "rejected" || !audio.value });
       accumulatedMs.current = puzzle.elapsedMs;
       movementRef.current = createMovementState(puzzle.availableTileIds);
       setMovement(movementRef.current);
@@ -208,53 +229,64 @@ export default function App() {
     }).catch((reason: unknown) => {
       if (!alive) return;
       const code = reason instanceof Error ? reason.message.match(/^(CONTENT_INVALID|BOOT_TIMEOUT)/)?.[1] : undefined;
+      console.warn(code ?? "CONTENT_INVALID", reason instanceof Error ? reason.message : String(reason));
       setError(code ?? "CONTENT_INVALID");
+    }).finally(() => {
+      window.clearTimeout(timer);
     });
-    return () => { alive = false; };
-  }, []);
+    return () => {
+      alive = false;
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [bootGeneration]);
 
   useEffect(() => {
     if (!game) return;
     let active = true;
+    failedAudioPaths.current.clear();
+    setAudioBlocked(false);
     const { level } = game;
+    const occurrence = game.puzzle.puzzleOccurrence;
     const requiredAudioPaths = [
       level.word_audio_path,
       ...level.letter_audio_paths,
       "assets/audios/incorrect.wav",
     ];
     void areAudioCuesAvailable(requiredAudioPaths).then((available) => {
-      if (!active || activeAudioLevelId.current !== level.level_id) return;
-      const failures = failedAudioPaths.current.get(level.level_id);
+      if (!active || activeAudioOccurrence.current !== occurrence) return;
+      const failures = failedAudioPaths.current.get(occurrence);
       setAudioStatus({
-        levelId: level.level_id,
+        occurrence,
         unavailable: !available || (failures?.size ?? 0) > 0,
       });
     });
     return () => {
       active = false;
     };
-  }, [game?.level]);
+  }, [game?.puzzle.puzzleOccurrence]);
 
-  function recordAudioFailure(levelId: number, path: string) {
-    let failures = failedAudioPaths.current.get(levelId);
+  function recordAudioFailure(occurrence: number, path: string) {
+    let failures = failedAudioPaths.current.get(occurrence);
     if (!failures) {
       failures = new Set();
-      failedAudioPaths.current.set(levelId, failures);
+      failedAudioPaths.current.set(occurrence, failures);
     }
     failures.add(path);
-    if (activeAudioLevelId.current === levelId) {
-      setAudioStatus({ levelId, unavailable: true });
+    if (activeAudioOccurrence.current === occurrence) {
+      setAudioStatus({ occurrence, unavailable: true });
     }
   }
 
-  function handleAudioResult(levelId: number, path: string, result: Awaited<ReturnType<typeof playAudioCue>>) {
-    if (result === "unavailable") recordAudioFailure(levelId, path);
-    if (activeAudioLevelId.current !== levelId) return;
+  function handleAudioResult(occurrence: number, path: string, result: Awaited<ReturnType<typeof playAudioCue>>) {
+    if (activeBootGeneration.current !== bootGeneration || activeAudioOccurrence.current !== occurrence) return;
+    if (result === "unavailable") recordAudioFailure(occurrence, path);
     if (result === "blocked") setAudioBlocked(true);
     if (result === "played") setAudioBlocked(false);
   }
 
   const puzzle = game?.puzzle ?? null;
+  useEffect(() => { setAudioMuted(muted); }, [muted]);
   startedRef.current = started;
   puzzleRef.current = puzzle;
   const tileMap = useMemo(() => new Map(puzzle?.tiles.map((tile) => [tile.id, tile]) ?? []), [puzzle?.tiles]);
@@ -443,7 +475,7 @@ export default function App() {
       ? currentGame.level.letter_audio_paths[slotIndex]
       : "assets/audios/incorrect.wav";
     const cue = playAudioCue(cuePath, muted).then((played) => {
-      handleAudioResult(currentGame.level.level_id, cuePath, played);
+      handleAudioResult(current.puzzleOccurrence, cuePath, played);
       return played;
     });
 
@@ -466,17 +498,22 @@ export default function App() {
         });
       }
       setMessage("You spelled it!");
-      const wordCue = cue.then(() => playAudioCue(currentGame.level.word_audio_path, muted)).then((played) => {
-        handleAudioResult(currentGame.level.level_id, currentGame.level.word_audio_path, played);
+      const wordCue = cue.then(() => {
+        if (activeBootGeneration.current !== bootGeneration || activeAudioOccurrence.current !== current.puzzleOccurrence) return "muted" as const;
+        return playAudioCue(currentGame.level.word_audio_path, muted);
+      }).then((played) => {
+        handleAudioResult(current.puzzleOccurrence, currentGame.level.word_audio_path, played);
         return played;
       });
       Promise.all([wordCue, wait(1200)]).then(() => {
+        if (activeBootGeneration.current !== bootGeneration || activeAudioOccurrence.current !== current.puzzleOccurrence) return;
         advance(nextGame);
         setFeedbackBusy(false);
         setMessage("Drag a letter, or choose a letter then a space.");
       });
     } else {
       Promise.all([cue, wait(result.result === "foil" ? 250 : 300)]).then(() => {
+        if (activeBootGeneration.current !== bootGeneration || activeAudioOccurrence.current !== current.puzzleOccurrence) return;
         setFeedbackBusy(false);
         setCorrectionId(null);
         resumeClock();
@@ -740,7 +777,19 @@ export default function App() {
   }, [game]);
 
   if (error) {
-    return <main className="shell"><section className="card"><h1>We couldn't load this activity.</h1><p>Try again. Error code: {error}</p><button onClick={() => window.location.reload()}>Try loading again</button></section></main>;
+    return <main className="shell"><section className="card"><h1>We couldn't load this activity.</h1><p>Try again. Error code: {error}</p><button onClick={() => {
+      setGame(null);
+      setError("");
+      setStarted(false);
+      setFeedbackBusy(false);
+      setSelectedId(null);
+      setDrag(null);
+      setAudioBlocked(false);
+      setAudioStatus(null);
+      setNotice("");
+      failedAudioPaths.current.clear();
+      setBootGeneration((generation) => generation + 1);
+    }}>Try loading again</button></section></main>;
   }
   if (!game || !puzzle) {
     return <main className="shell"><p role="status">Getting your letters ready...</p></main>;
@@ -791,10 +840,13 @@ export default function App() {
         }}
       >
         {!started && <button className="start" onClick={startOrResume}>{hasSavedProgress ? "Keep going!" : "Let's spell!"}</button>}
-        <img className="target-image" src={new URL(game.level.image_path, document.baseURI).href} alt={game.level.image_alt} onError={() => setError("CONTENT_INVALID")} />
+        <img className="target-image" src={new URL(game.level.image_path, document.baseURI).href} alt={game.level.image_alt} onError={() => {
+          console.warn("CONTENT_INVALID", game.level.image_path);
+          setError("CONTENT_INVALID");
+        }} />
         <button className="replay" disabled={muted || !started || feedbackBusy || puzzle.phase !== "playing"} onClick={() => {
           playAudioCue(game.level.word_audio_path, muted).then((played) => {
-            handleAudioResult(game.level.level_id, game.level.word_audio_path, played);
+            handleAudioResult(game.puzzle.puzzleOccurrence, game.level.word_audio_path, played);
           });
         }}>Hear the word</button>
         <button className="sound-toggle" aria-label={muted ? "Sound off" : "Sound on"} aria-pressed={!muted} onClick={toggleMute}>{muted ? "Sound off" : "Sound on"}</button>
@@ -835,7 +887,7 @@ export default function App() {
         </div>
         <p className="status" role="status" aria-live="polite">{message}</p>
         {notice && <p className="notice" role="status">{notice}</p>}
-        {audioStatus?.levelId === game.level.level_id && audioStatus.unavailable && (
+        {audioStatus?.occurrence === game.puzzle.puzzleOccurrence && audioStatus.unavailable && (
           <p className="notice" role="status">Sound isn't available. You can still play.</p>
         )}
         {drag && <span className="drag-ghost" aria-hidden="true" style={{ left: drag.x, top: drag.y }}>{tileMap.get(drag.id)?.letter}</span>}

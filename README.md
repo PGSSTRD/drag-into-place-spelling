@@ -48,6 +48,9 @@ recovery and progression. This is **not full T-01-T-33
 acceptance** and does not resolve open application/specification decisions or
 authorize release.
 
+Stage 6 adds [audio, loading and failure recovery](#stage-6-audio-loading-and-failure-recovery);
+the user explicitly approved its implementation on 2026-11-05.
+
 On Windows use `npm.cmd` if PowerShell blocks `npm.ps1`:
 
 ```powershell
@@ -93,13 +96,18 @@ servers (including port 8000) are not used or stopped.
 - [Pre-boot runtime adapters](tests/e2e/support/runtime.ts): seeded RNG and
   sequential v4 UUIDs; opt-in paused Playwright monotonic clock (`clock: true`,
   advance with `page.clock.runFor`); saved progress/mute; read/write storage
-  failures; absent/recording/throwing bridge; stalled content XHR on either
-  transport. `rawContent` supports malformed, truncated and empty responses.
+  failures; absent/recording/throwing bridge; stalled content requests on either
+  transport (`stallContentXHR` is the retained compatibility option name;
+  HTTP now uses fetch). `contentResponses` supplies ordered status/body/pending
+  responses; `emitContent` delivers captured late callbacks. `stallImages`
+  bounds required-image loading. `rawContent` supports malformed, truncated
+  and empty responses.
 - Audio defaults to real playback. `audio: "mock"` enables per-path played,
   unavailable, autoplay-blocked and pending outcomes. Manual `emitAudio`
   delivers delayed/stale callbacks (optionally target the recorded media
   instance ID); a pending outcome has no automatic ending. Mock sources are
   isolated from native media loading, and pause cancels automatic completion.
+  `audioPlayOutcomes` overrides playback independently of preload availability.
   These adapters simulate media lifecycle only, not decoding or speech.
 - Generated 100ms PCM tones and SVG shapes are original CC0 test assets,
   distinct by level/cue. Staging includes a fixture notice and license records;
@@ -252,3 +260,47 @@ matrix. T-15 covers the completion-marker reload boundary only; other crash
 windows and permitted telemetry loss remain open. The user approved Stage 5 on
 2026-11-04; that approval does not approve full T-01-T-33 acceptance, the Draft
 specifications or release.
+
+### Stage 6 audio, loading and failure recovery
+
+```powershell
+npm.cmd run test:e2e -- --grep "stage 6"
+```
+
+The [Stage 6 coverage manifest](tests/e2e/audio-loading-coverage.json) maps
+[the executable cases](tests/e2e/audio-loading.spec.ts) to T-07/T-16/T-22/T-23.
+They exercise production HTTP and `file://` builds, with deterministic media
+outcomes for sequencing/boundaries and real staged WAV/font failures for native
+decoding/fallback checks. Synthetic tones do not prove pronunciation.
+
+Coverage includes final-letter-before-word ordering, the 1,200 ms celebration,
+4,000 ms media watchdogs, successful long-word playback, muted/blocked/failed
+completion and exactly one advance; no sound before Start/Resume; saved mute;
+replay visibility, disabled states and stable geometry at all six viewports;
+and mute during active feedback. Autoplay rejection offers Enable sound without
+misclassifying media as missing.
+
+HTTP content now uses abortable fetch; `file://` uses bounded XHR with nonempty
+text and status 0/200 validation. The whole boot, including required-image
+preloading, is bounded at 10 seconds. Failed loads offer in-document Retry;
+old generations cannot overwrite the retried puzzle. Required audio failures
+remain nonfatal and independently diagnosed. Availability is recomputed per
+occurrence, so another successful cue cannot hide a failure and a complete
+destination cannot inherit a prior occurrence's warning. Missing Lexend uses
+the system-font fallback with a diagnostic.
+
+Validation on 2026-11-05: all 68 Stage 6 executions passed (34 per transport);
+the complete browser suite passed 188 executions (94 per transport), with zero
+skips, failures, retries or flaky results. All 82 unit tests, production
+typecheck/build, four-level authored content validation and whitespace checks
+passed. The manifest retains environment/build hashes and evidence details.
+Initial test synchronization and viewport-scroll measurement issues were
+corrected before the final clean run. The user explicitly approved Stage 6 on
+2026-11-05; this does not approve full acceptance, the Draft specifications or release.
+
+The named U-05 "Failed load versus failed audio" cases cover both branches.
+The manifest records remaining T-22 Settings/focus/preview variants and external
+device, container, pronunciation, media-distribution and release gates.
+The implementation task left normative specifications unchanged; a separately
+authorized reconciliation records the approved evidence while preserving Draft
+status and outstanding gates.

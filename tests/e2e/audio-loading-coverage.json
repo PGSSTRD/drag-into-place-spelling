@@ -1,0 +1,77 @@
+{
+  "stage": 6,
+  "title": "Audio, loading and failure recovery",
+  "requirements": {
+    "product": ["P-02", "P-03", "P-08", "P-09"],
+    "development": ["D-02", "D-05", "D-06", "D-08"],
+    "ui": ["U-02", "U-03", "U-05"],
+    "tests": ["F-01", "F-04", "F-07", "F-08", "F-10", "T-07", "T-16", "T-22", "T-23"]
+  },
+  "execution": {
+    "suite": "audio-loading.spec.ts",
+    "transport": ["http", "file"],
+    "seed": 12345,
+    "input": ["mouse click/select/place"],
+    "viewport": "768x1024 except replay geometry, which uses all six acceptanceViewports",
+    "motion": "reduced for spelling; moving and reduced previews for replay; default moving for load-only cases",
+    "status": "passed listed automated variants; implementation explicitly human-approved on 2026-11-05",
+    "evidence": {
+      "date": "2026-11-05",
+      "base_revision": "7b0350fbfd6810cd9b447682b3e1e920b9959560 plus uncommitted stage 6 changes",
+      "production_js_sha256": "603D8D3F19FE1FDAEF377BBD1D4A791B4DC9457B26254C457D89E6853E290AE4",
+      "production_html_sha256": "C243DDFC4E7674D359375633CC23A4466506E61706699F820E28E3F8C9967F80",
+      "environment": "Windows 10.0.26200.0; Node 24.20.0; npm 11.19.0; Chromium 156.0.8078.4",
+      "content": "schema 1; synthetic packs 1.0.0; authored pack 1.4.1",
+      "stage_6": { "http": 34, "file": 34, "passed": 68 },
+      "full_suite": { "http": 94, "file": 94, "passed": 188, "failed": 0, "skipped": 0, "flaky": 0, "retries": 0, "duration_ms": 438209.596 },
+      "unit_tests": 82,
+      "other_checks": ["production typecheck/build passed", "all four authored English levels validated", "23 local documentation links and requirement references validated", "git diff --check passed"],
+      "report": "../../test-results/browser-results.json",
+      "diagnostics": "Every case attaches console/server/network diagnostics; harness rejects uncaught errors and external runtime attempts. Expected fault diagnostics are asserted in the corresponding tests.",
+      "initial_failures": "Preload-boundary synchronization and replay geometry assertions were corrected: wait for preload initialization, and compare document coordinates rather than viewport coordinates changed by native control scrolling. Targeted reruns and the final full run passed."
+    }
+  },
+  "cases": [
+    {
+      "id": "T-07",
+      "references": { "P": ["P-02", "P-03"], "D": ["D-02", "D-06"], "U": ["U-02", "U-03"], "T": ["T-07"] },
+      "test": "final letter precedes word and advances once with played/unavailable/blocked/pending/muted audio; waits for successful word completion even after animation",
+      "fixtures": ["F-01", "F-10"],
+      "assertions": ["final-letter play before word play", "no advance before 1200 ms", "pending letter and word each bounded at 4000 ms", "late ended/error and repeated pointerup cannot advance/post completion twice", "a successful late word ending, not animation alone, releases advancement", "muted play produces no media play calls"],
+      "status": "automated; desktop Chromium, mocked media"
+    },
+    {
+      "id": "T-16",
+      "references": { "P": ["P-08"], "D": ["D-06", "D-08"], "U": ["U-02"], "T": ["T-16"] },
+      "test": "required transport; successful/non-success responses; whole-boot deadline; independently settling preloads; old-generation completion after Retry",
+      "fixtures": ["F-01", "F-07", "F-10"],
+      "assertions": ["HTTP fetch and file XHR are actually called", "file status 0 and 200 accepted with nonempty text", "HTTP failure, empty/malformed/truncated/missing content rejected", "9999 ms still loading; 10000 ms recoverable error for stalled content and image", "4000 ms audio timeout settles independently of successful/failed siblings", "Retry succeeds in the same document; captured old callback cannot replace it"],
+      "supporting": "loadContent.test.ts additionally rejects non-text XHR responses, exercises XHR onerror, verifies explicit cancellation and HTTP abort",
+      "status": "automated; physical-device cold-start performance remains external"
+    },
+    {
+      "id": "T-22",
+      "references": { "P": ["P-03", "P-09"], "D": ["D-02", "D-05", "D-06"], "U": ["U-02", "U-03"], "T": ["T-22"] },
+      "test": "new/saved and moving/reduced replay gates; sound gesture recovery; mute during active feedback",
+      "fixtures": ["F-01", "F-08", "F-10"],
+      "assertions": ["no play before Start/Resume", "replay visible and disabled before Start/Resume, muted and during feedback/completion", "disabled replay cannot focus and is skipped by Tab; disabled gray and enabled blue styles return correctly", "unmute cannot bypass feedback gate", "image/replay/answers/status/pool-or-lanes keep document geometry across mute in six viewports", "saved mute survives reload", "muting settles active cue and suppresses queued word without hanging", "Enable sound gesture permits replay recovery"],
+      "status": "partial; Settings, exhaustive preview-input and focus/tab-order variants remain separate acceptance work"
+    },
+    {
+      "id": "T-23",
+      "references": { "P": ["P-08", "P-09"], "D": ["D-06", "D-08"], "U": ["U-02", "U-03", "U-05"], "T": ["T-23"] },
+      "test": "Failed load versus failed audio; per-cue failures; real staged media/font failures; complete destination; same-level new occurrence; stale callbacks and unresolved preload",
+      "fixtures": ["F-01", "F-04", "F-07", "F-08", "F-10"],
+      "assertions": ["JSON and image failures are fatal with successful Retry", "word, every CAT letter-position cue and shared correction independently cause nonfatal notice", "another successful cue does not clear a required failure", "real missing/corrupt WAV preserves visible correct placement", "real missing Lexend logs FONT_UNAVAILABLE and preserves play", "complete destination and fresh same-level occurrence clear old failures", "unresolved earlier-occurrence preload cannot overwrite complete destination", "autoplay rejection uses Enable sound, not unavailable notice", "learner error copy contains no raw paths, fixture user ID or stack"],
+      "supporting": "persistence.spec.ts retains storage-denial notice and in-memory-play checks",
+      "status": "automated listed variants; not exhaustive for every pack/cue permutation or physical playback policy"
+    }
+  ],
+  "gates": {
+    "u_05_failed_load_versus_failed_audio": "named executable cases cover fatal and nonfatal branches on both transports",
+    "real_media": "native synthetic WAV decode/playback and missing/corrupt WAV exercised; not contextual pronunciation or restricted production-media distribution approval",
+    "input_matrix": "failure policy exercised through click/select/place; other input drivers are covered in earlier stages, not repeated for each fault permutation",
+    "full_t_01_t_33": "not complete; stages 7-8, remaining variants, physical WebViews/container, human review and release packaging remain open",
+    "human_approval": "2026-11-05: user explicitly selected Approve stage 6; implementation only, not full acceptance, normative specifications or release"
+  }
+}

@@ -1,8 +1,8 @@
 # DEVSPEC - Drag Into Place Spelling
 
-**Version:** 2.0.19<br>
-**Status:** Draft - Stage 5 persistence/progression implementation human-approved; partial T-01-T-15 and T-17/T-19/T-20 variants, full browser acceptance, audio distribution review, independent QA and release gates outstanding<br>
-**Last update:** 2026-11-04<br>
+**Version:** 2.0.20<br>
+**Status:** Draft - Stage 6 audio/loading/failure-recovery implementation human-approved; remaining browser variants, audio-adapter compliance, device, independent QA, audio distribution and release gates outstanding<br>
+**Last update:** 2026-11-05<br>
 **Author:** Copilot
 
 ## 1. Authority and reading order
@@ -406,7 +406,7 @@ Great-only specification and does not constitute approval of Great or release.
 |---|---|---|
 | M1 | React 19.1.1, TypeScript 5.9.2, Vite 7.1.7, Ajv 8.17.1; Node 24.20.0/npm 11.19.0; content schema and reference/license validator; CAT, DOG, RABBIT and BIRD source pack at content version 1.4.1 with local SVG illustrations; all 20 referenced MP3s and restricted-license records; local Lexend regular WOFF2 and OFL notice | Partial. On 2026-11-03, content validation, typecheck/build, all 23 existing unit tests and source/output hash checks passed; the production `file://` page decoded and applied Lexend to page and tile text. Stage 1 subsequently added schema/path fixture checks and the browser foundation in section 9.3; case-exact/true-format and full M1 exit coverage remain outstanding. ElevenLabs free-plan distribution/title-attribution review and contextual pronunciation review remain outstanding. |
 | M2 | Pure reducer, value-based duplicate matching, attempts, random wrong-tile relocation, historical foil removal/hints, per-user snapshot validation, cycle order and completion marker; six domain and four progress tests | Historical static-core behavior is present; full injected-clock/invariant matrix and all F-01-F-10 fixture coverage remain outstanding. |
-| M3 | Bounded XHR content loader, current-level audio cue availability checks, serialized HTML audio cues with watchdog, local progress/settings, and fire-and-forget bridge envelope | Partial. Current-level word, letter and shared correction cues are checked independently; unavailable state is level-scoped and browser playback blocks are distinguished. Stage 4 browser tests verify active-cue suspension/resumption with mocked audio and simulated visibility. HTTP development still uses XHR rather than the specified fetch path; broader preload settlement, component/browser failure-generation tests and device checks remain outstanding. `sub_app_id` is a development placeholder pending Q-02. |
+| M3 | Abortable HTTP fetch and bounded local XHR, whole-boot/image preloading and Retry generation guards, occurrence-scoped audio availability, serialized HTML audio with watchdog/mute, local progress/settings and bridge envelope | Partial. Stage 6 verifies listed boot, independent preload, Retry, playback-policy and stale-result variants on HTTP/file; Stage 4 verifies mocked pause/visibility. HTML audio failures settle as unavailable without creating D-06's literal one-frame silent buffer; that adapter requirement, broader variants and device checks remain open. `sub_app_id` is a development placeholder pending Q-02. |
 | M4 | At the time of prototype evidence, responsive static UI, pointer capture, 8 px threshold, clamping, center hit-testing, tap/keyboard placement, live status and a historical MVP/Better tier control | Focused browser checks pass. This historical evidence is not normative. Full viewport, focus/screen-reader, contrast, cancellation and automated component/E2E acceptance remains outstanding. |
 | M5 | Historical static prototype displayed per-position hints and removed foils; these mechanics are retained in the Great specification | Focused behavior is present. Full T-09/T-10 and regression suite remains outstanding. |
 | M6 | Great moving lanes, tap-to-stop selection, pause, reduced-motion static presentation and FIFO recycle scheduler are implemented; focused scheduler tests cover 12 tiles for 100 passes at lane widths 320, 568, 768 and 1024 CSS px, and Stage 4 browser checks exercise movement and pause on HTTP/`file://`. | Partial. Full Great drag/recycle/persistence, viewport/device, performance and acceptance coverage remain outstanding. |
@@ -427,8 +427,8 @@ commands are not present. At the 2026-10-22 prototype checkpoint, the clean
 install used `--ignore-scripts --no-audit --offline`, plain `npm ci` was not
 run, missing media blocked content validation, and npm reported five
 advisories whose details could not be retrieved. Preserve that historical
-evidence; current stage 1-4 checks and their narrower approvals are in
-sections 9.3-9.6. No clean-machine install or security-review gate is inferred
+evidence; current stage 1-6 checks and their narrower approvals are in
+sections 9.3-9.8. No clean-machine install or security-review gate is inferred
 from them.
 
 ### 9.2 Great implementation evidence recorded 2026-10-27
@@ -684,6 +684,55 @@ and the complete browser corruption matrix. T-15 covers the completion-marker
 reload boundary; other crash windows and permitted telemetry loss remain open.
 This evidence does not establish full T-01-T-33 acceptance or release.
 
+### 9.8 Approved browser acceptance stage 6: audio, loading and failure recovery (2026-11-05)
+
+Source task: [browser acceptance suite](../tasks/draft/browser-acceptance-suite.md),
+stage 6, covering P-02/P-03/P-08/P-09; D-02/D-05/D-06/D-08;
+U-02/U-03/U-05; and T-07/T-16/T-22/T-23. The user explicitly selected
+"Approve stage 6" after validation and then "Start specification update" for
+this separate reconciliation. Approval covers the implementation task only;
+this specification remains Draft. PRD intent, normative behavior and module
+dependencies are unchanged: M1 content and M2 puzzle/snapshot invariants
+support M3 loading/audio services, exercised through M4-M6 application adapters.
+
+The [Stage 6 manifest](../../tests/e2e/audio-loading-coverage.json) maps
+[browser cases](../../tests/e2e/audio-loading.spec.ts) and supporting
+[loader](../../tests/loadContent.test.ts) and [audio](../../tests/audio.test.ts)
+unit checks. HTTP uses fetch with abort/timeout; local files use nonempty
+text XHR with status 0/200 validation. A whole-boot 10,000 ms deadline includes
+required-image preloading, while audio/font settlement is bounded independently.
+In-document Retry invalidates the old boot generation; captured late callbacks
+cannot replace the retried puzzle. Required JSON/image errors remain fatal;
+audio and font failures preserve play with the specified notice or diagnosed
+system-font fallback.
+
+Audio checks cover destination-indexed cues, final-letter-before-word ordering,
+the 1,200 ms celebration and 4,000 ms playback watchdogs, successful word
+completion after animation, and single advancement under muted, failed, blocked,
+pending and stale-callback conditions. Muting active feedback stops playback
+and suppresses queued sound. Required-cue failures persist despite another cue
+succeeding; complete destinations and new occurrences of the same level do not
+inherit prior failures. Earlier-occurrence availability/playback results cannot
+alter the current notice. Policy blocks offer Enable sound rather than an
+unavailable-media warning.
+
+The final production-build run passed 188 executions (94 HTTP and 94
+`file://`), including all 68 Stage 6 executions (34 per transport), with zero
+failures, skips, retries or flaky results. All 82 unit tests, authored
+four-level content validation, typecheck/build, documentation link/reference
+checks and whitespace checks passed. The manifest retains build hashes,
+base revision plus uncommitted changes, seed, versions, diagnostics and the
+generated report location. Initial preload synchronization and viewport-scroll
+measurement assertions were corrected before the final clean run.
+
+These are desktop Chromium results, not baseline-device performance,
+physical WebView/container or production-pronunciation evidence. The HTML
+audio failure path returns `unavailable`; it does not create D-06's literal
+one-frame silent buffer, which remains an explicit implementation gap rather
+than a waived requirement. Full diagnostic-deduplication/adapter compliance,
+remaining T-22 Settings/preview/focus variants, the complete acceptance matrix,
+independent QA, media distribution and release gates remain open.
+
 ## Part II - Non-functional requirements
 
 ## 10. Quality, safety and diagnostics (D-08)
@@ -769,7 +818,7 @@ the selected pack for local testing. `audit:standalone` inspects emitted output
 for network paths, root-relative references, maps, missing media and forbidden
 runtime modules. Packaging refuses an audit/content failure.
 
-Implemented stage 1-4 browser commands (not a substitute for the complete
+Implemented stage 1-6 browser commands (not a substitute for the complete
 release sequence above):
 
 ```text
@@ -782,6 +831,8 @@ npm run test:e2e -- --project=http --grep "stage 3"
 npm run test:e2e -- --project=file --grep "stage 3"
 npm run test:e2e -- --project=http --grep "stage 4"
 npm run test:e2e -- --project=file --grep "stage 4"
+npm run test:e2e -- --grep "stage 5"
+npm run test:e2e -- --grep "stage 6"
 ```
 
 `test:e2e:install` invokes the locked `playwright install chromium` command;
@@ -789,9 +840,10 @@ the browser download needs internet once. `test:e2e` builds with
 `tsc --noEmit && vite build` before running both projects, unless a project
 selector is supplied. No Vite development server or physical phone is needed.
 On Windows, use `npm.cmd`/`npx.cmd` when execution policy blocks the PowerShell
-wrappers. The [README runbook](../../README.md#browser-testing-stages-1-4-harness-content-spelling-interaction-movement-and-pause)
-documents focused reruns, fixture options and limits. The stage 2, stage 3 and
-stage 4 coverage manifests record partial results; they are not the full
+wrappers. The [README runbook](../../README.md#browser-testing-stages-1-5-harness-content-spelling-interaction-movement-pause-persistence-and-progression)
+and [Stage 6 runbook](../../README.md#stage-6-audio-loading-and-failure-recovery)
+document focused reruns, fixture options and limits. The stage 2-6 coverage
+manifests record listed results and remaining variants; they are not the full
 acceptance manifest.
 HTML and JSON reports
 are generated at `playwright-report/index.html` and
@@ -909,6 +961,7 @@ dates or invent a change-log entry for untouched specs.
 
 ## Spec change log
 
+2026-11-05 — Copilot — Recorded the user-approved stage 6 audio/loading/recovery implementation and 188 HTTP/file executions, updated implemented tooling evidence and preserved partial acceptance and audio-adapter gaps.
 2026-11-04 — Copilot — Clarified D-05's `occurrence_counter` mapping and recorded the user-approved stage 5 persistence/progression evidence and partial gates without changing behavior.
 2026-11-04 — Copilot — Recorded the user-approved stage 4 movement/pause implementation and 100 HTTP/file executions, including partial T-11/T-12/T-19/T-20 gates, without changing normative behavior or module dependencies.
 2026-11-04 — Copilot — Recorded the user-approved stage 3 pointer/touch/keyboard evidence, 90 HTTP/file executions and remaining partial T-03/T-17/T-19 variants without changing behavior or module dependencies.

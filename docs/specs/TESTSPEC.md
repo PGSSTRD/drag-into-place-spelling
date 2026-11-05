@@ -1,8 +1,8 @@
 # TESTSPEC - Drag Into Place Spelling
 
-**Version:** 2.1.17<br>
-**Status:** Draft - Stage 5 persistence/progression implementation human-approved; 120 executions (60 per transport) pass; partial T-01-T-15 and T-17/T-19/T-20 variants, full acceptance, audio distribution and independent QA gates outstanding<br>
-**Last update:** 2026-11-04<br>
+**Version:** 2.1.18<br>
+**Status:** Draft - Stage 6 implementation human-approved; 188 executions (94 per transport) pass; remaining acceptance variants, audio-adapter compliance, device, audio distribution, independent QA and release gates outstanding<br>
+**Last update:** 2026-11-05<br>
 **Author:** Copilot<br>
 **Independent QA owner:** To be assigned
 
@@ -200,8 +200,9 @@ phase approval run all applicable groups, including Great moving and
 reduced-motion presentation.
 Release requires the full sequence plus physical/manual gates.
 
-For the implemented stage 1 harness and stage 2-4 acceptance cases, follow D-09
-and the [README runbook](../../README.md#browser-testing-stages-1-4-harness-content-spelling-interaction-movement-and-pause).
+For the implemented stage 1 harness and stage 2-6 acceptance cases, follow D-09
+and the [README runbook](../../README.md#browser-testing-stages-1-5-harness-content-spelling-interaction-movement-pause-persistence-and-progression),
+including its [Stage 6 section](../../README.md#stage-6-audio-loading-and-failure-recovery).
 `npm run test:e2e` first builds production output, then runs the HTTP and file
 projects with one worker, zero retries and a one-failure stop. Correct and
 rerun a failing test before continuing; do not skip it or weaken expected
@@ -209,8 +210,9 @@ behavior. Install the pinned Chromium runtime with `npm run test:e2e:install`
 before the first run. Desktop `file://` uses the documented Chromium local-file
 flag; it is not evidence of physical WebView/container compatibility. Use
 `--grep "stage 2"` for T-01-T-10, `--grep "stage 3"` for pointer/touch/
-keyboard, or `--grep "stage 4"` for movement/pause with either project
-selector.
+keyboard, `--grep "stage 4"` for movement/pause, `--grep "stage 5"` for
+persistence/progression, or `--grep "stage 6"` for audio/loading/recovery
+with either project selector.
 
 Each case attaches console/server diagnostics and runtime API attempts,
 including across reloads. Uncaught application errors and detected external
@@ -221,7 +223,9 @@ evidence before another run replaces these generated outputs. The
 [stage 2 coverage manifest](../../tests/e2e/coverage.json) maps implemented
 T-01-T-10 checks and their partial variants. The stage 3 interaction manifest
 and stage 4 movement manifest similarly map implemented checks and partial
-variants. None is the full assertion coverage manifest; emitted-asset audit,
+variants; the stage 5 persistence and
+[stage 6 audio/loading manifest](../../tests/e2e/audio-loading-coverage.json)
+extend this traceability. None is the full assertion coverage manifest; emitted-asset audit,
 offline cold-launch trials, complete input/viewport/motion matrix and release
 packaging remain open.
 
@@ -670,8 +674,55 @@ corruption matrix. T-15 covers the marker-save boundary only; other crash
 windows and permitted telemetry loss remain open. No test establishes full
 T-01-T-33 acceptance or release.
 
+### Browser acceptance stage 6: audio, loading and failure recovery (2026-11-05)
+
+Source approval: the user selected "Approve stage 6" after implementation and
+validation, then authorized "Start specification update" as a separate task.
+The [Stage 6 manifest](../../tests/e2e/audio-loading-coverage.json) maps
+[executable cases](../../tests/e2e/audio-loading.spec.ts) to P-02/P-03/P-08/P-09;
+D-02/D-05/D-06/D-08; U-02/U-03/U-05; and T-07/T-16/T-22/T-23.
+F-01/F-04/F-07/F-08/F-10 provide synthetic packs, failures, snapshots and
+controlled media. [Loader](../../tests/loadContent.test.ts) and
+[audio](../../tests/audio.test.ts) unit checks supplement browser observations.
+
+| Group | Verified Stage 6 variants | Remaining boundary |
+|---|---|---|
+| T-07 | Final letter precedes word; animation cannot advance before 1,200 ms; successful late word ending is awaited; 4,000 ms cue watchdogs bound pending letter/word playback; muted/failed/blocked cues, repeated pointerup and stale ended/error cannot double-advance/post completion | Listed desktop reduced-motion variants pass; not every input/motion/content permutation |
+| T-16 | Actual HTTP fetch/file XHR; successful status 0/200 local text; non-success, empty/malformed/truncated/missing content; 9,999/10,000 ms boot boundary for content/image stalls; independent 4,000 ms preload settlement; same-document Retry and late old-generation completion | Unit tests also cover wrong response type, XHR error/cancellation and HTTP abort; physical-device performance and D-06 silent-buffer substitution are not passed |
+| T-22 | No pre-gesture play; new/saved moving/reduced previews; replay visible/gray/disabled, unfocusable and skipped by Tab; enabled styling restoration; mute/feedback/completion gates; saved mute; active-mute stops cue/queued word; Enable sound recovery; six-viewport stable geometry | Settings/dialog focus, exhaustive preview-input and accessibility variants remain open |
+| T-23 | Each CAT word/position/shared-correction cue fails independently; another successful cue cannot clear its notice; complete destinations and fresh same-level occurrences clear old failures; stale callbacks and unresolved prior preload cannot overwrite availability; real missing/corrupt WAV and missing Lexend preserve visual play; fatal JSON/image errors recover via Retry; sanitized learner error copy | Listed cases pass, not every pack/cue permutation; storage evidence remains in Stage 5, and physical policy/pronunciation, full diagnostic-deduplication and literal silent-buffer compliance remain open |
+
+The named U-05 "Failed load versus failed audio" cases now execute both
+branches. `audioPlayOutcomes` isolates playback rejection/pending behavior
+from preload success; ordered `contentResponses` and captured `emitContent`
+callbacks exercise protocol-specific responses and old generations.
+`stallImages` checks the whole-boot bound. Real synthetic WAV failures and
+the system-font fallback complement mocks, not production pronunciation.
+Replay geometry is compared in document coordinates so browser scrolling
+to a control is not mistaken for layout shift.
+
+Final evidence on 2026-11-05: 188 expected browser passes (94 HTTP and 94
+`file://`), including 68 Stage 6 executions (34 each), with zero unexpected,
+skipped, flaky or retried results. All 82 unit tests, four-level authored
+content validation, production typecheck/build, local links/requirement
+references and whitespace checks passed. The manifest records Windows
+10.0.26200.0, Node 24.20.0, npm 11.19.0, Chromium 156.0.8078.4, seed 12345,
+schema 1, synthetic content 1.0.0, authored content 1.4.1, base revision plus
+uncommitted changes and output hashes. Per-case diagnostics and the generated
+JSON/HTML reports retain execution evidence; later runs replace reports.
+Initial test synchronization and scroll-measurement failures were corrected
+and rerun before the final clean suite.
+
+This reconciliation changes evidence/status only, not mandatory acceptance
+criteria or module order. Implementation approval is not specification,
+independent QA, full T-01-T-33, physical-device/container or release approval.
+Remaining earlier-stage variants, D-06's literal silent-buffer gap, static
+offline/archive audits, media distribution, accessibility and human gates
+remain open.
+
 ## Spec change log
 
+2026-11-05 — Copilot — Recorded user-approved stage 6 T-07/T-16/T-22/T-23 coverage, 188 HTTP/file and 82 unit passes, updated runbook traceability and retained partial variants and audio-adapter/device/release gates.
 2026-11-04 — Copilot — Recorded user-approved stage 5 persistence/progression coverage, 120 HTTP/file executions and partial T-08/T-13/T-14/T-15 gates.
 2026-11-04 — Copilot — Recorded the user-approved stage 4 movement/pause coverage and 100 HTTP/file executions, preserving partial T-11/T-12/T-19/T-20 and device/release gates.
 2026-11-04 — Copilot — Recorded user-approved stage 3 T-03/T-05/T-17/T-18/T-19 evidence and 90 HTTP/file executions while retaining partial variants and device/release gates.

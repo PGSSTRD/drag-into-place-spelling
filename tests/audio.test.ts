@@ -1,15 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { areAudioCuesAvailable, playAudioCue } from "../src/services/audio";
+import { areAudioCuesAvailable, playAudioCue, setAudioMuted } from "../src/services/audio";
 
 class MockAudio extends EventTarget {
   static unavailablePaths = new Set<string>();
   static pendingPaths = new Set<string>();
   static playError: unknown = null;
+  static instances: MockAudio[] = [];
   preload = "";
   src = "";
 
   constructor(src?: string) {
     super();
+    MockAudio.instances.push(this);
     if (src) this.src = src;
   }
 
@@ -23,6 +25,7 @@ class MockAudio extends EventTarget {
 
   play(): Promise<void> {
     if (MockAudio.playError) return Promise.reject(MockAudio.playError);
+    if (MockAudio.pendingPaths.has(this.src)) return Promise.resolve();
     queueMicrotask(() => this.dispatchEvent(new Event("ended")));
     return Promise.resolve();
   }
@@ -35,6 +38,8 @@ describe("audio cue availability", () => {
     MockAudio.unavailablePaths.clear();
     MockAudio.pendingPaths.clear();
     MockAudio.playError = null;
+    MockAudio.instances = [];
+    setAudioMuted(false);
     vi.stubGlobal("Audio", MockAudio);
     vi.stubGlobal("document", { baseURI: "http://localhost/" });
     vi.stubGlobal("window", { setTimeout, clearTimeout });
@@ -82,5 +87,33 @@ describe("audio cue availability", () => {
 
     MockAudio.playError = new Error("Media decode failed");
     await expect(playAudioCue("lang/english/audios/rabbit.mp3", false)).resolves.toBe("unavailable");
+  });
+
+  it("settles a pending playback at exactly 4000 ms and ignores stale events", async () => {
+    vi.useFakeTimers();
+    MockAudio.pendingPaths.add("http://localhost/pending.wav");
+    const finished = vi.fn();
+    const result = playAudioCue("pending.wav", false).then(finished);
+    await vi.advanceTimersByTimeAsync(3999);
+    expect(finished).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
+    await result;
+    expect(finished).toHaveBeenCalledExactlyOnceWith("unavailable");
+    MockAudio.instances[0].dispatchEvent(new Event("ended"));
+    MockAudio.instances[0].dispatchEvent(new Event("error"));
+    expect(finished).toHaveBeenCalledTimes(1);
+  });
+
+  it("muting settles active and queued cues without starting more media", async () => {
+    MockAudio.pendingPaths.add("http://localhost/mute-active.wav");
+    const active = playAudioCue("mute-active.wav", false);
+    const queued = playAudioCue("mute-queued.wav", false);
+    setAudioMuted(true);
+    await expect(active).resolves.toBe("muted");
+    await expect(queued).resolves.toBe("muted");
+    await expect(playAudioCue("mute-new.wav", false)).resolves.toBe("muted");
+    expect(MockAudio.instances).toHaveLength(1);
+    setAudioMuted(false);
+    await expect(playAudioCue("unmuted.wav", false)).resolves.toBe("played");
   });
 });

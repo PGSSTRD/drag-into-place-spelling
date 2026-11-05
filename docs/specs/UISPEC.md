@@ -1,8 +1,8 @@
 # UISPEC - Drag Into Place Spelling
 
-**Version:** 2.0.18<br>
-**Status:** Draft - Stage 5 saved-state presentation integration human-approved; product, accessibility and design review outstanding<br>
-**Last update:** 2026-11-04<br>
+**Version:** 2.0.19<br>
+**Status:** Draft - Stage 6 audio/error/replay presentation implementation human-approved; full accessibility, product and design review outstanding<br>
+**Last update:** 2026-11-05<br>
 **Author:** Copilot
 
 ## 1. Authority and visual intent
@@ -354,8 +354,40 @@ U-01-U-05 or grant product, design, full accessibility, screen-reader,
 physical-device or release approval. Guest isolation and other T-14 browser
 variants remain open.
 
+### Browser acceptance stage 6 evidence recorded 2026-11-05
+
+The user explicitly approved the tested Stage 6 implementation and separately
+authorized this reconciliation. The [Stage 6 coverage
+manifest](../../tests/e2e/audio-loading-coverage.json) links U-02/U-03/U-05
+to P-02/P-03/P-08/P-09, D-02/D-06/D-08 and T-07/T-16/T-22/T-23.
+All 34 Stage 6 cases passed on each transport as part of the full
+188-execution production-browser run (94 HTTP and 94 `file://`).
+
+Checks cover recoverable JSON/image errors with sanitized learner copy and
+working Retry; nonfatal audio notices that survive another cue's success;
+notice recovery on destination/new occurrence and stale-result exclusion;
+Enable sound after policy rejection; saved mute; and visible feedback without
+usable audio. The named U-05 "Failed load versus failed audio" cases exercise
+both fatal and nonfatal branches, including native missing/corrupt synthetic
+WAV and missing-font fallback checks.
+
+For new/saved previews in moving and reduced-motion presentations, replay
+stays visible, gray, disabled, unfocusable and skipped by Tab before
+Start/Resume. Starting unmuted restores enabled styling; muting, feedback
+and completion disable it without bypass on unmute. Image/replay/answer/status
+and pool-or-lane document geometry remains unchanged across mute at 320x568,
+568x320, 768x1024, 1024x768, 566x600 and 800x400. Muting active feedback
+stops sound and suppresses the queued word without stranding progression.
+
+This records implementation evidence, not changes to U-01-U-05 or approval of
+these Draft specifications. Settings/dialog focus, exhaustive preview-input
+and accessibility variants, physical playback policy, production media,
+product/design review and release remain open. D-06's silent-buffer adapter
+gap is retained in DEVSPEC; visible fallback tests do not waive it.
+
 ## Spec change log
 
+2026-11-05 — Copilot — Recorded user-approved stage 6 audio/error/replay presentation evidence and the named failure scenario while preserving U-01-U-05 and remaining accessibility, design and release gates.
 2026-11-04 — Copilot — Recorded user-approved stage 5 saved-state, recovery and storage-notice presentation evidence without changing U-01-U-05 or product/design/accessibility gates.
 2026-11-04 — Copilot — Recorded user-approved stage 4 movement/pause presentation evidence while preserving U-01-U-05 and product, design, accessibility and release gates.
 2026-11-04 — Copilot — Recorded user-approved stage 3 interaction evidence while preserving U-01-U-05 and product, design, accessibility and release gates.

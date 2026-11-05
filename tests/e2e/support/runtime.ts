@@ -1,10 +1,19 @@
 import type { Page } from "@playwright/test";
 
 export type AudioOutcome = "played" | "unavailable" | "blocked" | "pending";
+export interface ContentResponse {
+  status: number;
+  body: string;
+  pending?: boolean;
+  wrongType?: boolean;
+}
 export interface RuntimeOptions {
   seed?: number;
   audio?: "real" | "mock";
   audioOutcomes?: Record<string, AudioOutcome>;
+  audioPlayOutcomes?: Record<string, AudioOutcome>;
+  contentResponses?: ContentResponse[];
+  stallImages?: boolean;
   bridge?: "absent" | "recording" | "throwing";
   storage?: "normal" | "read-denied" | "write-denied";
   stallContentXHR?: boolean;
@@ -18,8 +27,10 @@ interface BrowserHarness {
   events: Array<{ type: string; path: string; id?: number }>;
   messages: string[];
   outcomes: Record<string, AudioOutcome>;
+  playOutcomes: Record<string, AudioOutcome>;
   network: Array<{ api: string; url: string }>;
   emitAudio: (path: string, type: "canplay" | "ended" | "error", id?: number) => void;
+  emitContent: (id: number) => void;
 }
 
 declare global {
@@ -47,6 +58,7 @@ export async function installRuntime(page: Page, options: RuntimeOptions): Promi
       return `00000000-0000-4000-8000-${uuidCount.toString(16).padStart(12, "0")}`;
     };
     const elements = new Set<HTMLMediaElement>();
+    const contentCallbacks: Array<() => void> = [];
     const elementIds = new WeakMap<HTMLMediaElement, number>();
     const state: BrowserHarness = {
       seed,
@@ -54,7 +66,13 @@ export async function installRuntime(page: Page, options: RuntimeOptions): Promi
       events: [],
       messages: [],
       outcomes: config.audioOutcomes ?? {},
+      playOutcomes: config.audioPlayOutcomes ?? {},
       network: [],
+      emitContent(id) {
+        const callback = contentCallbacks[id];
+        if (!callback) throw new Error(`Unknown content request ${id}`);
+        callback();
+      },
       emitAudio(path, type, id) {
         for (const element of elements) {
           if (new URL(element.src).pathname.endsWith(path) && (id === undefined || elementIds.get(element) === id)) {
@@ -72,6 +90,17 @@ export async function installRuntime(page: Page, options: RuntimeOptions): Promi
     const fetch = window.fetch;
     window.fetch = function (input, init) {
       recordNetwork("fetch", input instanceof Request ? input.url : input);
+      const url = new URL(input instanceof Request ? input.url : input, document.baseURI);
+      if (url.pathname.endsWith("/lang/english/levels.json") && (config.contentResponses || config.stallContentXHR)) {
+        const id = contentCallbacks.length;
+        const response = config.contentResponses?.[id] ?? { status: 200, body: "", pending: true };
+        state.events.push({ type: response.pending ? "content-stalled" : "content-response", path: url.pathname, id });
+        return new Promise<Response>((resolve) => {
+          const finish = () => resolve(new Response(response.body, { status: response.status }));
+          contentCallbacks.push(finish);
+          if (!response.pending) queueMicrotask(finish);
+        });
+      }
       return fetch.call(this, input, init);
     };
     const open = XMLHttpRequest.prototype.open;
@@ -98,7 +127,7 @@ export async function installRuntime(page: Page, options: RuntimeOptions): Promi
         super(url, init);
       }
     };
-    if (config.stallContentXHR) {
+    if (config.stallContentXHR || config.contentResponses) {
       const urls = new WeakMap<XMLHttpRequest, string>();
       const open = XMLHttpRequest.prototype.open;
       const send = XMLHttpRequest.prototype.send;
@@ -109,7 +138,20 @@ export async function installRuntime(page: Page, options: RuntimeOptions): Promi
       XMLHttpRequest.prototype.send = function (body) {
         const path = urls.get(this);
         if (path?.endsWith("/lang/english/levels.json")) {
-          state.events.push({ type: "xhr-stalled", path });
+          const id = contentCallbacks.length;
+          const response = config.contentResponses?.[id] ?? { status: 200, body: "", pending: true };
+          state.events.push({ type: response.pending ? "content-stalled" : "content-response", path, id });
+          const onload = this.onload;
+          const finish = () => {
+            Object.defineProperties(this, {
+              status: { configurable: true, value: response.status },
+              responseText: { configurable: true, value: response.body },
+              response: { configurable: true, value: response.wrongType ? new ArrayBuffer(4) : response.body },
+            });
+            onload?.call(this, new ProgressEvent("load"));
+          };
+          contentCallbacks.push(finish);
+          if (!response.pending) queueMicrotask(finish);
           return;
         }
         send.call(this, body);
@@ -142,6 +184,14 @@ export async function installRuntime(page: Page, options: RuntimeOptions): Promi
     if (config.storage === "write-denied") {
       Storage.prototype.setItem = () => { throw new DOMException("Injected write failure", "QuotaExceededError"); };
     }
+    if (config.stallImages) {
+      const NativeImage = window.Image;
+      window.Image = class extends NativeImage {
+        override set src(value: string) {
+          state.events.push({ type: "image-stalled", path: value });
+        }
+      };
+    }
     if (config.audio !== "mock") return;
 
     const sources = new WeakMap<HTMLMediaElement, string>();
@@ -159,8 +209,12 @@ export async function installRuntime(page: Page, options: RuntimeOptions): Promi
       }
     };
     const pathOf = (audio: HTMLMediaElement) => new URL(audio.src).pathname;
-    const outcomeOf = (audio: HTMLMediaElement) => {
+    const outcomeOf = (audio: HTMLMediaElement, playing = false) => {
       const path = pathOf(audio);
+      if (playing) {
+        const override = Object.entries(state.playOutcomes).find(([suffix]) => path.endsWith(suffix))?.[1];
+        if (override) return override;
+      }
       return Object.entries(state.outcomes).find(([suffix]) => path.endsWith(suffix))?.[1] ?? "played";
     };
     const record = (audio: HTMLMediaElement, type: string) => {
@@ -175,7 +229,7 @@ export async function installRuntime(page: Page, options: RuntimeOptions): Promi
     };
     HTMLMediaElement.prototype.play = function () {
       record(this, "play");
-      const outcome = outcomeOf(this);
+      const outcome = outcomeOf(this, true);
       if (outcome === "blocked") return Promise.reject(new DOMException("Injected autoplay block", "NotAllowedError"));
       if (outcome === "unavailable") return Promise.reject(new DOMException("Injected media failure", "NotSupportedError"));
       if (outcome === "played") {

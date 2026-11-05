@@ -129,9 +129,9 @@ test("H-06 staged missing/corrupt assets do not change production output", async
   expect(await readFile(resolve("dist", "lang", "english", "levels.json"), "utf8")).toContain('"content_version": "1.4.1"');
 });
 
-test("H-07 XHR stall injection is installed before boot on both transports", async ({ app, page }) => {
+test("H-07 content stall injection is installed before boot on both transports", async ({ app, page }) => {
   await app.launch({ stallContentXHR: true, clock: true });
-  expect(await page.evaluate(() => window.__browserHarness.events.filter((event) => event.type === "xhr-stalled"))).toHaveLength(1);
+  expect(await page.evaluate(() => window.__browserHarness.events.filter((event) => event.type === "content-stalled"))).toHaveLength(1);
 });
 
 for (const storage of ["read-denied", "write-denied"] as const) {

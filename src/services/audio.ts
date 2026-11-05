@@ -6,7 +6,13 @@ let queueBusy = false;
 let audioContext: AudioContext | null = null;
 let unlockFailureReported = false;
 let audioSuspended = false;
-const activeCues = new Set<{ pause: () => void; resume: () => void }>();
+let audioMuted = false;
+const activeCues = new Set<{ pause: () => void; resume: () => void; mute: () => void }>();
+
+export function setAudioMuted(muted: boolean): void {
+  audioMuted = muted;
+  if (muted) for (const cue of activeCues) cue.mute();
+}
 
 export function suspendAudioCues(): void {
   audioSuspended = true;
@@ -19,7 +25,7 @@ export function resumeAudioCues(): void {
 }
 
 export function playAudioCue(path: string, muted: boolean): Promise<AudioCueResult> {
-  if (muted) return Promise.resolve("muted");
+  if (muted || audioMuted) return Promise.resolve("muted");
   if (!queueBusy) return startQueuedCue(path).catch(() => {
     reportFailure(path);
     return "unavailable";
@@ -143,6 +149,7 @@ function playOne(path: string): Promise<AudioCueResult> {
     }
 
     const cue = {
+      mute() { finish("muted"); },
       pause() {
         if (settled || suspended) return;
         suspended = true;
@@ -173,6 +180,7 @@ function isPlaybackBlocked(reason: unknown): boolean {
 }
 
 function startQueuedCue(path: string): Promise<AudioCueResult> {
+  if (audioMuted) return Promise.resolve("muted");
   queueBusy = true;
   const result = playOne(path).finally(() => {
     queueBusy = false;
