@@ -1,8 +1,8 @@
 # DEVSPEC - Drag Into Place Spelling
 
-**Version:** 2.0.22<br>
-**Status:** Draft - Stage 8 regression/reporting human-approved; implemented suite passes but full acceptance, accessibility review, audio-adapter compliance, device, independent QA, audio distribution and release gates remain incomplete<br>
-**Last update:** 2026-11-05<br>
+**Version:** 2.0.24<br>
+**Status:** Draft - Stage 8, draft dog tile icon and development-only CMS upload human-approved; full acceptance, accessibility, audio-adapter, device, independent QA, production-audio attribution/distribution and release gates remain incomplete<br>
+**Last update:** 2026-11-06<br>
 **Author:** Copilot
 
 ## 1. Authority and reading order
@@ -99,7 +99,12 @@ attribution or establish distribution approval. See
 [ElevenLabs publication guidance](https://elevenlabs.io/docs/help-center/legal/can-i-publish-the-content-i-generate-on-the-platform)
 and [terms](https://elevenlabs.io/terms).
 The user approved the manifest update on 2026-11-03, not publication or
-release. The Lexend font and its OFL license notice are now bundled; contextual
+release. On 2026-11-06 the user reported Curious Learning's confirmation that
+a commercial license is not required for this use and explicitly authorized
+and approved the development-only CMS upload recorded under D-10. This is
+operator-reported guidance, not an independently verified license grant or
+waiver of applicable attribution; production distribution remains unapproved.
+The Lexend font and its OFL license notice are now bundled; contextual
 pronunciation, applicable terms and publication attribution still require
 T-31 review. The SVGs remain repository-only placeholders and are not release
 media unless selected and approved through T-31.
@@ -410,7 +415,7 @@ Great-only specification and does not constitute approval of Great or release.
 | M4 | At the time of prototype evidence, responsive static UI, pointer capture, 8 px threshold, clamping, center hit-testing, tap/keyboard placement, live status and a historical MVP/Better tier control | Focused browser checks pass. This historical evidence is not normative. Full viewport, focus/screen-reader, contrast, cancellation and automated component/E2E acceptance remains outstanding. |
 | M5 | Historical static prototype displayed per-position hints and removed foils; these mechanics are retained in the Great specification | Focused behavior is present. Full T-09/T-10 and regression suite remains outstanding. |
 | M6 | Great moving lanes, tap-to-stop selection, pause, reduced-motion static presentation and FIFO recycle scheduler are implemented; focused scheduler tests cover 12 tiles for 100 passes at lane widths 320, 568, 768 and 1024 CSS px, and Stage 4 browser checks exercise movement and pause on HTTP/`file://`. | Partial. Full Great drag/recycle/persistence, viewport/device, performance and acceptance coverage remain outstanding. |
-| M7 | Bridge envelope validation/call boundary and a browser-supporting emitted-output audit are implemented; Stage 7 evidence is in section 9.9 | Partial. The pattern-based audit is not the required release audit command; ZIPs, icon, release configuration and device/container evidence remain outstanding. |
+| M7 | Bridge envelope validation/call boundary and a browser-supporting emitted-output audit are implemented; the approved draft icon (section 9.11), static ZIP validation and approved development-only CMS upload are recorded under D-10 | Partial. The pattern-based audit is not the required release audit command; release configuration, complete archive/runtime acceptance and device/container evidence remain outstanding. Development upload does not approve production media or pass package acceptance. |
 
 Commands currently present in `package.json` are:
 
@@ -841,11 +846,21 @@ among the report's not-run work. D-06's literal one-frame silent-buffer
 allocation and full diagnostic-deduplication compliance remain open.
 
 D-09/D-10 `lint`, `build:standalone`, `audit:standalone` and `package`
-are still required future commands. Archive merge/icon/release asset
-checks, human accessibility/QA/usability/architecture/security review,
-physical-device performance, actual Curious Reader receipt/deduplication,
-production identifiers and media distribution/publication remain unpassed.
+are still required future commands. Archive merge and complete
+package/icon/release-asset acceptance, human accessibility/QA/usability/
+architecture/security review, physical-device performance, actual Curious
+Reader receipt/deduplication, production identifiers and media distribution/
+publication remain unpassed.
 Completing stages 1-8 as tasks does not satisfy all module exit criteria.
+
+### 9.11 Approved draft tile icon artifact (2026-11-06)
+
+After the Stage 8 run, the user requested and approved
+`content/assets/icons/dog-tile-icon.png`, rendered from the repository's draft
+`content/assets/images/dog.svg`. Its PNG signature and dimensions were checked
+as true 512x512 PNG. This supplies a draft icon asset only: it does not approve
+the placeholder illustration for production or pass D-10 packaging, archive
+verification or T-28.
 
 ## Part II - Non-functional requirements
 
@@ -1026,6 +1041,47 @@ Operator handoff, only after explicit authorization:
 This repository does not implement CMS endpoints or automate irreversible
 reservations, promotion or publishing.
 
+### Approved development upload (2026-11-06)
+
+The user approved the completed development-upload task and separately
+authorized this specification reconciliation. This was an operator-authorized
+development test using draft media, not release packaging or approval.
+Registered engine metadata:
+
+| Field | Verified value |
+|---|---|
+| Engine slug | `drag-into-place-spelling` (existing reservation reused) |
+| Title | `Drag Into Place Spelling` |
+| URL template | `https://drag-into-place-spelling.curiouslearning.org/?cr_lang={lang}` |
+| Layout | A; `hasCoreLevel: false`; no core slug or book tier |
+| Language | `english`; content version `1.4.1` |
+| Engine CMS item | `8f533300-202f-42d1-95de-6b826cadb462`, version 1, `development` |
+| English CMS item | `6808c54b-e229-4a10-91b5-67f89d585d91`, version 1, `development` |
+| Icon | Separate true-PNG 512x512 dog icon, 30,752 bytes |
+| Automatic manifest | `all-development`, ID `86485600-4c58-4001-a6de-e3e8d3b61f69`, entry channel `development` |
+
+The engine ZIP was uploaded as `drag-into-place-spelling-core.zip` (219,965
+bytes). The supplied `drag-into-place-spelling-core-lang-english.zip` was
+uploaded with the corrected filename `drag-into-place-spelling-lang-english.zip`
+(441,292 bytes); its bytes and the original local filename were unchanged.
+The language upload receipt confirmed icon storage and automatic manifest
+addition; independent inventory and manifest reads confirmed persistence.
+No explicit change to `Sopra Steria dev`, promotion or staff Publish occurred.
+CMS acceptance of the URL template does not establish public DNS/hosting.
+
+The existing `auditOutput` helper passed on the extracted, merged supplied
+archives: 34 files, 26 referenced media assets, content version 1.4.1.
+Path/symlink/source-map/collision checks and artifact hashes are recorded in
+[TESTSPEC](./TESTSPEC.md#5-bridge-offline-and-delivery-cases).
+The engine contains root `licenses.json`, while normative D-10 requires
+`content/licenses.json`; the helper checks the former. This mismatch remains
+an explicit release-packaging gap, not a normative change.
+Draft animal illustrations were included for this authorized development
+test only; T-31 production selection remains outstanding.
+No extracted-archive gameplay, physical-device or actual-container validation
+was performed by this upload task. Required future packaging/audit commands
+and existing release gates remain unchanged.
+
 ## Part IV - Decisions and maintenance
 
 ## 14. Open questions
@@ -1033,7 +1089,7 @@ reservations, promotion or publishing.
 | ID | Question / owner | Blocks |
 |---|---|---|
 | Q-01 | Product owner: formal approval of proposed limits, timings, scoring and Draft behavior; the user validated Great-only scope including foils/hints on 2026-10-26, but the product owner remains unassigned | Product/release approval |
-| Q-02 | Curious Learning: approved engine slug, `sub_app_id`, language catalog entry and promotion permissions | Release packaging/upload |
+| Q-02 | Development upload verified reserved engine slug `drag-into-place-spelling` and catalog language `english`; registered title/URL are recorded under D-10. Curious Learning confirmation of production identity/hostname convention, `sub_app_id` and promotion permissions remains open | Production packaging/promotion; does not block the completed authorized development upload |
 | Q-03 | Content owner: provide production level set, contextual recordings, illustrations, icon, font and redistribution evidence | Production content gate |
 | Q-04 | Engineering/QA: select baseline device and minimum OS/WebView versions; Node.js 24.20.0/npm 11.19.0 selected for the prototype on 2026-10-22 | Performance/support claims; device and OS/WebView selection |
 | Q-05 | Sponsor: assign product approver, independent QA owner, human architecture/security reviewers and facilitated usability review | Approval/release |
@@ -1086,6 +1142,8 @@ dates or invent a change-log entry for untouched specs.
 
 ## Spec change log
 
+2026-11-06 — Copilot — Recorded the approved development-only engine/English/icon upload, registered metadata, static validation and reported audio guidance while retaining attribution, packaging and production-release gaps.
+2026-11-06 — Copilot — Recorded the user-approved 512x512 true-PNG draft dog tile icon while preserving D-10 packaging, archive verification and release gates.
 2026-11-05 — Copilot — Recorded the approved stage 8 regression/reporting task, retained 229-browser/90-unit evidence, reconciled current coverage and axe review findings, and preserved normative behavior, Draft status and incomplete release gates.
 2026-11-05 — Copilot — Recorded the user-approved stage 7 layout/accessibility/bridge/offline implementation, 229 browser and 90 unit passes, current audit tooling and remaining desktop, adapter, human and release boundaries.
 2026-11-05 — Copilot — Recorded the user-approved stage 6 audio/loading/recovery implementation and 188 HTTP/file executions, updated implemented tooling evidence and preserved partial acceptance and audio-adapter gaps.

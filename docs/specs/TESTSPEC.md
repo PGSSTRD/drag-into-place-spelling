@@ -1,8 +1,8 @@
 # TESTSPEC - Drag Into Place Spelling
 
-**Version:** 2.1.20<br>
-**Status:** Draft - Stage 8 regression/reporting human-approved; 229 executions (113 HTTP, 116 file) pass; full acceptance remains incomplete for not-run variants, ARIA/contrast review, audio-adapter compliance and human/device/container/content/release gates<br>
-**Last update:** 2026-11-05<br>
+**Version:** 2.1.22<br>
+**Status:** Draft - Stage 8, draft icon and development-only CMS upload human-approved; historical 229 browser executions pass; new static archive and CMS read-back checks pass, but full acceptance, ARIA/contrast, audio-adapter, human/device/container/content/release gates remain incomplete<br>
+**Last update:** 2026-11-06<br>
 **Author:** Copilot<br>
 **Independent QA owner:** To be assigned
 
@@ -167,6 +167,65 @@ insufficient.
 | T-31 | P-11; D-01/D-10 | Independently review production word-picture match, each contextual clip, full-word clip and licenses; verify actual published manifest/device | All content correct and legally distributable; no placeholder IDs/media; promotion alone not treated as release; staff Publish and device version verified |
 | T-32 | P-12; DEVSPEC section 15 lifecycle; all spec metadata | Dry-run a new task plan, completed/unapproved task, approved task and affected-spec update | Plan cites all four specs and relevant IDs; no approval inferred; approved work prompts separate reconciliation; altered specs update metadata/log and report added/removed/replaced items |
 | T-33 | P-01/P-03/P-07/P-11; D-01/D-05; U-01/U-03 | Validate and cycle F-11; inspect each expected image, foil set, word/letter audio path and license record | DOG/RABBIT/BIRD use stable IDs 2/3/4, matching target letters and SVG paths, accurate alt text, two non-target foils and one zero-based contextual clip per letter; the DOG is a head-only tan illustration with paired floppy ears and a symmetric muzzle, accepted by the user as a sufficient depiction of a dog on 2026-11-02; the BIRD illustration faces forward with two visible eyes, a centered beak, and no side-wing or outer-feather shapes; all four pack levels are reachable in a cycle. Verify exactly one complete manifest entry per source MP3, preserving ElevenLabs free-plan restrictions; metadata completeness does not establish title attribution, commercial permission, pronunciation correctness or T-31 approval. Missing referenced files or incomplete license records fail content validation; repository-only SVGs do not pass release review by themselves |
+
+Post-Stage-8 artifact evidence (2026-11-06): the user-approved
+`content/assets/icons/dog-tile-icon.png` exists as a true 512x512 PNG rendered
+from the draft dog SVG; its signature and dimensions were verified. This
+supports the T-28 icon file-format/dimension criterion only. At that point,
+engine/language ZIP construction, extraction, merge, collision/path/hash
+checks and the complete package audit were still unrun.
+The Stage 8 report remains the historical result of its 2026-11-05 run.
+
+### Approved development-upload verification (2026-11-06)
+
+Source task: the user authorized upload of the three supplied files, approved
+the completed development-upload task after read-back verification, and
+separately authorized specification reconciliation. This adds evidence for
+P-11/P-12, D-01/D-10 and partial T-26/T-28/T-31; it does not change mandatory
+acceptance criteria, module dependencies or U-01-U-05 presentation.
+
+| Check actually performed | Result / boundary |
+|---|---|
+| ZIP entry inspection and extraction into an empty session directory | Root engine `index.html`; no engine `lang/`; English archive only `lang/english/` data/audio; no detected traversal, absolute/drive/backslash entries, symlinks, source maps or case-insensitive duplicate/overwriting file paths |
+| Existing `auditOutput` on the merged supplied archives | Pass: 34 files, 26 referenced media assets, content version `1.4.1`; schema, exact-case local references, media-format/license-record checks, font notice/reference and implemented emitted-output scans passed |
+| Separate icon | PNG signature and IHDR dimensions verified: 512x512, 30,752 bytes; upload receipt confirmed stored icon |
+| Pre-upload file identity | All three SHA-256 values matched the validated inputs immediately before upload |
+| CMS upload and independent inventory read-back | Engine v1 and English v1 persisted as `development`; item IDs and metadata are recorded in [DEVSPEC D-10](./DEVSPEC.md#13-packaging-and-authorized-delivery-d-10) |
+| Automatic manifest addition and independent manifest read-back | English tile exists in `all-development`, channel `development`, no pinned version; not an addition to `Sopra Steria dev` |
+| Promotion / publishing | Not performed or authorized |
+
+Validated and uploaded artifact identities:
+
+| Uploaded artifact | Bytes | SHA-256 |
+|---|---:|---|
+| `drag-into-place-spelling-core.zip` | 219965 | `840568b8bdacb3bccca99ba2a0497a6e4f35c1adad1d3cb8f2c0d56aab9d5aa9` |
+| `drag-into-place-spelling-lang-english.zip` | 441292 | `5f379118dfc809f144d47335ef412cfbb4cc05672357b88d262b84517ab54f28` |
+| `dog-tile-icon.png` | 30752 | `0aaf2fdf0a0f36d44defecc83bc19976bc8b96bf3ddf4d99b55751791c6d52ee` |
+
+The language input filename contained an extra `-core`; only the upload's
+filename argument was corrected, with user permission. No source archive was
+rewritten. The initial local audit invocation failed on shell quoting; the
+corrected stdin invocation passed. The first HTTP upload attempt failed TLS
+certificate validation before an upload response; retrying with Node's
+Windows/system trusted CAs and TLS verification enabled succeeded, and
+inventory confirmed one version of each item.
+
+These are static archive and CMS checks, not new application/browser test
+passes. Extracted-archive gameplay, cold-launch timings, NetGuard, bridge,
+physical-device and independent QA checks remain unrun by this task.
+T-28 remains partial: the archives include draft illustrations, no complete
+release/version-manifest acceptance was established, and the engine ships
+root `licenses.json` instead of D-10's required `content/licenses.json`.
+The helper's success does not resolve that mismatch or replace the required
+standalone release audit/packaging commands.
+
+For T-31, the user reports Curious Learning confirmed a commercial audio
+license is not required for this use. This supported the authorized
+development upload only; applicable ElevenLabs attribution, independently
+reviewed distribution terms, contextual pronunciation, production media
+selection and actual published-device verification remain open.
+No license was upgraded and no Draft specification or production release
+was approved by task approval.
 
 For T-26 use emitted-asset scanning plus instrumented runtime URL/API spies;
 a text search alone can miss dynamically constructed requests. Fail on
@@ -867,6 +926,8 @@ full browser/product acceptance or wholesale approval of these Draft specs.
 
 ## Spec change log
 
+2026-11-06 — Copilot — Recorded approved development-upload hashes, partial archive checks, CMS inventory/manifest verification and reported audio guidance while retaining runtime, attribution and release-packaging gaps.
+2026-11-06 — Copilot — Recorded the user-approved 512x512 draft dog tile icon as post-run evidence while keeping T-28 archive and release acceptance unpassed.
 2026-11-05 — Copilot — Recorded approved stage 8 regression/reporting, current T-01-T-33 and U-05 coverage reconciliation, retained 229-browser/90-unit evidence and axe incomplete findings while preserving mandatory criteria and remaining gates.
 2026-11-05 — Copilot — Recorded user-approved stage 7 T-20-T-27 evidence, 229 browser and 90 unit passes, partial accessibility/offline/container boundaries and current runbook/audit traceability without weakening acceptance criteria.
 2026-11-05 — Copilot — Recorded user-approved stage 6 T-07/T-16/T-22/T-23 coverage, 188 HTTP/file and 82 unit passes, updated runbook traceability and retained partial variants and audio-adapter/device/release gates.

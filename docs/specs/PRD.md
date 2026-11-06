@@ -1,8 +1,8 @@
 # PRD - Drag Into Place Spelling
 
-**Version:** 2.0.1<br>
-**Status:** Draft - Great implementation evidence recorded; awaiting product approval; release not approved<br>
-**Last update:** 2026-10-27<br>
+**Version:** 2.0.2<br>
+**Status:** Draft - Great implementation and human-approved development upload recorded; awaiting product approval; release not approved<br>
+**Last update:** 2026-11-06<br>
 **Author:** Copilot<br>
 **Product owner:** To be assigned by the project sponsor
 
@@ -148,7 +148,28 @@ P-12 acceptance suite or the release measures in section 5. Production media
 and licenses remain missing, and physical-device, Curious Reader, independent
 QA, accessibility, usability and release reviews remain outstanding.
 
+### Approved development upload evidence (2026-11-06)
+
+The user explicitly authorized and approved the completed development-only
+CMS upload of engine version 1, English pack version 1 (content 1.4.1) and the
+draft dog icon under the reserved identity `drag-into-place-spelling`.
+Static archive validation and CMS inventory/manifest read-back support
+P-11 delivery preparation; they do not establish the release measures above.
+The tile was automatically added to `all-development`, not the separately
+named `Sopra Steria dev` manifest. Nothing was promoted or published.
+
+The user reports Curious Learning confirmed a commercial audio license is
+not required for this use. That report supported authorization of this
+development upload; it does not grant a commercial license, waive applicable
+attribution, approve production media, or pass independent T-31 review.
+See [DEVSPEC D-10](./DEVSPEC.md#13-packaging-and-authorized-delivery-d-10)
+and [TESTSPEC delivery evidence](./TESTSPEC.md#5-bridge-offline-and-delivery-cases)
+for the registered metadata, artifact identity and verification boundaries.
+No gameplay or presentation requirements changed.
+
 ## Spec change log
+
+2026-11-06 — Copilot — Recorded the human-approved development-only CMS upload and reported audio guidance while preserving attribution, product, device and production-release gates.
 
 2026-10-27 — Copilot — Recorded the implemented Great interaction and focused validation evidence while retaining product and release approval gates.
 2026-10-26 — Copilot — Replaced multi-tier scope with Great as the sole product implementation, carrying forward foils/hints and specifying moving tiles; formal product approval remains outstanding.
